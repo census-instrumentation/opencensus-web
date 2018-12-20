@@ -1,10 +1,11 @@
-# OpenCensus - A stats collection and distributed tracing framework
+# OpenCensus for Web Browsers
 [![Gitter chat][gitter-image]][gitter-url]
 
-OpenCensus is a toolkit for collecting application performance and behavior data. It currently 
-includes 3 apis: stats, tracing and tags.
+OpenCensus Web is an experimental implementation of OpenCensus, a toolkit for
+collecting application performance and behavior monitoring data.
 
-The library is in alpha stage and the API is subject to change.
+The library is in an experimental pre-alpha stage and the API is subject to
+change, and is not suitable for production use.
 
 Please join [gitter](https://gitter.im/census-instrumentation/Lobby) for help or feedback on this
 project.
