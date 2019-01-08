@@ -1,0 +1,70 @@
+{
+  "name": "@opencensus/web-exporter-ocagent",
+  "version": "0.0.1",
+  "description": "OpenCensus Agent Exporter web allows user to send collected traces to the OpenCensus Agent via HTTP/JSON in a browser.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "webpack",
+    "test": "karma start --single-run",
+    "test:start": "karma start",
+    "clean": "rimraf build/*",
+    "check": "gts check",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "repository": "census-instrumentation/opencensus-web",
+  "keywords": [
+    "opencensus",
+    "browser",
+    "tracing",
+    "profiling",
+    "stats",
+    "metrics"
+  ],
+  "author": "OpenCensus Authors",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/jasmine": "^3.3.4",
+    "@types/node": "^10.12.18",
+    "chai": "^4.1.2",
+    "gts": "^0.9.0",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "jasmine": "^3.3.1",
+    "karma": "^3.1.4",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage-istanbul-reporter": "^2.0.4",
+    "karma-jasmine": "^2.0.1",
+    "karma-phantomjs-shim": "^1.5.0",
+    "karma-sinon-chai": "^2.0.2",
+    "karma-spec-reporter": "0.0.32",
+    "karma-webpack": "^4.0.0-rc.5",
+    "rimraf": "^2.6.2",
+    "sinon": "^6.2.0",
+    "sinon-chai": "^3.2.0",
+    "ts-loader": "^5.1.0",
+    "typescript": "^3.1.6",
+    "webpack": "^4.18.0",
+    "webpack-cli": "^3.1.0",
+    "@opencensus/core": "0.0.8"
+  },
+  "dependencies": {}
+}
