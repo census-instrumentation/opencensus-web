@@ -1,8 +1,7 @@
 {
-  "name": "@opencensus/web-exporter-ocagent",
+  "name": "@opencensus/web-core",
   "version": "0.0.1",
-  "description":
-    "OpenCensus Agent Exporter web allows user to send collected traces to the OpenCensus Agent via HTTP/JSON in a browser.",
+  "description": "OpenCensus Web is a toolkit for collecting application performance and behavior data from client side web browser apps.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
