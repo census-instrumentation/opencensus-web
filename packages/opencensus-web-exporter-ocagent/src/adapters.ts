@@ -37,6 +37,7 @@ function hexToBase64(hexStr: string): string {
   let hexAsciiCharsStr = '';
   for (let i = 0; i < hexStrLen; i += 2) {
     const hexPair = hexStr.substring(i, i + 2);
+    // tslint:disable-next-line:ban Needed to parse hexadecimal.
     const hexVal = parseInt(hexPair, 16);
     hexAsciiCharsStr += String.fromCharCode(hexVal);
   }
@@ -63,9 +64,7 @@ function adaptSpanKind(coreKind: string): apiTypes.SpanKind {
     case 'CLIENT': {
       return apiTypes.SpanKind.CLIENT;
     }
-    default: {
-      return apiTypes.SpanKind.UNSPECIFIED;
-    }
+    default: { return apiTypes.SpanKind.UNSPECIFIED; }
   }
 }
 
@@ -107,9 +106,7 @@ function adaptMessageEventType(type: string): apiTypes.MessageEventType {
     case 'RECEIVED': {
       return apiTypes.MessageEventType.RECEIVED;
     }
-    default: {
-      return apiTypes.MessageEventType.UNSPECIFIED;
-    }
+    default: { return apiTypes.MessageEventType.UNSPECIFIED; }
   }
 }
 
@@ -142,9 +139,7 @@ function adaptLinkType(type: string): apiTypes.LinkType {
     case 'PARENT_LINKED_SPAN': {
       return apiTypes.LinkType.PARENT_LINKED_SPAN;
     }
-    default: {
-      return apiTypes.LinkType.UNSPECIFIED;
-    }
+    default: { return apiTypes.LinkType.UNSPECIFIED; }
   }
 }
 
