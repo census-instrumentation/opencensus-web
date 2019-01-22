@@ -111,11 +111,11 @@ export class Tracer implements coreTypes.Tracer {
   /**
    * Start a new Span instance to the currentRootSpan
    * @param name Span name
-   * @param type Span type
+   * @param kind Span kind
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, type?: string): Span {
-    return this.currentRootSpan.startChildSpan(name, type);
+  startChildSpan(name?: string, kind?: string): Span {
+    return this.currentRootSpan.startChildSpan(name, kind);
   }
 
   /**

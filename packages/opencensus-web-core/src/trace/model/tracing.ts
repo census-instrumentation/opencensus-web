@@ -15,10 +15,10 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {NoOpExporter} from '../../exporters/no_op_exporter';
+import {NoopExporter} from '../../exporters/noop_exporter';
 import {Tracer} from './tracer';
 
-export const NO_OP_EXPORTER = new NoOpExporter();
+export const NOOP_EXPORTER = new NoopExporter();
 
 /** Main interface for tracing. */
 export class Tracing implements coreTypes.Tracing {
@@ -26,7 +26,7 @@ export class Tracing implements coreTypes.Tracing {
   readonly tracer = new Tracer();
 
   /** Service to send collected traces to. */
-  exporter = NO_OP_EXPORTER;
+  exporter = NOOP_EXPORTER;
 
   /** Whether tracing is active - always true for opencensus-web. */
   active = true;
@@ -60,7 +60,7 @@ export class Tracing implements coreTypes.Tracing {
    * @return The tracing object.
    */
   unregisterExporter(exporter: coreTypes.Exporter): coreTypes.Tracing {
-    this.registerExporter(NO_OP_EXPORTER);
+    this.registerExporter(NOOP_EXPORTER);
     return this;
   }
 }

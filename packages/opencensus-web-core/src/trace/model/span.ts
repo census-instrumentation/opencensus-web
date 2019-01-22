@@ -23,9 +23,9 @@ import {SpanKind} from './types';
 /** Default span name if none is specified. */
 const DEFAULT_SPAN_NAME = 'unnamed';
 
-/** A span represents a single operation within a trace.. */
+/** A span represents a single operation within a trace. */
 export class Span implements coreTypes.Span {
-  id: string = randomSpanId();
+  id = randomSpanId();
 
   /** If the parent span is in another process. */
   remoteParent = false;
@@ -117,6 +117,7 @@ export class Span implements coreTypes.Span {
   /**
    * Adds an attribute to the span.
    * @param key Describes the value added.
+   * @param value What value to set for the attribute.
    */
   addAttribute(key: string, value: string|number|boolean) {
     this.attributes[key] = value;

@@ -17,7 +17,7 @@
 import * as coreTypes from '@opencensus/core';
 
 import {Tracer} from '../src/trace/model/tracer';
-import {NO_OP_EXPORTER, Tracing} from '../src/trace/model/tracing';
+import {NOOP_EXPORTER, Tracing} from '../src/trace/model/tracing';
 
 describe('Tracing', () => {
   let tracing: Tracing;
@@ -38,7 +38,7 @@ describe('Tracing', () => {
 
   describe('default exporter', () => {
     it('is a no-op exporter', () => {
-      expect(tracing.exporter).toBe(NO_OP_EXPORTER);
+      expect(tracing.exporter).toBe(NOOP_EXPORTER);
     });
   });
 
@@ -79,7 +79,7 @@ describe('Tracing', () => {
       expect(tracer.registerSpanEventListener)
 
           .toHaveBeenCalledWith(newExporter);
-      expect(newExporter).toBe(NO_OP_EXPORTER);
+      expect(newExporter).toBe(NOOP_EXPORTER);
     });
   });
 });

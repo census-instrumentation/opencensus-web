@@ -16,7 +16,7 @@
 
 import * as coreTypes from '@opencensus/core';
 
-export class NoOpExporter implements coreTypes.Exporter {
+export class NoopExporter implements coreTypes.Exporter {
   publish(roots: coreTypes.RootSpan[]): Promise<number|string|void> {
     return Promise.resolve();
   }
