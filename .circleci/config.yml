@@ -37,18 +37,10 @@ jobs:
       # NPM yet. We can't install the package directly from GitHub because NPM
       # only supports that for packages in the root folder of the repo.
       # See https://github.com/census-instrumentation/opencensus-node/pull/254
-      - run: (cd packages/opencensus-web-core && npm install || true)
-      - run: (cd packages/opencensus-web-exporter-ocagent && npm install || true)
+      - run: npm install || true
       - run: find . -type f | grep '@opencensus/core' | xargs sed -i '/types="mocha"/d'
 
       - run: npm install
-
-      # Remove the mocha type references in @opencensus/core. This has been
-      # fixed in the upstream package on GitHub, but has not been released on
-      # NPM yet. We can't install the package directly from GitHub because NPM
-      # only supports that for packages in the root folder of the repo.
-      # See https://github.com/census-instrumentation/opencensus-node/pull/254
-      - run: find . -type f | grep '@opencensus/core' | xargs sed -i '/types="mocha"/d'
 
       - save_cache:
           paths:

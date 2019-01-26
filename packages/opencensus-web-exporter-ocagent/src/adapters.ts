@@ -66,9 +66,7 @@ function adaptSpanKind(coreKind: string): apiTypes.SpanKind {
     case 'CLIENT': {
       return apiTypes.SpanKind.CLIENT;
     }
-    default: {
-      return apiTypes.SpanKind.UNSPECIFIED;
-    }
+    default: { return apiTypes.SpanKind.UNSPECIFIED; }
   }
 }
 
@@ -110,9 +108,7 @@ function adaptMessageEventType(type: string): apiTypes.MessageEventType {
     case 'RECEIVED': {
       return apiTypes.MessageEventType.RECEIVED;
     }
-    default: {
-      return apiTypes.MessageEventType.UNSPECIFIED;
-    }
+    default: { return apiTypes.MessageEventType.UNSPECIFIED; }
   }
 }
 
@@ -145,9 +141,7 @@ function adaptLinkType(type: string): apiTypes.LinkType {
     case 'PARENT_LINKED_SPAN': {
       return apiTypes.LinkType.PARENT_LINKED_SPAN;
     }
-    default: {
-      return apiTypes.LinkType.UNSPECIFIED;
-    }
+    default: { return apiTypes.LinkType.UNSPECIFIED; }
   }
 }
 
