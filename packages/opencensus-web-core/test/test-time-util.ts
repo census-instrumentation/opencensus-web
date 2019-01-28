@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {getDateForPerfTime, getPerfTimeOrigin} from '../src/common/time-util';
+import {getDateForPerfTime, getIsoDateStrForPerfTime, getPerfTimeOrigin} from '../src/common/time-util';
 
 describe('getPerfTimeOrigin', () => {
   it('returns `performance.timeOrigin` if set', () => {
@@ -37,5 +37,20 @@ describe('getDateForPerfTime', () => {
     spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
 
     expect(getDateForPerfTime(999.6).getTime()).toBe(1548000000999);
+  });
+});
+
+describe('getIsoDateStrForPerfTime', () => {
+  it('converts perf time to nanosecond-precise ISO date string', () => {
+    spyOnProperty(performance, 'timeOrigin').and.returnValue(1535683887001);
+    expect(getIsoDateStrForPerfTime(0.000001))
+        .toEqual('2018-08-31T02:51:27.001000001Z');
+  });
+
+  it('accurately combines milliseconds from origin and perf times', () => {
+    spyOnProperty(performance, 'timeOrigin').and.returnValue(1535683887441.586);
+
+    expect(getIsoDateStrForPerfTime(658867.8000000073))
+        .toEqual('2018-08-31T03:02:26.309385938Z');
   });
 });

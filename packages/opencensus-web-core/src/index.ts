@@ -23,3 +23,5 @@ export * from './trace/model/types';
 
 // Re-export types this uses from @opencensus/core.
 export {Annotation, Attributes, Link, MessageEvent, SpanContext, SpanEventListener, TraceState, Propagation, Exporter, TracerConfig, Config} from '@opencensus/core';
+
+export * from './common/time-util';

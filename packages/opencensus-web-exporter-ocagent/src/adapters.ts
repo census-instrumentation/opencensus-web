@@ -15,13 +15,15 @@
  */
 
 import * as coreTypes from '@opencensus/core';
+import * as webCore from '@opencensus/web-core';
 import * as apiTypes from './api-types';
 
 /**
  * Converts a RootSpan type from @opencensus/core to the Span JSON structure
  * expected by the OpenCensus Agent's HTTP/JSON (grpc-gateway) API.
  */
-export function adaptRootSpan(rootSpan: coreTypes.RootSpan): apiTypes.Span[] {
+export function adaptRootSpan(rootSpan: coreTypes.RootSpan|
+                              webCore.RootSpan): apiTypes.Span[] {
   const adaptedSpans: apiTypes.Span[] = rootSpan.spans.map(adaptSpan);
   adaptedSpans.unshift(adaptSpan(rootSpan));
   return adaptedSpans;
@@ -156,7 +158,25 @@ function adaptLinks(links: coreTypes.Link[]): apiTypes.Links {
   return {link: links.map(adaptLink)};
 }
 
-function adaptSpan(span: coreTypes.Span): apiTypes.Span {
+/**
+ * Returns an ISO date string for a span high-resolution browser performance
+ * clock time when available (if the span was a `webCore.Span` instance) or
+ * otherwise using the more general `@opencensus/core` Date-typed times.
+ */
+function adaptSpanTime(perfTime: number|undefined, fallbackTime: Date) {
+  return perfTime === undefined ? fallbackTime.toISOString() :
+                                  webCore.getIsoDateStrForPerfTime(perfTime);
+}
+
+/** Interface to represent that a coreTypes.Span may be a webCore.Span */
+interface MaybeWebSpan {
+  startPerfTime?: number;
+  endPerfTime?: number;
+  startTime: Date;
+  endTime: Date;
+}
+
+function adaptSpan(span: coreTypes.Span|webCore.Span): apiTypes.Span {
   // The stackTrace and childSpanCount attributes are not currently supported by
   // opencensus-web.
   return {
@@ -166,8 +186,9 @@ function adaptSpan(span: coreTypes.Span): apiTypes.Span {
     parentSpanId: hexToBase64(span.parentSpanId),
     name: adaptString(span.name),
     kind: adaptSpanKind(span.kind),
-    startTime: span.startTime.toISOString(),
-    endTime: span.endTime.toISOString(),
+    startTime:
+        adaptSpanTime((span as MaybeWebSpan).startPerfTime, span.startTime),
+    endTime: adaptSpanTime((span as MaybeWebSpan).endPerfTime, span.endTime),
     attributes: adaptAttributes(span.attributes),
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
     links: adaptLinks(span.links),

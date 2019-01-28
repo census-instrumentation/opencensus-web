@@ -15,6 +15,7 @@
  */
 
 import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-core';
 import {adaptRootSpan} from '../src/adapters';
 import * as apiTypes from '../src/api-types';
 import {MockRootSpan, MockSpan} from './mock-trace-types';
@@ -161,6 +162,58 @@ describe('Core to API Span adapters', () => {
         sameProcessAsParentSpan: true,
         links: {link: []},
         status: {},
+      },
+    ];
+    expect(apiSpans).toEqual(expectedApiSpans);
+  });
+
+  it('adapts perf times of web spans as high-res timestamps', () => {
+    spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
+    const tracer = new webTypes.Tracer();
+    const webSpan1 = new webTypes.Span();
+    webSpan1.id = '000000000000000a';
+    webSpan1.traceId = '00000000000000000000000000000001';
+    webSpan1.startPerfTime = 10.1;
+    webSpan1.endPerfTime = 20.113;
+    const webRootSpan = new webTypes.RootSpan(tracer);
+    webRootSpan.spans = [webSpan1];
+    webRootSpan.startPerfTime = 5.001;
+    webRootSpan.endPerfTime = 30.000001;
+    webRootSpan.id = '000000000000000b';
+    webRootSpan.traceId = '00000000000000000000000000000001';
+
+    const apiSpans = adaptRootSpan(webRootSpan);
+
+    const expectedApiSpans: apiTypes.Span[] = [
+      {
+        traceId: 'AAAAAAAAAAAAAAAAAAAAAQ==',
+        spanId: 'AAAAAAAAAAs=',
+        tracestate: {},
+        parentSpanId: '',
+        name: {value: 'unnamed'},
+        kind: apiTypes.SpanKind.UNSPECIFIED,
+        startTime: '2019-01-20T16:00:00.005001000Z',
+        endTime: '2019-01-20T16:00:00.030000001Z',
+        attributes: {attributeMap: {}},
+        timeEvents: {timeEvent: []},
+        links: {link: []},
+        status: {},
+        sameProcessAsParentSpan: true,
+      },
+      {
+        traceId: 'AAAAAAAAAAAAAAAAAAAAAQ==',
+        spanId: 'AAAAAAAAAAo=',
+        tracestate: {},
+        parentSpanId: '',
+        name: {value: 'unnamed'},
+        kind: apiTypes.SpanKind.UNSPECIFIED,
+        startTime: '2019-01-20T16:00:00.010100000Z',
+        endTime: '2019-01-20T16:00:00.020113000Z',
+        attributes: {attributeMap: {}},
+        timeEvents: {timeEvent: []},
+        links: {link: []},
+        status: {},
+        sameProcessAsParentSpan: true,
       },
     ];
     expect(apiSpans).toEqual(expectedApiSpans);
