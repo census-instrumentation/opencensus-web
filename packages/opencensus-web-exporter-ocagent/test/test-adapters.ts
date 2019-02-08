@@ -175,12 +175,26 @@ describe('Core to API Span adapters', () => {
     webSpan1.traceId = '00000000000000000000000000000001';
     webSpan1.startPerfTime = 10.1;
     webSpan1.endPerfTime = 20.113;
+    webSpan1.messageEvents = [{
+      id: '1',
+      timestamp: 19.002,
+      type: webTypes.MessageEventType.SENT,
+      uncompressedSize: 22,
+      compressedSize: 15,
+      // TODO(draffensperger): remove the `as coreTypes.MessageEvent` once core
+      // interface has new fields.
+    } as coreTypes.MessageEvent];
     const webRootSpan = new webTypes.RootSpan(tracer);
     webRootSpan.spans = [webSpan1];
     webRootSpan.startPerfTime = 5.001;
     webRootSpan.endPerfTime = 30.000001;
     webRootSpan.id = '000000000000000b';
     webRootSpan.traceId = '00000000000000000000000000000001';
+    webRootSpan.annotations = [{
+      timestamp: 41.001,
+      description: 'annotation with perf time',
+      attributes: {attr1: true},
+    }];
 
     const apiSpans = adaptRootSpan(webRootSpan);
 
@@ -195,7 +209,25 @@ describe('Core to API Span adapters', () => {
         startTime: '2019-01-20T16:00:00.005001000Z',
         endTime: '2019-01-20T16:00:00.030000001Z',
         attributes: {attributeMap: {}},
-        timeEvents: {timeEvent: []},
+        timeEvents: {
+          timeEvent: [
+            {
+              time: '2019-01-20T16:00:00.041001000Z',
+              annotation: {
+                description: {
+                  value: 'annotation with perf time',
+                },
+                attributes: {
+                  attributeMap: {
+                    attr1: {
+                      boolValue: true,
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
         links: {link: []},
         status: {},
         sameProcessAsParentSpan: true,
@@ -210,7 +242,17 @@ describe('Core to API Span adapters', () => {
         startTime: '2019-01-20T16:00:00.010100000Z',
         endTime: '2019-01-20T16:00:00.020113000Z',
         attributes: {attributeMap: {}},
-        timeEvents: {timeEvent: []},
+        timeEvents: {
+          timeEvent: [{
+            time: '2019-01-20T16:00:00.019002000Z',
+            messageEvent: {
+              id: '1',
+              type: apiTypes.MessageEventType.SENT,
+              uncompressedSize: 22,
+              compressedSize: 15,
+            },
+          }],
+        },
         links: {link: []},
         status: {},
         sameProcessAsParentSpan: true,

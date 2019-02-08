@@ -15,10 +15,12 @@
  */
 
 import * as coreTypes from '@opencensus/core';
+
 import {LOGGER} from '../../common/console-logger';
 import {getDateForPerfTime} from '../../common/time-util';
 import {randomSpanId} from '../../internal/util';
-import {SpanKind} from './types';
+
+import {MessageEvent, SpanKind} from './types';
 
 /** Default span name if none is specified. */
 const DEFAULT_SPAN_NAME = 'unnamed';
@@ -66,7 +68,7 @@ export class Span implements coreTypes.Span {
   annotations: coreTypes.Annotation[] = [];
 
   /** Event describing messages sent/received between Spans. */
-  messageEvents: coreTypes.MessageEvent[] = [];
+  messageEvents: MessageEvent[] = [];
 
   /** Pointers from the current span to another span */
   links: coreTypes.Link[] = [];

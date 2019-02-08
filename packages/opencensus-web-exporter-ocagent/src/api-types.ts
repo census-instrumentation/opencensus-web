@@ -420,12 +420,12 @@ export interface MessageEvent {
   /**
    * The number of uncompressed bytes sent or received.
    */
-  uncompressedSize?: string;
+  uncompressedSize?: string|number;
   /**
    * The number of compressed bytes sent or received. If zero, assumed to be the
    * same size as uncompressed.
    */
-  compressedSize?: string;
+  compressedSize?: string|number;
 }
 
 /**
