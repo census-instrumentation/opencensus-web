@@ -26,7 +26,7 @@ describe('parseUrl', () => {
     expect(parsedUrl.hostname).toBe('example.com');
     expect(parsedUrl.port).toBe('3000');
     expect(parsedUrl.host).toBe('example.com:3000');
-    expect(parsedUrl.origin).toBe('http://example.com:3000');
+    expect(parsedUrl.origin).toBe('https://example.com:3000');
     expect(parsedUrl.pathname).toBe('/pathname/');
     expect(parsedUrl.hash).toBe('#hash');
     expect(parsedUrl.search).toBe('?search=test');
