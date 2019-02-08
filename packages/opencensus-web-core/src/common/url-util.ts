@@ -20,22 +20,26 @@
  *    https://example.com:3000/pathname/?search=test#hash
  */
 export interface ParsedUrl {
-  /** Protocol of the URL. E.g. https */
-  protocol: string;
+  /** Protocol of the URL including the colon. E.g. https: */
+  readonly protocol: string;
   /** Host name only (no port). E.g. example.com */
-  hostname: string;
-  /** Port number if explicitly specified (else empty string). E.g. 3000 */
-  port: string;
+  readonly hostname: string;
+  /**
+   * Port number if explicitly specified (else empty string). E.g. 3000
+   * This is a string type to match the type of the field in the document <a>
+   * tag that is used to implement this.
+   */
+  readonly port: string;
   /** Host portion of the URL including port. E.g. example.com:3000 */
-  host: string;
+  readonly host: string;
   /** Origin with protocol, hostname and port. E.g. https://example.com:3000 */
-  origin: string;
+  readonly origin: string;
   /** Request URL path. E.g. /pathname/ */
-  pathname: string;
+  readonly pathname: string;
   /** Portion of the URL after and including the `#` character. E.g. #hash */
-  hash: string;
+  readonly hash: string;
   /** Query string before the `#` char including the `?`. E.g. ?search=test */
-  search: string;
+  readonly search: string;
 }
 
 /** Parses the given URL into components. */

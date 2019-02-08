@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import 'jasmine';
 import {parseUrl} from '../src/common/url-util';
 
 describe('parseUrl', () => {
@@ -22,7 +21,7 @@ describe('parseUrl', () => {
     const parsedUrl =
         parseUrl('https://example.com:3000/pathname/?search=test#hash');
 
-    expect(parsedUrl.protocol).toBe('https');
+    expect(parsedUrl.protocol).toBe('https:');
     expect(parsedUrl.hostname).toBe('example.com');
     expect(parsedUrl.port).toBe('3000');
     expect(parsedUrl.host).toBe('example.com:3000');
@@ -30,5 +29,19 @@ describe('parseUrl', () => {
     expect(parsedUrl.pathname).toBe('/pathname/');
     expect(parsedUrl.hash).toBe('#hash');
     expect(parsedUrl.search).toBe('?search=test');
+  });
+
+  it('correctly parases a url without a port', () => {
+    const parsedUrl =
+        parseUrl('http://example.com/path1/path2?search=test&format=json');
+
+    expect(parsedUrl.protocol).toBe('http:');
+    expect(parsedUrl.hostname).toBe('example.com');
+    expect(parsedUrl.port).toBe('');
+    expect(parsedUrl.host).toBe('example.com');
+    expect(parsedUrl.origin).toBe('http://example.com');
+    expect(parsedUrl.pathname).toBe('/path1/path2');
+    expect(parsedUrl.hash).toBe('');
+    expect(parsedUrl.search).toBe('?search=test&format=json');
   });
 });
