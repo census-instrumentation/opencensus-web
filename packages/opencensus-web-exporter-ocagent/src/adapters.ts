@@ -134,15 +134,24 @@ function adaptMessageEventType(type: string): apiTypes.MessageEventType {
 
 function adaptMessageEvent(messageEvent: coreTypes.MessageEvent):
     apiTypes.TimeEvent {
+  const apiMessageEvent: apiTypes.MessageEvent = {
+    // tslint:disable-next-line:ban Needed to parse hexadecimal.
+    id: String(parseInt(messageEvent.id, 16)),
+    type: adaptMessageEventType(messageEvent.type),
+  };
+  // TODO(draffensperger): Remove this extra logic once there is a new
+  // @opencensus/core release with message event size types
+  if ((messageEvent as webCore.MessageEvent).uncompressedSize) {
+    apiMessageEvent.uncompressedSize =
+        (messageEvent as webCore.MessageEvent).uncompressedSize;
+  }
+  if ((messageEvent as webCore.MessageEvent).compressedSize) {
+    apiMessageEvent.compressedSize =
+        (messageEvent as webCore.MessageEvent).compressedSize;
+  }
   return {
     time: adaptTimestampNumber(messageEvent.timestamp),
-    messageEvent: {
-      // tslint:disable-next-line:ban Needed to parse hexadecimal.
-      id: String(parseInt(messageEvent.id, 16)),
-      type: adaptMessageEventType(messageEvent.type),
-      uncompressedSize: messageEvent.uncompressedSize,
-      compressedSize: messageEvent.compressedSize,
-    },
+    messageEvent: apiMessageEvent,
   };
 }
 
