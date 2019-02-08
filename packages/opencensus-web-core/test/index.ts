@@ -23,3 +23,4 @@ import './test-span';
 import './test-time-util';
 import './test-tracer';
 import './test-tracing';
+import './test-url-util';
