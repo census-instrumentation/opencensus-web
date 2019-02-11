@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// TODO(draffensperger): Remove these once the new @opencensus/core version is
+// pushed that has these enums/fields natively.
+
 /**
  * Type of span. Can be used to specify additional relationships between spans
  * in addition to a parent/child relationship.
@@ -57,4 +60,23 @@ export enum MessageEventType {
   SENT = 'SENT',
   /** Indicates a received message. */
   RECEIVED = 'RECEIVED',
+}
+
+/**
+ * An event describing a message sent/received between Spans.
+ */
+export interface MessageEvent {
+  /** A timestamp for the event. */
+  timestamp: number;
+  /** Indicates whether the message was sent or received. */
+  type: string;
+  /** An identifier for the MessageEvent's message. */
+  id: string;
+  /** The number of uncompressed bytes sent or received. */
+  uncompressedSize?: number;
+  /**
+   * The number of compressed bytes sent or received. If zero or
+   * undefined, assumed to be the same size as uncompressed.
+   */
+  compressedSize?: number;
 }

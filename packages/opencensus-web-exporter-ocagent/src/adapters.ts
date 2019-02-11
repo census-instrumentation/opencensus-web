@@ -19,11 +19,17 @@ import * as webCore from '@opencensus/web-core';
 import * as apiTypes from './api-types';
 
 /**
+ * This is a recent time in epoch milliseconds. Timestamps before this are
+ * assumed to be in browser performance clock millseconds, and timestamps after
+ * it are assumed to be in epoch milliseconds.
+ */
+const RECENT_EPOCH_MS = 1500000000000;  // July 13, 2017.
+
+/**
  * Converts a RootSpan type from @opencensus/core to the Span JSON structure
  * expected by the OpenCensus Agent's HTTP/JSON (grpc-gateway) API.
  */
-export function adaptRootSpan(rootSpan: coreTypes.RootSpan|
-                              webCore.RootSpan): apiTypes.Span[] {
+export function adaptRootSpan(rootSpan: coreTypes.RootSpan): apiTypes.Span[] {
   const adaptedSpans: apiTypes.Span[] = rootSpan.spans.map(adaptSpan);
   adaptedSpans.unshift(adaptSpan(rootSpan));
   return adaptedSpans;
@@ -92,12 +98,26 @@ function adaptAttributes(attributes: coreTypes.Attributes):
 
 function adaptAnnotation(annotation: coreTypes.Annotation): apiTypes.TimeEvent {
   return {
-    time: new Date(annotation.timestamp).toISOString(),
+    time: adaptTimestampNumber(annotation.timestamp),
     annotation: {
       description: adaptString(annotation.description),
       attributes: adaptAttributes(annotation.attributes),
     },
   };
+}
+
+/**
+ * Adapts a timestamp number for an annotation or message event. For
+ * opencensus-web, those timestamps are allowed to be either in epoch
+ * milliseconds or in browser performance clock milliseconds. This determines
+ * which one it likely is based on the size of the number.
+ * @return ISO string for timestamp
+ */
+function adaptTimestampNumber(timestamp: number): string {
+  if (timestamp > RECENT_EPOCH_MS) {
+    return new Date(timestamp).toISOString();
+  }
+  return webCore.getIsoDateStrForPerfTime(timestamp);
 }
 
 function adaptMessageEventType(type: string): apiTypes.MessageEventType {
@@ -114,13 +134,24 @@ function adaptMessageEventType(type: string): apiTypes.MessageEventType {
 
 function adaptMessageEvent(messageEvent: coreTypes.MessageEvent):
     apiTypes.TimeEvent {
+  const apiMessageEvent: apiTypes.MessageEvent = {
+    // tslint:disable-next-line:ban Needed to parse hexadecimal.
+    id: String(parseInt(messageEvent.id, 16)),
+    type: adaptMessageEventType(messageEvent.type),
+  };
+  // TODO(draffensperger): Remove this extra logic once there is a new
+  // @opencensus/core release with message event size types
+  if ((messageEvent as webCore.MessageEvent).uncompressedSize) {
+    apiMessageEvent.uncompressedSize =
+        (messageEvent as webCore.MessageEvent).uncompressedSize;
+  }
+  if ((messageEvent as webCore.MessageEvent).compressedSize) {
+    apiMessageEvent.compressedSize =
+        (messageEvent as webCore.MessageEvent).compressedSize;
+  }
   return {
-    time: new Date(messageEvent.timestamp).toISOString(),
-    messageEvent: {
-      // tslint:disable-next-line:ban Needed to parse hexadecimal.
-      id: String(parseInt(messageEvent.id, 16)),
-      type: adaptMessageEventType(messageEvent.type),
-    },
+    time: adaptTimestampNumber(messageEvent.timestamp),
+    messageEvent: apiMessageEvent,
   };
 }
 
@@ -176,7 +207,7 @@ interface MaybeWebSpan {
   endTime: Date;
 }
 
-function adaptSpan(span: coreTypes.Span|webCore.Span): apiTypes.Span {
+function adaptSpan(span: coreTypes.Span): apiTypes.Span {
   // The stackTrace and childSpanCount attributes are not currently supported by
   // opencensus-web.
   return {
