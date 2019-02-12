@@ -68,8 +68,8 @@ export const ATTRIBUTE_HTTP_RESP_ENCODED_BODY_SIZE =
 export const ATTRIBUTE_HTTP_RESP_DECODED_BODY_SIZE =
     `${HTTP_PREFIX}resp_decoded_body_size`;
 
+/** Attribute prefix for spans that represent navigations in the browser. */
 const NAVIGATION_PREFIX = 'nav.';
-
 /**
  * The type of browser navigation. See
  * https://www.w3.org/TR/navigation-timing-2/#sec-performance-navigation-types
@@ -81,3 +81,15 @@ export const ATTRIBUTE_NAV_TYPE = `${NAVIGATION_PREFIX}type`;
  */
 export const ATTRIBUTE_NAV_REDIRECT_COUNT =
     `${NAVIGATION_PREFIX}redirect_count`;
+
+/**
+ * Attribute prefix for spans that are for "long tasks" (long JS event loops).
+ * See https://www.w3.org/TR/longtasks/
+ */
+export const LONG_TASK_PREFIX = 'long_task.';
+/**
+ * A JSON string of the `attribution` field of a long task timing. This gives
+ * a little additional information about what on the page may have caused the
+ * long task.
+ */
+export const ATTRIBUTE_LONG_TASK_ATTRIBUTION = `${LONG_TASK_PREFIX}attribution`;
