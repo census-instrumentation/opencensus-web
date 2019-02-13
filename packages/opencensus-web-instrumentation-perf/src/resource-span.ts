@@ -36,8 +36,11 @@ const PERFORMANCE_ENTRY_EVENTS = [
 
 /** Returns a `Span` based on a browser performance API resource timing. */
 export function getResourceSpan(
-    resourceTiming: PerformanceResourceTimingExtended): webCore.Span {
-  const span = new webCore.Span();
+    resourceTiming: PerformanceResourceTimingExtended, traceId: string,
+    parentSpanId: string, spanId?: string): webCore.Span {
+  const span = new webCore.Span(spanId);
+  span.traceId = traceId;
+  span.parentSpanId = parentSpanId;
   const parsedUrl = webCore.parseUrl(resourceTiming.name);
   span.name = parsedUrl.pathname;
   span.startPerfTime = resourceTiming.startTime;

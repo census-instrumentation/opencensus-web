@@ -28,6 +28,11 @@ describe('Span', () => {
     expect(span.id).toMatch('^[a-z0-9]{16}$');
   });
 
+  it('allows initializing id in constructor', () => {
+    const span = new Span('000000000000000b');
+    expect(span.id).toBe('000000000000000b');
+  });
+
   it('calculates time fields based on startPerfTime/endPerfTime', () => {
     expect(span.ended).toBe(false);
 

@@ -260,8 +260,8 @@ describe('getInitialLoadRootSpan', () => {
     expect(root.annotations).toEqual(EXPECTED_ROOT_ANNOTATIONS);
 
     expect(root.spans.length).toBe(3);
+    const [navigationFetchSpan, resourceSpan, longTaskSpan] = root.spans;
 
-    const navigationFetchSpan = root.spans[0];
     expect(navigationFetchSpan.traceId).toBe(traceId);
     expect(navigationFetchSpan.id).toMatch(SPAN_ID_REGEX);
     expect(navigationFetchSpan.parentSpanId).toBe(root.id);
@@ -274,7 +274,6 @@ describe('getInitialLoadRootSpan', () => {
     expect(navigationFetchSpan.annotations)
         .toEqual(EXPECTED_NAV_FETCH_ANNOTATIONS);
 
-    const resourceSpan = root.spans[1];
     expect(resourceSpan.traceId).toBe(traceId);
     expect(resourceSpan.id).toMatch(SPAN_ID_REGEX);
     expect(resourceSpan.parentSpanId).toBe(root.id);
@@ -285,7 +284,6 @@ describe('getInitialLoadRootSpan', () => {
     expect(resourceSpan.attributes).toEqual(EXPECTED_RESOURCE_ATTRIBUTES);
     expect(resourceSpan.annotations).toEqual(EXPECTED_RESOURCE_ANNOTATIONS);
 
-    const longTaskSpan = root.spans[2];
     expect(longTaskSpan.traceId).toBe(traceId);
     expect(longTaskSpan.id).toMatch(SPAN_ID_REGEX);
     expect(longTaskSpan.parentSpanId).toBe(root.id);

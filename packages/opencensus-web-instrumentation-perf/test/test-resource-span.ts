@@ -20,6 +20,8 @@ import {getResourceSpan} from '../src/resource-span';
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const USER_AGENT = 'Mozilla/5.0 TEST';
+const TRACE_ID = '00000000000000000000000000000001';
+const PARENT_SPAN_ID = '000000000000000a';
 
 describe('getResourceSpan', () => {
   beforeEach(() => {
@@ -56,8 +58,11 @@ describe('getResourceSpan', () => {
       toJSON: () => ({}),
     };
 
-    const span = getResourceSpan(resourceTimingWithoutDetails);
+    const span =
+        getResourceSpan(resourceTimingWithoutDetails, TRACE_ID, PARENT_SPAN_ID);
     expect(span.id).toMatch(SPAN_ID_REGEX);
+    expect(span.traceId).toBe(TRACE_ID);
+    expect(span.parentSpanId).toBe(PARENT_SPAN_ID);
     expect(span.name).toBe('/style.css');
     expect(span.kind).toBe(SpanKind.CLIENT);
     expect(span.startPerfTime).toBe(resourceTimingWithoutDetails.startTime);
@@ -105,7 +110,9 @@ describe('getResourceSpan', () => {
       toJSON: () => ({}),
     };
 
-    const span = getResourceSpan(resourceTimingWithDetails);
+    const span =
+        getResourceSpan(resourceTimingWithDetails, TRACE_ID, PARENT_SPAN_ID);
+    expect(span.id).toMatch(SPAN_ID_REGEX);
     expect(span.annotations).toEqual([
       {timestamp: 1, description: 'fetchStart', attributes: {}},
       {timestamp: 2, description: 'domainLookupStart', attributes: {}},
