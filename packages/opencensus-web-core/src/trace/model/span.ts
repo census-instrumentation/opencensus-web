@@ -15,11 +15,9 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-
 import {LOGGER} from '../../common/console-logger';
 import {getDateForPerfTime} from '../../common/time-util';
 import {randomSpanId} from '../../internal/util';
-
 import {MessageEvent, SpanKind} from './types';
 
 /** Default span name if none is specified. */
@@ -27,7 +25,9 @@ const DEFAULT_SPAN_NAME = 'unnamed';
 
 /** A span represents a single operation within a trace. */
 export class Span implements coreTypes.Span {
-  id = randomSpanId();
+  constructor(
+      /** The ID of this span. Defaults to a random span ID. */
+      public id = randomSpanId()) {}
 
   /** If the parent span is in another process. */
   remoteParent = false;

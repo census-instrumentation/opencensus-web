@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-describe('the empty library', () => {
-  it('does nothing', () => {});
-});
+// This file is an entry point for the webpack test configuration, so this
+// should import from all test files.
+
+import './test-initial-load-root-span';
+import './test-perf-recorder';
+import './test-resource-span';
