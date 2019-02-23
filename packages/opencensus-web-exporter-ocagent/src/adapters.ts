@@ -64,18 +64,6 @@ function adaptTraceState(coreTraceState?: coreTypes.TraceState):
   return apiTraceState;
 }
 
-function adaptSpanKind(coreKind: string): apiTypes.SpanKind {
-  switch (coreKind) {
-    case 'SERVER': {
-      return apiTypes.SpanKind.SERVER;
-    }
-    case 'CLIENT': {
-      return apiTypes.SpanKind.CLIENT;
-    }
-    default: { return apiTypes.SpanKind.UNSPECIFIED; }
-  }
-}
-
 function adaptValue(value: boolean|string|number): apiTypes.AttributeValue {
   const valType = typeof value;
   if (valType === 'boolean') {
@@ -120,38 +108,17 @@ function adaptTimestampNumber(timestamp: number): string {
   return webCore.getIsoDateStrForPerfTime(timestamp);
 }
 
-function adaptMessageEventType(type: string): apiTypes.MessageEventType {
-  switch (type) {
-    case 'SENT': {
-      return apiTypes.MessageEventType.SENT;
-    }
-    case 'RECEIVED': {
-      return apiTypes.MessageEventType.RECEIVED;
-    }
-    default: { return apiTypes.MessageEventType.UNSPECIFIED; }
-  }
-}
-
 function adaptMessageEvent(messageEvent: coreTypes.MessageEvent):
     apiTypes.TimeEvent {
-  const apiMessageEvent: apiTypes.MessageEvent = {
-    // tslint:disable-next-line:ban Needed to parse hexadecimal.
-    id: String(parseInt(messageEvent.id, 16)),
-    type: adaptMessageEventType(messageEvent.type),
-  };
-  // TODO(draffensperger): Remove this extra logic once there is a new
-  // @opencensus/core release with message event size types
-  if ((messageEvent as webCore.MessageEvent).uncompressedSize) {
-    apiMessageEvent.uncompressedSize =
-        (messageEvent as webCore.MessageEvent).uncompressedSize;
-  }
-  if ((messageEvent as webCore.MessageEvent).compressedSize) {
-    apiMessageEvent.compressedSize =
-        (messageEvent as webCore.MessageEvent).compressedSize;
-  }
   return {
     time: adaptTimestampNumber(messageEvent.timestamp),
-    messageEvent: apiMessageEvent,
+    messageEvent: {
+      // tslint:disable-next-line:ban Needed to parse hexadecimal.
+      id: String(parseInt(messageEvent.id, 16)),
+      type: messageEvent.type,  // Enum values match proto values
+      uncompressedSize: messageEvent.uncompressedSize,
+      compressedSize: messageEvent.compressedSize,
+    },
   };
 }
 
@@ -164,23 +131,11 @@ function adaptTimeEvents(
   };
 }
 
-function adaptLinkType(type: string): apiTypes.LinkType {
-  switch (type) {
-    case 'CHILD_LINKED_SPAN': {
-      return apiTypes.LinkType.CHILD_LINKED_SPAN;
-    }
-    case 'PARENT_LINKED_SPAN': {
-      return apiTypes.LinkType.PARENT_LINKED_SPAN;
-    }
-    default: { return apiTypes.LinkType.UNSPECIFIED; }
-  }
-}
-
 function adaptLink(link: coreTypes.Link): apiTypes.Link {
   return {
     traceId: hexToBase64(link.traceId),
     spanId: hexToBase64(link.spanId),
-    type: adaptLinkType(link.type),
+    type: link.type,  // Enum values match proto values
     attributes: adaptAttributes(link.attributes),
   };
 }
@@ -216,14 +171,14 @@ function adaptSpan(span: coreTypes.Span): apiTypes.Span {
     tracestate: adaptTraceState(span.traceState),
     parentSpanId: hexToBase64(span.parentSpanId),
     name: adaptString(span.name),
-    kind: adaptSpanKind(span.kind),
+    kind: span.kind,  // Enum values match proto values.
     startTime:
         adaptSpanTime((span as MaybeWebSpan).startPerfTime, span.startTime),
     endTime: adaptSpanTime((span as MaybeWebSpan).endPerfTime, span.endTime),
     attributes: adaptAttributes(span.attributes),
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),
     links: adaptLinks(span.links),
-    status: adaptStatus(span.status),
+    status: span.status,
     sameProcessAsParentSpan: !span.remoteParent,
   };
 }

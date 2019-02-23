@@ -107,6 +107,24 @@ export type TraceState = {
   [key: string]: string
 };
 
+/** Unspecified span kind. */
+export type SpanKindUnspecified = 0;
+/**
+ * Indicates that the span covers server-side handling of an RPC or other
+ * remote network request.
+ */
+export type SpanKindServer = 1;
+/**
+ * Indicates that the span covers the client-side wrapper around an RPC or
+ * other remote request.
+ */
+export type SpanKindClient = 2;
+/**
+ * Type of span. Can be used to specify additional relationships between spans
+ * in addition to a parent/child relationship.
+ */
+export type SpanKind = SpanKindUnspecified|SpanKindServer|SpanKindClient;
+
 /**
  * A span represents a single operation within a trace. Spans can be nested to
  * form a trace tree. Often, a trace contains a root span that describes the
@@ -226,6 +244,22 @@ export interface Attributes {
 }
 
 /**
+ * The relationship of the two spans is unknown, or known but other than
+ * parent-child.
+ */
+export type LinkTypeUnspecified = 0;
+/** The linked span is a child of the current span. */
+export type LinkTypeChildLinkedSpan = 1;
+/** The linked span is a parent of the current span. */
+export type LinkTypeParentLinkedSpan = 2;
+/**
+ * The relationship of the current span relative to the linked span: child,
+ * parent, or unspecified.
+ */
+export type LinkType =
+    LinkTypeUnspecified|LinkTypeChildLinkedSpan|LinkTypeParentLinkedSpan;
+
+/**
  * A pointer from the current span to another span in the same trace or in a
  * different trace. For example, this can be used in batching operations, where
  * a single batch handler processes multiple requests from different traces or
@@ -253,19 +287,6 @@ export interface Link {
 }
 
 /**
- * The relationship of the current span relative to the linked span: child,
- * parent, or unspecified.   - TYPE_UNSPECIFIED: The relationship of the two
- * spans is unknown, or known but other than parent-child.  - CHILD_LINKED_SPAN:
- * The linked span is a child of the current span.  - PARENT_LINKED_SPAN: The
- * linked span is a parent of the current span.
- */
-export enum LinkType {
-  UNSPECIFIED = 0,
-  CHILD_LINKED_SPAN = 1,
-  PARENT_LINKED_SPAN = 2,
-}
-
-/**
  * A collection of links, which are references from this span to a span in the
  * same or different trace.
  */
@@ -279,19 +300,6 @@ export interface Links {
    * value is 0, then no links were dropped.
    */
   droppedLinksCount?: number;
-}
-
-/**
- * Type of span. Can be used to specify additional relationships between spans
- * in addition to a parent/child relationship.   - SPAN_KIND_UNSPECIFIED:
- * Unspecified.  - SERVER: Indicates that the span covers server-side handling
- * of an RPC or other remote network request.  - CLIENT: Indicates that the span
- * covers the client-side wrapper around an RPC or other remote request.
- */
-export enum SpanKind {
-  UNSPECIFIED = 0,
-  SERVER = 1,
-  CLIENT = 2,
 }
 
 /**
@@ -401,6 +409,16 @@ export interface Annotation {
   attributes?: Attributes;
 }
 
+/** Unknown message event type. */
+export type MessageEventTypeUnspecified = 0;
+/** Indicates a sent message. */
+export type MessageEventTypeSent = 1;
+/** Indicates a received message. */
+export type MessageEventTypeReceived = 2;
+/** Indicates whether the message was sent or received. */
+export type MessageEventType =
+    MessageEventTypeUnspecified|MessageEventTypeSent|MessageEventTypeReceived;
+
 /**
  * An event describing a message sent/received between Spans.
  */
@@ -426,17 +444,6 @@ export interface MessageEvent {
    * same size as uncompressed.
    */
   compressedSize?: string|number;
-}
-
-/**
- * Indicates whether the message was sent or received.   - TYPE_UNSPECIFIED:
- * Unknown event type.  - SENT: Indicates a sent message.  - RECEIVED: Indicates
- * a received message.
- */
-export enum MessageEventType {
-  UNSPECIFIED = 0,
-  SENT = 1,
-  RECEIVED = 2,
 }
 
 /**

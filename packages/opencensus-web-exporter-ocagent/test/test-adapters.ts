@@ -20,6 +20,11 @@ import {adaptRootSpan} from '../src/adapters';
 import * as apiTypes from '../src/api-types';
 import {MockRootSpan, MockSpan} from './mock-trace-types';
 
+const API_SPAN_KIND_UNSPECIFIED: apiTypes.SpanKindUnspecified = 0;
+const API_SPAN_KIND_SERVER: apiTypes.SpanKindServer = 1;
+const API_LINK_TYPE_CHILD_LINKED_SPAN: apiTypes.LinkTypeChildLinkedSpan = 1;
+const API_MESSAGE_EVENT_TYPE_SENT: apiTypes.MessageEventTypeSent = 1;
+
 describe('Core to API Span adapters', () => {
   it('adapts @opencensus/core span to grpc-gateway properties', () => {
     const coreRootSpan: coreTypes.RootSpan = new MockRootSpan(
@@ -28,7 +33,7 @@ describe('Core to API Span adapters', () => {
           traceId: '69f223f58668171cedf0c9eab06f0d36',
           parentSpanId: 'b56a50b90c653f00',
           name: 'test1',
-          kind: 'SERVER',
+          kind: webTypes.SpanKind.SERVER,
           startTime: new Date(1535683887003),
           endTime: new Date(1535683887005),
           attributes: {
@@ -47,14 +52,14 @@ describe('Core to API Span adapters', () => {
           links: [{
             traceId: '79f223f58668171cedf0c9eab06f0d36',
             spanId: 'b56a50b90c653f00',
-            type: 'CHILD_LINKED_SPAN',
+            type: webTypes.LinkType.CHILD_LINKED_SPAN,
             attributes: {
               'd': 'def',
               'e': 456,
               'f': true,
             },
           }],
-          status: 404,
+          status: {code: 7},
         },
         []);
 
@@ -63,7 +68,7 @@ describe('Core to API Span adapters', () => {
       spanId: 'pWpQuQxlPwA=',
       parentSpanId: 'tWpQuQxlPwA=',
       name: {value: 'test1'},
-      kind: apiTypes.SpanKind.SERVER,
+      kind: API_SPAN_KIND_SERVER,
       startTime: '2018-08-31T02:51:27.003Z',
       endTime: '2018-08-31T02:51:27.005Z',
       attributes: {
@@ -91,7 +96,7 @@ describe('Core to API Span adapters', () => {
         link: [{
           traceId: 'efIj9YZoFxzt8MnqsG8NNg==',
           spanId: 'tWpQuQxlPwA=',
-          type: apiTypes.LinkType.CHILD_LINKED_SPAN,
+          type: API_LINK_TYPE_CHILD_LINKED_SPAN,
           attributes: {
             attributeMap: {
               'd': {stringValue: {value: 'def'}},
@@ -101,7 +106,7 @@ describe('Core to API Span adapters', () => {
           },
         }],
       },
-      status: {code: 404},
+      status: {code: 7},
       sameProcessAsParentSpan: true,
       tracestate: {},
     };
@@ -139,14 +144,14 @@ describe('Core to API Span adapters', () => {
         tracestate: {},
         parentSpanId: '',
         name: {value: 'root'},
-        kind: apiTypes.SpanKind.UNSPECIFIED,
+        kind: API_SPAN_KIND_UNSPECIFIED,
         startTime: '2018-08-31T02:51:27.001Z',
         endTime: '2018-08-31T02:51:27.009Z',
         attributes: {attributeMap: {}},
         timeEvents: {timeEvent: []},
         sameProcessAsParentSpan: true,
         links: {link: []},
-        status: {},
+        status: {code: 0},
       },
       {
         traceId: 'ifIj9YZoFxzt8MnqsG8NNg==',
@@ -154,14 +159,14 @@ describe('Core to API Span adapters', () => {
         tracestate: {},
         parentSpanId: 'pmpQuQxlPwA=',
         name: {value: 'child'},
-        kind: apiTypes.SpanKind.UNSPECIFIED,
+        kind: API_SPAN_KIND_UNSPECIFIED,
         startTime: '2018-08-31T02:51:27.003Z',
         endTime: '2018-08-31T02:51:27.005Z',
         attributes: {attributeMap: {}},
         timeEvents: {timeEvent: []},
         sameProcessAsParentSpan: true,
         links: {link: []},
-        status: {},
+        status: {code: 0},
       },
     ];
     expect(apiSpans).toEqual(expectedApiSpans);
@@ -181,9 +186,7 @@ describe('Core to API Span adapters', () => {
       type: webTypes.MessageEventType.SENT,
       uncompressedSize: 22,
       compressedSize: 15,
-      // TODO(draffensperger): remove the `as coreTypes.MessageEvent` once core
-      // interface has new fields.
-    } as coreTypes.MessageEvent];
+    }];
     const webRootSpan = new webTypes.RootSpan(tracer);
     webRootSpan.spans = [webSpan1];
     webRootSpan.startPerfTime = 5.001;
@@ -205,7 +208,7 @@ describe('Core to API Span adapters', () => {
         tracestate: {},
         parentSpanId: '',
         name: {value: 'unnamed'},
-        kind: apiTypes.SpanKind.UNSPECIFIED,
+        kind: API_SPAN_KIND_UNSPECIFIED,
         startTime: '2019-01-20T16:00:00.005001000Z',
         endTime: '2019-01-20T16:00:00.030000001Z',
         attributes: {attributeMap: {}},
@@ -229,7 +232,7 @@ describe('Core to API Span adapters', () => {
           ],
         },
         links: {link: []},
-        status: {},
+        status: {code: 0},
         sameProcessAsParentSpan: true,
       },
       {
@@ -238,7 +241,7 @@ describe('Core to API Span adapters', () => {
         tracestate: {},
         parentSpanId: '',
         name: {value: 'unnamed'},
-        kind: apiTypes.SpanKind.UNSPECIFIED,
+        kind: API_SPAN_KIND_UNSPECIFIED,
         startTime: '2019-01-20T16:00:00.010100000Z',
         endTime: '2019-01-20T16:00:00.020113000Z',
         attributes: {attributeMap: {}},
@@ -247,14 +250,14 @@ describe('Core to API Span adapters', () => {
             time: '2019-01-20T16:00:00.019002000Z',
             messageEvent: {
               id: '1',
-              type: apiTypes.MessageEventType.SENT,
+              type: API_MESSAGE_EVENT_TYPE_SENT,
               uncompressedSize: 22,
               compressedSize: 15,
             },
           }],
         },
         links: {link: []},
-        status: {},
+        status: {code: 0},
         sameProcessAsParentSpan: true,
       },
     ];

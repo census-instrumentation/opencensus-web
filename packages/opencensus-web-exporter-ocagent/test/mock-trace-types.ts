@@ -14,37 +14,8 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, Link, Logger, MessageEvent, RootSpan, Span, SpanContext, TraceState} from '@opencensus/core';
-
-/**
- * A no-op Logger implementation to enable MockSpan to implement the Span type
- * from `@opencensus/core`. We can't use the `ConsoleLogger` from
- * `@opencensus/core`, because that would cause the webpack build to try to pull
- * in other Node.js specific dependencies.
- */
-export class MockLogger implements Logger {
-  readonly level = '';
-  // tslint:disable-next-line:no-any
-  error(message: any, ...args: any[]) {
-    throw new Error('Not implemented');
-  }
-  // tslint:disable-next-line:no-any
-  warn(message: any, ...args: any[]) {
-    throw new Error('Not implemented');
-  }
-  // tslint:disable-next-line:no-any
-  info(message: any, ...args: any[]) {
-    throw new Error('Not implemented');
-  }
-  // tslint:disable-next-line:no-any
-  debug(message: any, ...args: any[]) {
-    throw new Error('Not implemented');
-  }
-  // tslint:disable-next-line:no-any
-  silly(message: any, ...args: any[]) {
-    throw new Error('Not implemented');
-  }
-}
+import {Annotation, Attributes, CanonicalCode, Link, Logger, MessageEvent, RootSpan, Span, SpanContext, Status, TraceState} from '@opencensus/core';
+import {LinkType, MessageEventType, SpanKind} from '@opencensus/web-core';
 
 /** Helper interface for specifying the parameters of a MockSpan. */
 export interface MockSpanParams {
@@ -52,8 +23,8 @@ export interface MockSpanParams {
   remoteParent?: boolean;
   parentSpanId?: string;
   name: string;
-  kind?: string;
-  status?: number;
+  kind?: SpanKind;
+  status?: Status;
   attributes?: Attributes;
   annotations?: Annotation[];
   messageEvents?: MessageEvent[];
@@ -74,9 +45,9 @@ export class MockSpan implements Span {
   readonly remoteParent: boolean;
   readonly parentSpanId: string;
   readonly name: string;
-  readonly kind: string;
-  readonly status: number;
-  readonly logger: Logger = new MockLogger();
+  readonly kind: SpanKind;
+  readonly status: Status;
+  readonly logger: Logger = console;
   readonly attributes: Attributes;
   readonly annotations: Annotation[];
   readonly messageEvents: MessageEvent[];
@@ -89,6 +60,11 @@ export class MockSpan implements Span {
   readonly startTime: Date;
   readonly endTime: Date;
   readonly spanContext: SpanContext;
+  readonly activeTraceParams = {};
+  readonly droppedAttributesCount = 0;
+  readonly droppedAnnotationsCount = 0;
+  readonly droppedLinksCount = 0;
+  readonly droppedMessageEventsCount = 0;
 
   get duration(): number {
     return this.endTime.getTime() - this.startTime.getTime();
@@ -99,8 +75,8 @@ export class MockSpan implements Span {
     remoteParent = false,
     parentSpanId = '',
     name,
-    kind = 'SPAN_KIND_UNSPECIFIED',
-    status = 0,
+    kind = SpanKind.UNSPECIFIED,
+    status = {code: 0},
     attributes = {},
     annotations = [],
     messageEvents = [],
@@ -140,7 +116,8 @@ export class MockSpan implements Span {
   }
 
   addLink(
-      traceId: string, spanId: string, type: string, attributes?: Attributes) {
+      traceId: string, spanId: string, type: LinkType,
+      attributes?: Attributes) {
     throw new Error('Not implemented');
   }
 
@@ -148,7 +125,11 @@ export class MockSpan implements Span {
     throw new Error('Not implemented');
   }
 
-  addMessageEvent(type: string, id: string, timestamp?: number) {
+  addMessageEvent(type: MessageEventType, id: string, timestamp?: number) {
+    throw new Error('Not implemented');
+  }
+
+  setStatus(code: CanonicalCode, message?: string) {
     throw new Error('Not implemented');
   }
 
@@ -171,7 +152,7 @@ export class MockRootSpan extends MockSpan implements RootSpan {
     super(spanParams);
   }
 
-  startChildSpan(name: string, type: string): Span {
+  startChildSpan(name: string, type: SpanKind): Span {
     throw new Error('Not implemented');
   }
 }

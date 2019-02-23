@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import {LinkType, MessageEventType} from '../src/trace/model/enums';
 import {Span} from '../src/trace/model/span';
-import {LinkType, MessageEventType} from '../src/trace/model/types';
 
 describe('Span', () => {
   let span: Span;

@@ -15,9 +15,11 @@
  */
 
 import * as coreTypes from '@opencensus/core';
+
 import {randomTraceId} from '../../internal/util';
+
+import {SpanKind} from './enums';
 import {Span} from './span';
-import {SpanKind} from './types';
 
 /** Simple mock root span for use in use tests. */
 export class RootSpan extends Span implements coreTypes.RootSpan {
@@ -46,7 +48,7 @@ export class RootSpan extends Span implements coreTypes.RootSpan {
     }
   }
 
-  startChildSpan(name?: string, kind?: string): Span {
+  startChildSpan(name?: string, kind?: SpanKind): Span {
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;
