@@ -15,9 +15,7 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-
 import {randomTraceId} from '../../internal/util';
-
 import {SpanKind} from './enums';
 import {Span} from './span';
 
@@ -48,13 +46,27 @@ export class RootSpan extends Span implements coreTypes.RootSpan {
     }
   }
 
-  startChildSpan(name?: string, kind?: SpanKind): Span {
+  /**
+   * Starts a new child span in the root span.
+   * @param nameOrOptions Span name string or object with `name` and `kind`
+   * @param kind Span kind if not using options object.
+   */
+  startChildSpan(
+      nameOrOptions?: string|{name: string, kind: SpanKind},
+      kind?: SpanKind): Span {
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;
-    if (name) child.name = name;
-    if (kind) child.kind = kind;
+
+    const spanName =
+        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
+    const spanKind =
+        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
+    if (spanName) child.name = spanName;
+    if (spanKind) child.kind = spanKind;
+
     child.start();
+    child.parentSpanId = this.id;
     this.spans.push(child);
     return child;
   }

@@ -62,6 +62,22 @@ describe('RootSpan', () => {
       expect(childSpan.traceState).toBe('a=b');
       expect(childSpan.name).toBe('child1');
       expect(childSpan.kind).toBe(SpanKind.CLIENT);
+      expect(childSpan.parentSpanId).toBe(root.id);
+      expect(root.spans).toEqual([childSpan]);
+    });
+
+    it('allows specifying span options object with name and kind', () => {
+      root.traceId = '00000000000000000000000000000001';
+      root.traceState = 'a=b';
+
+      const childSpan =
+          root.startChildSpan({name: 'child1', kind: SpanKind.CLIENT});
+
+      expect(childSpan.traceId).toBe('00000000000000000000000000000001');
+      expect(childSpan.traceState).toBe('a=b');
+      expect(childSpan.name).toBe('child1');
+      expect(childSpan.kind).toBe(SpanKind.CLIENT);
+      expect(childSpan.parentSpanId).toBe(root.id);
       expect(root.spans).toEqual([childSpan]);
     });
   });
