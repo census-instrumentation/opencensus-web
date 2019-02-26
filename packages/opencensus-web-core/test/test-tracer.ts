@@ -15,10 +15,9 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-
+import {SpanKind} from '../src/trace/model/enums';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Tracer} from '../src/trace/model/tracer';
-import {SpanKind} from '../src/trace/model/types';
 
 describe('Tracer', () => {
   let tracer: Tracer;

@@ -15,10 +15,11 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {LOGGER} from '../../common/console-logger';
+
 import {getDateForPerfTime} from '../../common/time-util';
 import {randomSpanId} from '../../internal/util';
-import {MessageEvent, SpanKind} from './types';
+
+import {CanonicalCode, LinkType, MessageEventType, SpanKind} from './enums';
 
 /** Default span name if none is specified. */
 const DEFAULT_SPAN_NAME = 'unnamed';
@@ -50,16 +51,17 @@ export class Span implements coreTypes.Span {
   name = DEFAULT_SPAN_NAME;
 
   /** Kind of span. */
-  kind: string = SpanKind.UNSPECIFIED;
+  kind: SpanKind = SpanKind.UNSPECIFIED;
 
-  /** An object to log information to. This is a console logger by default. */
-  logger = LOGGER;
+  /** An object to log information to. Logs to the JS console by default. */
+  logger: coreTypes.Logger = console;
 
   /**
-   * HTTP request status associated with this span. Defaults to 0, which
-   * indicates there is no status associated.
+   * Status associated with this span. Defaults to OK status. Note that the
+   * `code` is not an HTTP status, but is a specific trace status code. See:
+   * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md#mapping-from-http-status-codes-to-trace-status-codes
    */
-  status = 0;
+  status: coreTypes.Status = {code: CanonicalCode.OK};
 
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: coreTypes.Attributes = {};
@@ -68,13 +70,34 @@ export class Span implements coreTypes.Span {
   annotations: coreTypes.Annotation[] = [];
 
   /** Event describing messages sent/received between Spans. */
-  messageEvents: MessageEvent[] = [];
+  messageEvents: coreTypes.MessageEvent[] = [];
 
   /** Pointers from the current span to another span */
   links: coreTypes.Link[] = [];
 
   /** Start time of the span as measured by the browser performance clock. */
   startPerfTime = 0;
+
+  /**
+   * Number of dropped attributes. This is always zero because OpenCensus web
+   * does not implement attribute dropping (but may be done by agent on export).
+   */
+  readonly droppedAttributesCount = 0;
+
+  /** Number of dropped links. Always zero for OpenCensus web. */
+  readonly droppedLinksCount = 0;
+
+  /** Number of dropped annotations. Always zero for OpenCensus web. */
+  readonly droppedAnnotationsCount = 0;
+
+  /** Number of dropped message events. Always zero for OpenCensus web. */
+  readonly droppedMessageEventsCount = 0;
+
+  /**
+   * Trace parameter configuration. Not used by OpenCensus Web, but
+   * kept for interface compatibility with @opencensus/core.
+   */
+  readonly activeTraceParams = {};
 
   /** Start time of the span as a Date. */
   get startTime(): Date {
@@ -146,7 +169,7 @@ export class Span implements coreTypes.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: string,
+      traceId: string, spanId: string, type: LinkType,
       attributes: coreTypes.Attributes = {}) {
     this.links.push({traceId, spanId, type, attributes});
   }
@@ -158,8 +181,18 @@ export class Span implements coreTypes.Span {
    *     Defaults to `performance.now()`.
    */
   addMessageEvent(
-      type: string, id: string, timestamp: number = performance.now()) {
+      type: MessageEventType, id: string,
+      timestamp: number = performance.now()) {
     this.messageEvents.push({type, id, timestamp});
+  }
+
+  /**
+   * Sets a status to the span.
+   * @param code The canonical status code.
+   * @param message optional A developer-facing error message.
+   */
+  setStatus(code: CanonicalCode, message?: string) {
+    this.status = {code, message};
   }
 
   /** Starts span by setting `startTime` to now. */

@@ -15,7 +15,6 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {LOGGER} from '../../common/console-logger';
 import {NoHeadersPropagation} from '../propagation/no_headers_propagation';
 import {AlwaysSampler} from '../sampler/sampler';
 import {RootSpan} from './root-span';
@@ -35,8 +34,8 @@ export class Tracer implements coreTypes.Tracer {
    */
   sampler = new AlwaysSampler();
 
-  /** An object to log information to. This is a console logger by default. */
-  logger = LOGGER;
+  /** An object to log information to. Logs to the JS console by default. */
+  logger: coreTypes.Logger = console;
 
   /** Trace context header propagation behavior. */
   propagation = NO_HEADERS_PROPAGATION;
@@ -51,12 +50,18 @@ export class Tracer implements coreTypes.Tracer {
   active = true;
 
   /**
+   * Trace parameter configuration. Not used by OpenCensus Web, but
+   * kept for interface compatibility with @opencensus/core.
+   */
+  readonly activeTraceParams = {};
+
+  /**
    * Starts the tracer. This makes the tracer active and sets `logger` and
    * `propagation` based on the given config. The `samplingRate` property of
    * `config` is currently ignored.
    */
   start(config: coreTypes.TracerConfig): Tracer {
-    this.logger = config.logger || LOGGER;
+    this.logger = config.logger || console;
     this.propagation = config.propagation || NO_HEADERS_PROPAGATION;
     return this;
   }
@@ -114,7 +119,7 @@ export class Tracer implements coreTypes.Tracer {
    * @param kind Span kind
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, kind?: string): Span {
+  startChildSpan(name?: string, kind?: coreTypes.SpanKind): Span {
     return this.currentRootSpan.startChildSpan(name, kind);
   }
 

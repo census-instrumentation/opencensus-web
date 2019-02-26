@@ -43,7 +43,7 @@ const SPAN1_API_JSON: apiTypes.Span = {
   attributes: {attributeMap: {}},
   timeEvents: {timeEvent: []},
   links: {link: []},
-  status: {},
+  status: {code: 0},
   sameProcessAsParentSpan: true,
 };
 const SPAN2_API_JSON: apiTypes.Span = {
@@ -58,7 +58,7 @@ const SPAN2_API_JSON: apiTypes.Span = {
   attributes: {attributeMap: {}},
   timeEvents: {timeEvent: []},
   links: {link: []},
-  status: {},
+  status: {code: 0},
   sameProcessAsParentSpan: true,
 };
 

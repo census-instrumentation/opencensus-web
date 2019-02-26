@@ -32,14 +32,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      # Remove the mocha type references in @opencensus/core. This has been
-      # fixed in the upstream package on GitHub, but has not been released on
-      # NPM yet. We can't install the package directly from GitHub because NPM
-      # only supports that for packages in the root folder of the repo.
-      # See https://github.com/census-instrumentation/opencensus-node/pull/254
-      - run: npm install || true
-      - run: find . -type f | grep '@opencensus/core' | xargs sed -i '/types="mocha"/d'
-
       - run: npm install
 
       - save_cache:
