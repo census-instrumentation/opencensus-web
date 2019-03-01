@@ -19,6 +19,7 @@ import * as webTypes from '@opencensus/web-core';
 import {adaptRootSpan} from '../src/adapters';
 import * as apiTypes from '../src/api-types';
 import {MockRootSpan, MockSpan} from './mock-trace-types';
+import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
 const API_SPAN_KIND_UNSPECIFIED: apiTypes.SpanKindUnspecified = 0;
 const API_SPAN_KIND_SERVER: apiTypes.SpanKindServer = 1;
@@ -26,6 +27,14 @@ const API_LINK_TYPE_CHILD_LINKED_SPAN: apiTypes.LinkTypeChildLinkedSpan = 1;
 const API_MESSAGE_EVENT_TYPE_SENT: apiTypes.MessageEventTypeSent = 1;
 
 describe('Core to API Span adapters', () => {
+  let realTimeOrigin: number;
+  beforeEach(() => {
+    realTimeOrigin = performance.timeOrigin;
+  });
+  afterEach(() => {
+    restoreGetterOrValue(performance, 'timeOrigin', realTimeOrigin);
+  });
+
   it('adapts @opencensus/core span to grpc-gateway properties', () => {
     const coreRootSpan: coreTypes.RootSpan = new MockRootSpan(
         {
@@ -173,7 +182,7 @@ describe('Core to API Span adapters', () => {
   });
 
   it('adapts perf times of web spans as high-res timestamps', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
+    mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
     const tracer = new webTypes.Tracer();
     const webSpan1 = new webTypes.Span();
     webSpan1.id = '000000000000000a';
