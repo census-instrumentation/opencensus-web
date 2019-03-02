@@ -1,0 +1,67 @@
+{
+  "name": "@opencensus/web-all",
+  "version": "0.0.1",
+  "description": "OpenCensus Web All combines all the main OpenCensus Web packages to provide distributions for easy use in web applications via <script> tags.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "webpack",
+    "test": "karma start --single-run",
+    "test:start": "karma start",
+    "clean": "rimraf build/*",
+    "check": "gts check",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "repository": "census-instrumentation/opencensus-web",
+  "keywords": [
+    "opencensus",
+    "browser",
+    "tracing",
+    "profiling",
+    "stats",
+    "metrics"
+  ],
+  "author": "OpenCensus Authors",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "files": [
+    "build/src/**/*.js",
+    "build/src/**/*.d.ts",
+    "doc",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.3.4",
+    "@types/node": "^10.12.18",
+    "gts": "^0.9.0",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "jasmine": "^3.3.1",
+    "karma": "^3.1.4",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage-istanbul-reporter": "^2.0.4",
+    "karma-jasmine": "^2.0.1",
+    "karma-spec-reporter": "0.0.32",
+    "karma-webpack": "^4.0.0-rc.5",
+    "rimraf": "^2.6.2",
+    "ts-loader": "^5.1.0",
+    "typescript": "^3.1.6",
+    "webpack": "^4.18.0",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "@opencensus/web-core": "^0.0.1",
+    "@opencensus/web-instrumentation-perf": "^0.0.1",
+    "@opencensus/web-exporter-ocagent": "^0.0.1"
+  }
+}
