@@ -14,43 +14,105 @@
  * limitations under the License.
  */
 
-import {getDateForPerfTime, getIsoDateStrForPerfTime, getPerfTimeOrigin} from '../src/common/time-util';
+import {adjustPerfTimeOrigin, getDateForPerfTime, getIsoDateStrForPerfTime, getPerfTimeOrigin, TEST_ONLY} from '../src/common/time-util';
+import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
-describe('getPerfTimeOrigin', () => {
-  it('returns `performance.timeOrigin` if set', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
-
-    expect(getPerfTimeOrigin()).toBe(1548000000000);
+describe('time utils', () => {
+  let realTimeOrigin: number;
+  beforeEach(() => {
+    realTimeOrigin = performance.timeOrigin;
+  });
+  afterEach(() => {
+    restoreGetterOrValue(performance, 'timeOrigin', realTimeOrigin);
   });
 
-  it('calculates via polyfill if `performance.timeOrigin` unset', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(undefined);
-    spyOn(Date, 'now').and.returnValue(1548000009999);
-    spyOn(performance, 'now').and.returnValue(9999);
+  describe('getPerfTimeOrigin', () => {
+    it('returns `performance.timeOrigin` if set', () => {
+      mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
+      expect(getPerfTimeOrigin()).toBe(1548000000000);
+    });
 
-    expect(getPerfTimeOrigin()).toBe(1548000000000);
-  });
-});
-
-describe('getDateForPerfTime', () => {
-  it('calculates date for perf time based on time origin', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
-
-    expect(getDateForPerfTime(999.6).getTime()).toBe(1548000000999);
-  });
-});
-
-describe('getIsoDateStrForPerfTime', () => {
-  it('converts perf time to nanosecond-precise ISO date string', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1535683887001);
-    expect(getIsoDateStrForPerfTime(0.000001))
-        .toEqual('2018-08-31T02:51:27.001000001Z');
+    it('calculates via polyfill if `performance.timeOrigin` unset', () => {
+      mockGetterOrValue(performance, 'timeOrigin', undefined);
+      spyOn(Date, 'now').and.returnValue(1548000009999);
+      spyOn(performance, 'now').and.returnValue(9999);
+    });
   });
 
-  it('accurately combines milliseconds from origin and perf times', () => {
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1535683887441.586);
+  describe('adjustPerfTimeOrigin', () => {
+    const CLIENT_TIME_ORIGIN = 1548000000000;
+    beforeEach(() => {
+      mockGetterOrValue(performance, 'timeOrigin', CLIENT_TIME_ORIGIN);
+    });
+    afterEach(() => {
+      TEST_ONLY.clearAdjustedPerfTime();
+    });
 
-    expect(getIsoDateStrForPerfTime(658867.8000000073))
-        .toEqual('2018-08-31T03:02:26.309385938Z');
+    it('keeps client time origin if performance timing missing', () => {
+      spyOnProperty(performance, 'timing').and.returnValue(undefined);
+      adjustPerfTimeOrigin(1548000001000.2, 5.1);
+      expect(getPerfTimeOrigin()).toBe(CLIENT_TIME_ORIGIN);
+    });
+
+    it('keeps client time origin if server time longer than client', () => {
+      // Client nav fetch duration is 5ms
+      spyOnProperty(performance.timing, 'requestStart').and.returnValue(10.1);
+      spyOnProperty(performance.timing, 'responseStart').and.returnValue(15.1);
+
+      // Server nav fetch duration is 10ms
+      adjustPerfTimeOrigin(1548000001000.2, /* serverNavFetchDuration */ 10);
+
+      expect(getPerfTimeOrigin()).toBe(CLIENT_TIME_ORIGIN);
+    });
+
+    it('adjusts origin to center server span in client span', () => {
+      const clientNavFetchStartInPerfTime = 10;  // Performance clock millis.
+      spyOnProperty(performance.timing, 'requestStart')
+          .and.returnValue(clientNavFetchStartInPerfTime);
+      const clientNavFetchEndInPerfTime = 18;  // Performance clock millis.
+      spyOnProperty(performance.timing, 'responseStart')
+          .and.returnValue(clientNavFetchEndInPerfTime);
+
+      const serverNavFetchStartEpochMillis = 1500000001000;  // Epoch millis.
+      const serverNavFetchDuration = 6;                      // Duration millis
+      adjustPerfTimeOrigin(
+          serverNavFetchStartEpochMillis, serverNavFetchDuration);
+
+      // Calculations to make the expectation clearer:
+      const clientNavFetchDuration =
+          clientNavFetchEndInPerfTime - clientNavFetchStartInPerfTime;
+      expect(clientNavFetchDuration).toBe(8);  // Duration millis
+      const networkTime = clientNavFetchDuration - serverNavFetchDuration;
+      expect(networkTime).toBe(2);  // Duration millis
+      const clientNavStartInEpochMillis =
+          serverNavFetchStartEpochMillis - networkTime / 2;
+      expect(clientNavStartInEpochMillis).toBe(1500000000999);
+      const perfOriginInEpochMillis =
+          clientNavStartInEpochMillis - clientNavFetchStartInPerfTime;
+      expect(perfOriginInEpochMillis).toBe(1500000000989);
+
+      expect(getPerfTimeOrigin()).toBe(perfOriginInEpochMillis);
+    });
+  });
+
+  describe('getDateForPerfTime', () => {
+    it('calculates date for perf time based on time origin', () => {
+      mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
+      expect(getDateForPerfTime(999.6).getTime()).toBe(1548000000999);
+    });
+  });
+
+  describe('getIsoDateStrForPerfTime', () => {
+    it('converts perf time to nanosecond-precise ISO date string', () => {
+      mockGetterOrValue(performance, 'timeOrigin', 1535683887001);
+      expect(getIsoDateStrForPerfTime(0.000001))
+          .toEqual('2018-08-31T02:51:27.001000001Z');
+    });
+
+    it('accurately combines milliseconds from origin and perf times', () => {
+      mockGetterOrValue(performance, 'timeOrigin', 1535683887441.586);
+      expect(getIsoDateStrForPerfTime(658867.8000000073))
+          .toEqual('2018-08-31T03:02:26.309385938Z');
+    });
   });
 });
