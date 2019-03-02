@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {clearPerfEntries, getPerfEntries, recordPerfEntries, TEST_ONLY} from '../src/perf-recorder';
+import {recordLongTasks} from '../src/long-tasks-recorder';
+import {clearPerfEntries, getPerfEntries} from '../src/perf-grouper';
 import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended, PerformanceObserver, PerformanceObserverConfig, PerformanceObserverEntryList, PerformancePaintTiming, PerformanceResourceTimingExtended} from '../src/perf-types';
 
 const LONG_TASK_1: PerformanceLongTaskTiming = {
@@ -157,16 +158,9 @@ describe('performance recorder functions', () => {
     windowWithPerfObserver.PerformanceObserver = realPerformanceObserver;
   });
 
-  describe('recordPerfEntries', () => {
-    it('increases the resource buffer size', () => {
-      spyOn(performance, 'setResourceTimingBufferSize');
-      recordPerfEntries();
-      expect(performance.setResourceTimingBufferSize)
-          .toHaveBeenCalledWith(TEST_ONLY.RESOURCE_TIMING_BUFFER_SIZE);
-    });
-
+  describe('recordLongTasks', () => {
     it('starts tracking long tasks', () => {
-      recordPerfEntries();
+      recordLongTasks();
       expect(performanceObserver).toBeDefined();
       expect(performanceObserver!.config).toEqual({entryTypes: ['longtask']});
     });
@@ -174,7 +168,7 @@ describe('performance recorder functions', () => {
 
   describe('getPerfEntries', () => {
     it('combines perf entries for nav, paint, resource and long tasks', () => {
-      recordPerfEntries();
+      recordLongTasks();
       performanceObserver!.sendMockPerfEntries(
           new MockPerfEntryList([LONG_TASK_1, LONG_TASK_2]));
       spyOn(performance, 'getEntriesByType')
@@ -205,7 +199,7 @@ describe('performance recorder functions', () => {
     });
 
     it('clears stored long tasks', () => {
-      recordPerfEntries();
+      recordLongTasks();
       performanceObserver!.sendMockPerfEntries(
           new MockPerfEntryList([LONG_TASK_1]));
       expect(getPerfEntries().longTasks.length).toBe(1);

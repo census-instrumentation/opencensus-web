@@ -16,7 +16,7 @@
 
 import {Annotation, Attributes, SpanKind, Tracer} from '@opencensus/web-core';
 import {getInitialLoadRootSpan} from '../src/initial-load-root-span';
-import {GroupedPerfEntries} from '../src/perf-recorder';
+import {GroupedPerfEntries} from '../src/perf-grouper';
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const USER_AGENT = 'Mozilla/5.0 TEST';

@@ -13,3 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export * from './perf-types';
+export {getInitialLoadRootSpan} from './initial-load-root-span';
+export {recordLongTasks} from './long-tasks-recorder';
+export {GroupedPerfEntries, getPerfEntries, clearPerfEntries} from './perf-grouper';

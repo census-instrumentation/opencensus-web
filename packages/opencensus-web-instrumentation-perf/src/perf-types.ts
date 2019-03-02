@@ -162,3 +162,8 @@ export declare interface PerformanceLongTaskTiming extends PerformanceEntry {
 export declare type WindowWithPerformanceObserver = Window & {
   readonly PerformanceObserver?: PerformanceObserver;
 };
+
+/** Type for the `window` object with a field to track LongTask timings. */
+export declare type WindowWithLongTasks = WindowWithPerformanceObserver & {
+  ocwLt?: PerformanceLongTaskTiming[];
+}
