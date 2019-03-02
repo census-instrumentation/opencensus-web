@@ -166,4 +166,4 @@ export declare type WindowWithPerformanceObserver = Window & {
 /** Type for the `window` object with a field to track LongTask timings. */
 export declare type WindowWithLongTasks = WindowWithPerformanceObserver & {
   ocwLt?: PerformanceLongTaskTiming[];
-}
+};
