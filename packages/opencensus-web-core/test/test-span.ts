@@ -16,6 +16,7 @@
 
 import {LinkType, MessageEventType} from '../src/trace/model/enums';
 import {Span} from '../src/trace/model/span';
+import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
 describe('Span', () => {
   let span: Span;
@@ -33,17 +34,27 @@ describe('Span', () => {
     expect(span.id).toBe('000000000000000b');
   });
 
-  it('calculates time fields based on startPerfTime/endPerfTime', () => {
-    expect(span.ended).toBe(false);
+  describe('time fields', () => {
+    let realTimeOrigin: number;
+    beforeEach(() => {
+      realTimeOrigin = performance.timeOrigin;
+    });
+    afterEach(() => {
+      restoreGetterOrValue(performance, 'timeOrigin', realTimeOrigin);
+    });
 
-    spyOnProperty(performance, 'timeOrigin').and.returnValue(1548000000000);
-    span.startPerfTime = 2;
-    span.endPerfTime = 4.5;
+    it('calculates them based on startPerfTime/endPerfTime', () => {
+      expect(span.ended).toBe(false);
 
-    expect(span.ended).toBe(true);
-    expect(span.startTime.getTime()).toBe(1548000000002);
-    expect(span.endTime.getTime()).toBe(1548000000004);
-    expect(span.duration).toBe(2.5);
+      mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
+      span.startPerfTime = 2;
+      span.endPerfTime = 4.5;
+
+      expect(span.ended).toBe(true);
+      expect(span.startTime.getTime()).toBe(1548000000002);
+      expect(span.endTime.getTime()).toBe(1548000000004);
+      expect(span.duration).toBe(2.5);
+    });
   });
 
   it('calculates isRootSpan based on parentSpanId', () => {
