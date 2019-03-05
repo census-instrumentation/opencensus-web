@@ -27,6 +27,7 @@ export {Annotation, Attributes, Config, Exporter, Link, MessageEvent, Propagatio
 
 export * from './common/time-util';
 export * from './common/url-util';
+export * from './common/id-util';
 
 // Export global tracing instance.
 import {Tracing} from './trace/model/tracing';

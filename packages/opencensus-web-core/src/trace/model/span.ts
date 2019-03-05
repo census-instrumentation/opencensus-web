@@ -16,8 +16,8 @@
 
 import * as coreTypes from '@opencensus/core';
 
+import {randomSpanId} from '../../common/id-util';
 import {getDateForPerfTime} from '../../common/time-util';
-import {randomSpanId} from '../../internal/util';
 
 import {CanonicalCode, LinkType, MessageEventType, SpanKind} from './enums';
 

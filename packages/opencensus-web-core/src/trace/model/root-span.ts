@@ -15,7 +15,7 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {randomTraceId} from '../../internal/util';
+import {randomTraceId} from '../../common/id-util';
 import {SpanKind} from './enums';
 import {Span} from './span';
 

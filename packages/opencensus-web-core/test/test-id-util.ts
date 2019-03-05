@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {randomSpanId, randomTraceId} from '../src/internal/util';
+import {randomSpanId, randomTraceId} from '../src/common/id-util';
 
 const NUM_VERIFY_TRIALS = 10;
 
