@@ -31,6 +31,9 @@ npm-debug.log
 .nyc_output/
 build/
 
+# JS bundle builds
+dist/
+
 #backup files
 *--
 *_backup

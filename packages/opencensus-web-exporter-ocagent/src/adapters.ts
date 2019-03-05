@@ -182,7 +182,3 @@ function adaptSpan(span: coreTypes.Span): apiTypes.Span {
     sameProcessAsParentSpan: !span.remoteParent,
   };
 }
-
-function adaptStatus(code: number): apiTypes.Status {
-  return code ? {code} : {};
-}
