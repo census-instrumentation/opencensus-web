@@ -40,6 +40,47 @@ describe('time utils', () => {
   });
 
   describe('adjustPerfTimeOrigin', () => {
+    function createNavTiming({requestStart, responseStart}:
+                                 {requestStart: number, responseStart: number}):
+        PerformanceNavigationTiming {
+      return {
+        // This are used by the time adjustment function below.
+        requestStart,   // Client start time in performance clock millis.
+        responseStart,  // Client end time in performance clock millis.
+        // These are needed to satisfy the interface.
+        connectEnd: 0,
+        connectStart: 0,
+        decodedBodySize: 0,
+        domComplete: 0,
+        domContentLoadedEventEnd: 0,
+        domContentLoadedEventStart: 0,
+        domInteractive: 0,
+        domainLookupEnd: 0,
+        domainLookupStart: 0,
+        duration: 0,
+        encodedBodySize: 0,
+        entryType: '',
+        fetchStart: 0,
+        initiatorType: '',
+        loadEventEnd: 0,
+        loadEventStart: 0,
+        name: '',
+        nextHopProtocol: '',
+        redirectCount: 0,
+        redirectEnd: 0,
+        redirectStart: 0,
+        responseEnd: 0,
+        secureConnectionStart: 0,
+        startTime: 0,
+        toJSON: () => ({}),
+        transferSize: 0,
+        type: 'navigate',
+        unloadEventEnd: 0,
+        unloadEventStart: 0,
+        workerStart: 0,
+      };
+    }
+
     const CLIENT_TIME_ORIGIN = 1548000000000;
     beforeEach(() => {
       mockGetterOrValue(performance, 'timeOrigin', CLIENT_TIME_ORIGIN);
@@ -48,35 +89,31 @@ describe('time utils', () => {
       TEST_ONLY.clearAdjustedPerfTime();
     });
 
-    it('keeps client time origin if performance timing missing', () => {
-      spyOnProperty(performance, 'timing').and.returnValue(undefined);
-      adjustPerfTimeOrigin(1548000001000.2, 5.1);
-      expect(getPerfTimeOrigin()).toBe(CLIENT_TIME_ORIGIN);
-    });
-
     it('keeps client time origin if server time longer than client', () => {
       // Client nav fetch duration is 5ms
-      spyOnProperty(performance.timing, 'requestStart').and.returnValue(10.1);
-      spyOnProperty(performance.timing, 'responseStart').and.returnValue(15.1);
+      const perfNavTiming =
+          createNavTiming({requestStart: 10.1, responseStart: 15.1});
 
       // Server nav fetch duration is 10ms
-      adjustPerfTimeOrigin(1548000001000.2, /* serverNavFetchDuration */ 10);
+      adjustPerfTimeOrigin(
+          1548000001000.2, /* serverNavFetchDuration */ 10, perfNavTiming);
 
       expect(getPerfTimeOrigin()).toBe(CLIENT_TIME_ORIGIN);
     });
 
     it('adjusts origin to center server span in client span', () => {
-      const clientNavFetchStartInPerfTime = 10;  // Performance clock millis.
-      spyOnProperty(performance.timing, 'requestStart')
-          .and.returnValue(clientNavFetchStartInPerfTime);
-      const clientNavFetchEndInPerfTime = 18;  // Performance clock millis.
-      spyOnProperty(performance.timing, 'responseStart')
-          .and.returnValue(clientNavFetchEndInPerfTime);
-
+      const clientNavFetchStartInPerfTime = 10;
+      const clientNavFetchEndInPerfTime = 18;
+      const perfNavTiming = createNavTiming({
+        requestStart: clientNavFetchStartInPerfTime,
+        responseStart: clientNavFetchEndInPerfTime,
+      });
       const serverNavFetchStartEpochMillis = 1500000001000;  // Epoch millis.
       const serverNavFetchDuration = 6;                      // Duration millis
+
       adjustPerfTimeOrigin(
-          serverNavFetchStartEpochMillis, serverNavFetchDuration);
+          serverNavFetchStartEpochMillis, serverNavFetchDuration,
+          perfNavTiming);
 
       // Calculations to make the expectation clearer:
       const clientNavFetchDuration =
