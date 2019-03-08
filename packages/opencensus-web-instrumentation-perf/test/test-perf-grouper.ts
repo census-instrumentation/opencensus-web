@@ -91,6 +91,7 @@ const RESOURCE_ENTRY: PerformanceResourceTimingExtended = {
   nextHopProtocol: 'h2',
   redirectEnd: 0,
   redirectStart: 0,
+  redirectCount: 0,
   requestStart: 0,
   responseEnd: 280.1000000035856,
   responseStart: 0,

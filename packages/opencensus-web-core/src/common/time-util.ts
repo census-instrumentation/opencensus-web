@@ -43,15 +43,15 @@ export function getPerfTimeOrigin(): number {
  *     the client in a <script> in the rendered HTML.
  * @param serverNavFetchDuration The server's measurement of the request
  *     duration in milliseconds. This would also be sent to the client.
+ * @param perfNavTiming The performance navigation timing, which can be
+ *     retrieved by `performance.getEntriesByType('navigation')[0]`, provided
+ *     that the browser supports it.
  */
 export function adjustPerfTimeOrigin(
-    serverNavFetchStartTime: number, serverNavFetchDuration: number) {
-  // If there is no performance timing info, we don't have the client's
-  // start/end times for the navigation fetch, so we can't accurately use the
-  // server times to adjust the client time origin.
-  if (!performance.timing) return;
-  const clientStart = performance.timing.requestStart;
-  const clientEnd = performance.timing.responseStart;
+    serverNavFetchStartTime: number, serverNavFetchDuration: number,
+    perfNavTiming: PerformanceNavigationTiming) {
+  const clientStart = perfNavTiming.requestStart;
+  const clientEnd = perfNavTiming.responseStart;
   const clientNavFetchDuration = clientEnd - clientStart;
 
   // Server time is more than client time, which we don't expect, so don't try

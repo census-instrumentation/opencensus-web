@@ -91,6 +91,7 @@ export declare interface PerformanceNavigationTimingExtended extends
   readonly type: NavigationType;
   readonly unloadEventEnd: number;
   readonly unloadEventStart: number;
+  readonly redirectCount: number;
 }
 
 /**
@@ -158,12 +159,8 @@ export declare interface PerformanceLongTaskTiming extends PerformanceEntry {
   readonly attribution: TaskAttributionTiming[];
 }
 
-/** Enables casting `window` to have optional `PerformanceObserver` field. */
-export declare type WindowWithPerformanceObserver = Window & {
-  readonly PerformanceObserver?: PerformanceObserver;
-};
-
 /** Type for the `window` object with a field to track LongTask timings. */
-export declare type WindowWithLongTasks = WindowWithPerformanceObserver & {
+export declare interface WindowWithLongTasks extends Window {
+  readonly PerformanceObserver?: PerformanceObserver;
   ocwLt?: PerformanceLongTaskTiming[];
-};
+}
