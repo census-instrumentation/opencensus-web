@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
-import './test-export-initial-load';
+import './instrument-initial-load';
+import './export-initial-load';

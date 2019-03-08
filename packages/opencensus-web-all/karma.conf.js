@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const webpackConfig = require('./webpack.config');
+const webpackConfig = require('./webpack/dev-package.config');
 const path = require('path');
 
 delete webpackConfig.entry;

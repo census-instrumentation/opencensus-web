@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-import './test-export-initial-load';
+const baseConfig = require('./base-bundles.config.js');
+const path = require('path');
+
+const config = baseConfig;
+config['mode'] = 'development';
+module.exports = config;

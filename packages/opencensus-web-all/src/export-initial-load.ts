@@ -1,0 +1,70 @@
+/**
+ * Copyright 2019, OpenCensus Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {adjustPerfTimeOrigin, tracing} from '@opencensus/web-core';
+import {OCAgentExporter} from '@opencensus/web-exporter-ocagent';
+import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries} from '@opencensus/web-instrumentation-perf';
+
+import {OpenCensusWebConfig, WindowWithOcwGlobals} from './types';
+
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
+
+/** How long to wait after `load` event to export initial load spans. */
+const WAIT_TIME_AFTER_LOAD_MS = 2000;
+
+/** Trace endpoint in the OC agent. */
+const TRACE_ENDPOINT = '/v1/trace';
+
+/**
+ * Waits until after the document `load` event fires, and then uses the
+ * `window.ocwConfig` settings to configure an OpenCensus agent exporter and
+ * export the spans for the initial page load.
+ */
+export function exportRootSpanAfterLoadEvent() {
+  const config = windowWithOcwGlobals.ocwConfig;
+  if (!config) return;
+  if (!config.agent || !config.sampled) return;
+
+  tracing.registerExporter(
+      new OCAgentExporter({agentEndpoint: `${config.agent}${TRACE_ENDPOINT}`}));
+
+  if (document.readyState === 'complete') {
+    exportInitialLoadSpans(config);
+  } else {
+    window.addEventListener('load', () => {
+      exportInitialLoadSpans(config);
+    });
+  }
+}
+
+function exportInitialLoadSpans(config: OpenCensusWebConfig) {
+  setTimeout(() => {
+    const perfEntries = getPerfEntries();
+
+    // Adjust the performance time origin with server time if we have it.
+    if (perfEntries.navigationTiming && config.reqStart && config.reqDuration) {
+      adjustPerfTimeOrigin(
+          config.reqStart, config.reqDuration, perfEntries.navigationTiming);
+    }
+
+    const root = getInitialLoadRootSpan(
+        tracing.tracer, perfEntries, config.spanId, config.traceId);
+
+    clearPerfEntries();
+    // Notify that the span has ended to trigger export.
+    tracing.tracer.onEndSpan(root);
+  }, WAIT_TIME_AFTER_LOAD_MS);
+}

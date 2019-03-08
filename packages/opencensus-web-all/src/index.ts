@@ -13,3 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// Re-export symbols from the main OpenCensus Web libraries.
+export * from '@opencensus/web-core';
+export * from '@opencensus/web-exporter-ocagent';
+export * from '@opencensus/web-instrumentation-perf';
+
+export {exportRootSpanAfterLoadEvent} from './export-initial-load';
