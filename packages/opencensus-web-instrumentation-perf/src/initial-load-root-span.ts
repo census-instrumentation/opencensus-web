@@ -83,7 +83,7 @@ export function getInitialLoadRootSpan(
 
   const resourceSpans = perfEntries.resourceTimings.map(
       (resourceTiming) => getResourceSpan(resourceTiming, traceId, root.id));
-  const longTaskSpans = perfEntries.longTasks.map(
+  const longTaskSpans = perfEntries.longTaskTimings.map(
       (longTaskTiming) => getLongTaskSpan(longTaskTiming, traceId, root.id));
 
   root.spans = root.spans.concat(resourceSpans, longTaskSpans);

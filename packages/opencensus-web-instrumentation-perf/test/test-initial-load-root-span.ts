@@ -49,7 +49,7 @@ const PERF_ENTRIES: GroupedPerfEntries = {
       toJSON: () => ({}),
     },
   ],
-  longTasks: [
+  longTaskTimings: [
     {
       name: 'self',
       entryType: 'longtask',

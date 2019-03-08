@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import {PerformanceLongTaskTiming, PerformanceObserverEntryList, WindowWithLongTasks} from './perf-types';
 
 /** Cast `window` to be access the `ocwLt` field for long task timings.  */
