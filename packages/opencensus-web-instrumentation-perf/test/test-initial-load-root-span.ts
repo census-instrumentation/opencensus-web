@@ -19,6 +19,7 @@ import {getInitialLoadRootSpan} from '../src/initial-load-root-span';
 import {GroupedPerfEntries} from '../src/perf-grouper';
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
+const TRACE_ID_REGEX = /[0-9a-f]{32}/;
 const USER_AGENT = 'Mozilla/5.0 TEST';
 
 const PERF_ENTRIES: GroupedPerfEntries = {
@@ -298,5 +299,13 @@ describe('getInitialLoadRootSpan', () => {
           '"containerId":"","containerName":""}]',
     });
     expect(longTaskSpan.annotations).toEqual([]);
+  });
+
+  it('defaults trace and span ID to random values if not specified', () => {
+    const root = getInitialLoadRootSpan(new Tracer(), PERF_ENTRIES);
+
+    expect(root.traceId).toMatch(TRACE_ID_REGEX);
+    const navigationFetchSpan = root.spans[0];
+    expect(navigationFetchSpan.id).toMatch(SPAN_ID_REGEX);
   });
 });

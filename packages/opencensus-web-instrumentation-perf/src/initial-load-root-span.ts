@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, parseUrl, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
+import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, parseUrl, randomSpanId, randomTraceId, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
+
 import {GroupedPerfEntries} from './perf-grouper';
 import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended} from './perf-types';
 import {getResourceSpan} from './resource-span';
@@ -53,7 +54,8 @@ const NAVIGATION_TIMING_EVENTS = [
  */
 export function getInitialLoadRootSpan(
     tracer: Tracer, perfEntries: GroupedPerfEntries,
-    navigationFetchSpanId: string, traceId: string): RootSpan {
+    navigationFetchSpanId: string = randomSpanId(),
+    traceId: string = randomTraceId()): RootSpan {
   const navTiming = perfEntries.navigationTiming;
   const navigationUrl = navTiming ? navTiming.name : location.href;
   const parsedNavigationUrl = parseUrl(navigationUrl);

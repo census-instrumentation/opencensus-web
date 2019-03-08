@@ -15,7 +15,7 @@
  */
 
 import * as coreTypes from '@opencensus/core';
-import {randomSpanId, randomTraceId} from '../../internal/util';
+import {randomSpanId, randomTraceId} from '../../common/id-util';
 
 /** Propagation implementation that does not set or get headers. */
 export class NoHeadersPropagation implements coreTypes.Propagation {

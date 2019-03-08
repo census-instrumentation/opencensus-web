@@ -17,7 +17,7 @@
 // This file is an entry point for the webpack test configuration, so this
 // should import from all test files.
 
-import './test-internal-util';
+import './test-id-util';
 import './test-root-span';
 import './test-span';
 import './test-time-util';
