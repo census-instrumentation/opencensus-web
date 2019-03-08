@@ -18,5 +18,5 @@
 // should import from all test files.
 
 import './test-initial-load-root-span';
-import './test-perf-recorder';
+import './test-perf-grouper';
 import './test-resource-span';

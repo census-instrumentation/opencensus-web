@@ -15,7 +15,7 @@
  */
 
 import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, parseUrl, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
-import {GroupedPerfEntries} from './perf-recorder';
+import {GroupedPerfEntries} from './perf-grouper';
 import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended} from './perf-types';
 import {getResourceSpan} from './resource-span';
 import {annotationsForPerfTimeFields} from './util';
@@ -83,7 +83,7 @@ export function getInitialLoadRootSpan(
 
   const resourceSpans = perfEntries.resourceTimings.map(
       (resourceTiming) => getResourceSpan(resourceTiming, traceId, root.id));
-  const longTaskSpans = perfEntries.longTasks.map(
+  const longTaskSpans = perfEntries.longTaskTimings.map(
       (longTaskTiming) => getLongTaskSpan(longTaskTiming, traceId, root.id));
 
   root.spans = root.spans.concat(resourceSpans, longTaskSpans);
