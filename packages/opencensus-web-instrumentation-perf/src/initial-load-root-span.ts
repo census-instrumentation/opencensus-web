@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, parseUrl, randomSpanId, randomTraceId, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
+import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, GroupedPerfEntries, parseUrl, randomSpanId, randomTraceId, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
 import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended} from './perf-types';
 import {getResourceSpan} from './resource-span';
 import {annotationsForPerfTimeFields} from './util';
