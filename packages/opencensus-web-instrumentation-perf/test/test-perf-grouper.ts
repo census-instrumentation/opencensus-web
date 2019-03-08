@@ -180,7 +180,7 @@ describe('performance recorder functions', () => {
         navigationTiming: NAVIGATION_ENTRY,
         paintTimings: [PAINT_ENTRY],
         resourceTimings: [RESOURCE_ENTRY],
-        longTasks: [LONG_TASK_1, LONG_TASK_2],
+        longTaskTimings: [LONG_TASK_1, LONG_TASK_2],
       });
     });
   });
@@ -202,11 +202,11 @@ describe('performance recorder functions', () => {
       recordLongTasks();
       performanceObserver!.sendMockPerfEntries(
           new MockPerfEntryList([LONG_TASK_1]));
-      expect(getPerfEntries().longTasks.length).toBe(1);
+      expect(getPerfEntries().longTaskTimings.length).toBe(1);
 
       clearPerfEntries();
 
-      expect(getPerfEntries().longTasks.length).toBe(0);
+      expect(getPerfEntries().longTaskTimings.length).toBe(0);
     });
   });
 });

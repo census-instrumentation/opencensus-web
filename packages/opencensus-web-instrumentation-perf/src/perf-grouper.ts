@@ -24,7 +24,7 @@ export interface GroupedPerfEntries {
   navigationTiming?: PerformanceNavigationTimingExtended;
   paintTimings: PerformancePaintTiming[];
   resourceTimings: PerformanceResourceTimingExtended[];
-  longTasks: PerformanceLongTaskTiming[];
+  longTaskTimings: PerformanceLongTaskTiming[];
 }
 
 /** Returns the recorded performance entries but does not clear them. */
@@ -32,20 +32,20 @@ export function getPerfEntries(): GroupedPerfEntries {
   if (!window.performance) {
     return {
       resourceTimings: [],
-      longTasks: [],
+      longTaskTimings: [],
       paintTimings: [],
     };
   }
 
   const perf = window.performance;
 
-  const longTasks = windowWithLongTasks.ocwLt;
+  const longTaskTimings = windowWithLongTasks.ocwLt;
 
   const entries: GroupedPerfEntries = {
     resourceTimings: perf.getEntriesByType('resource') as
         PerformanceResourceTimingExtended[],
     paintTimings: perf.getEntriesByType('paint') as PerformancePaintTiming[],
-    longTasks: longTasks ? longTasks.slice() : [],
+    longTaskTimings: longTaskTimings ? longTaskTimings.slice() : [],
   };
 
   const navEntries = perf.getEntriesByType('navigation');
