@@ -14,4 +14,12 @@
  * limitations under the License.
  */
 
-import './test-export-initial-load';
+import {recordLongTasks} from '@opencensus/web-instrumentation-perf';
+
+if (window.performance) {
+  if (performance.setResourceTimingBufferSize) {
+    // Set a larger performance buffer size to make sure events aren't lost.
+    performance.setResourceTimingBufferSize(1000);
+  }
+  recordLongTasks();
+}

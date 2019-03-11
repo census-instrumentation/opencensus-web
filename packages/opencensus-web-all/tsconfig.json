@@ -4,13 +4,14 @@
     "rootDir": ".",
     "outDir": "build",
     "pretty": true,
-    "module": "commonjs",
+    "module": "es6",
     "target": "es5",
     "lib": ["es5", "dom", "es6"],
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "baseUrl": ".",
     "moduleResolution": "node",
+    "sourceMap": true,
     "paths": {
       "src/*": ["./src/*"],
       "test/*": ["./test/*"]
