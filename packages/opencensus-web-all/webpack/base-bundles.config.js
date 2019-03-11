@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const path = require('path');
-
 module.exports = {
   entry: {
     'export-initial-load': './src/entrypoints/export-initial-load.ts',

@@ -15,7 +15,6 @@
  */
 
 const baseConfig = require('./base-bundles.config.js');
-const path = require('path');
 
 const config = baseConfig;
 config['mode'] = 'development';

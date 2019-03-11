@@ -22,8 +22,12 @@ import {OpenCensusWebConfig, WindowWithOcwGlobals} from './types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
-/** How long to wait after `load` event to export initial load spans. */
-const WAIT_TIME_AFTER_LOAD_MS = 2000;
+/**
+ * How long to wait after `load` event to export initial load spans. This allows
+ * time for any other post-load handlers to run first so that the work to export
+ * spans does not slow down the user experience.
+ */
+const WAIT_TIME_AFTER_LOAD_MS = 2000;  // 2 seconds
 
 /** Trace endpoint in the OC agent. */
 const TRACE_ENDPOINT = '/v1/trace';
@@ -35,8 +39,10 @@ const TRACE_ENDPOINT = '/v1/trace';
  */
 export function exportRootSpanAfterLoadEvent() {
   const config = windowWithOcwGlobals.ocwConfig;
-  if (!config) return;
-  if (!config.agent || !config.sampled) return;
+  if (!config || !config.agent || !config.sampled) {
+    console.log('Not configured to export page load spans.');
+    return;
+  }
 
   tracing.registerExporter(
       new OCAgentExporter({agentEndpoint: `${config.agent}${TRACE_ENDPOINT}`}));
@@ -55,9 +61,11 @@ function exportInitialLoadSpans(config: OpenCensusWebConfig) {
     const perfEntries = getPerfEntries();
 
     // Adjust the performance time origin with server time if we have it.
-    if (perfEntries.navigationTiming && config.reqStart && config.reqDuration) {
+    if (perfEntries.navigationTiming && config.reqStartTime &&
+        config.reqDuration) {
       adjustPerfTimeOrigin(
-          config.reqStart, config.reqDuration, perfEntries.navigationTiming);
+          config.reqStartTime, config.reqDuration,
+          perfEntries.navigationTiming);
     }
 
     const root = getInitialLoadRootSpan(

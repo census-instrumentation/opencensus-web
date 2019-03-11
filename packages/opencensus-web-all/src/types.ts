@@ -33,7 +33,7 @@ export declare interface OpenCensusWebConfig {
    * time epoch milliseconds. This is used to correct for clock skew between
    * client and server before exporting spans.
    */
-  reqStart?: number;
+  reqStartTime?: number;
   /**
    * Duration of the server fetch request for initial HTML in server
    * milliseconds. This is also used to correct for clock skew.
