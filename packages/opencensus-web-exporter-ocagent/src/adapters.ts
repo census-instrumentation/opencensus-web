@@ -25,7 +25,7 @@ import * as apiTypes from './api-types';
 const RECENT_EPOCH_MS = 1500000000000;  // July 13, 2017.
 
 /**
- * Converts a RootSpan type from @opencensus/core to the Span JSON structure
+ * Converts a RootSpan type from @opencensus/web-core to the Span JSON structure
  * expected by the OpenCensus Agent's HTTP/JSON (grpc-gateway) API.
  */
 export function adaptRootSpan(rootSpan: webCore.RootSpan): apiTypes.Span[] {
