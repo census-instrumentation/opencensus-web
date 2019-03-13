@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
 import * as webCore from '@opencensus/web-core';
 import * as apiTypes from './api-types';
 
@@ -29,7 +28,7 @@ const RECENT_EPOCH_MS = 1500000000000;  // July 13, 2017.
  * Converts a RootSpan type from @opencensus/core to the Span JSON structure
  * expected by the OpenCensus Agent's HTTP/JSON (grpc-gateway) API.
  */
-export function adaptRootSpan(rootSpan: coreTypes.RootSpan): apiTypes.Span[] {
+export function adaptRootSpan(rootSpan: webCore.RootSpan): apiTypes.Span[] {
   const adaptedSpans: apiTypes.Span[] = rootSpan.spans.map(adaptSpan);
   adaptedSpans.unshift(adaptSpan(rootSpan));
   return adaptedSpans;
@@ -52,7 +51,7 @@ function hexToBase64(hexStr: string): string {
   return btoa(hexAsciiCharsStr);
 }
 
-function adaptTraceState(coreTraceState?: coreTypes.TraceState):
+function adaptTraceState(coreTraceState?: webCore.TraceState):
     apiTypes.TraceState {
   if (!coreTraceState || !coreTraceState.length) return {};
   const entries = coreTraceState.split(',');
@@ -75,8 +74,7 @@ function adaptValue(value: boolean|string|number): apiTypes.AttributeValue {
   return {stringValue: adaptString(String(value))};
 }
 
-function adaptAttributes(attributes: coreTypes.Attributes):
-    apiTypes.Attributes {
+function adaptAttributes(attributes: webCore.Attributes): apiTypes.Attributes {
   const attributeMap: apiTypes.AttributeMap = {};
   for (const key of Object.keys(attributes)) {
     attributeMap[key] = adaptValue(attributes[key]);
@@ -84,7 +82,7 @@ function adaptAttributes(attributes: coreTypes.Attributes):
   return {attributeMap};
 }
 
-function adaptAnnotation(annotation: coreTypes.Annotation): apiTypes.TimeEvent {
+function adaptAnnotation(annotation: webCore.Annotation): apiTypes.TimeEvent {
   return {
     time: adaptTimestampNumber(annotation.timestamp),
     annotation: {
@@ -108,7 +106,7 @@ function adaptTimestampNumber(timestamp: number): string {
   return webCore.getIsoDateStrForPerfTime(timestamp);
 }
 
-function adaptMessageEvent(messageEvent: coreTypes.MessageEvent):
+function adaptMessageEvent(messageEvent: webCore.MessageEvent):
     apiTypes.TimeEvent {
   return {
     time: adaptTimestampNumber(messageEvent.timestamp),
@@ -123,15 +121,15 @@ function adaptMessageEvent(messageEvent: coreTypes.MessageEvent):
 }
 
 function adaptTimeEvents(
-    annotations: coreTypes.Annotation[],
-    messageEvents: coreTypes.MessageEvent[]): apiTypes.TimeEvents {
+    annotations: webCore.Annotation[],
+    messageEvents: webCore.MessageEvent[]): apiTypes.TimeEvents {
   return {
     timeEvent: annotations.map(adaptAnnotation)
                    .concat(messageEvents.map(adaptMessageEvent)),
   };
 }
 
-function adaptLink(link: coreTypes.Link): apiTypes.Link {
+function adaptLink(link: webCore.Link): apiTypes.Link {
   return {
     traceId: hexToBase64(link.traceId),
     spanId: hexToBase64(link.spanId),
@@ -140,7 +138,7 @@ function adaptLink(link: coreTypes.Link): apiTypes.Link {
   };
 }
 
-function adaptLinks(links: coreTypes.Link[]): apiTypes.Links {
+function adaptLinks(links: webCore.Link[]): apiTypes.Links {
   return {link: links.map(adaptLink)};
 }
 
@@ -154,7 +152,7 @@ function adaptSpanTime(perfTime: number|undefined, fallbackTime: Date) {
                                   webCore.getIsoDateStrForPerfTime(perfTime);
 }
 
-/** Interface to represent that a coreTypes.Span may be a webCore.Span */
+/** Interface to represent that a webCore.Span may be a webCore.Span */
 interface MaybeWebSpan {
   startPerfTime?: number;
   endPerfTime?: number;
@@ -162,7 +160,7 @@ interface MaybeWebSpan {
   endTime: Date;
 }
 
-function adaptSpan(span: coreTypes.Span): apiTypes.Span {
+function adaptSpan(span: webCore.Span): apiTypes.Span {
   // The stackTrace and childSpanCount attributes are not currently supported by
   // opencensus-web.
   return {

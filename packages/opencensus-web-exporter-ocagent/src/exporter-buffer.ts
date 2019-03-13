@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BufferConfig, Exporter, RootSpan} from '@opencensus/core';
+import {BufferConfig, Exporter, RootSpan} from '@opencensus/web-core';
 
 /**
  * Controls the sending of traces to exporters.

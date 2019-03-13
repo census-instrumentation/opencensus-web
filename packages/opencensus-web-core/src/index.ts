@@ -23,7 +23,7 @@ export * from './trace/model/enums';
 export * from './trace/model/attribute-keys';
 
 // Re-export types this uses from @opencensus/core.
-export {Annotation, Attributes, Config, Exporter, Link, MessageEvent, Propagation, SpanContext, SpanEventListener, TracerConfig, TraceState} from '@opencensus/core';
+export {Annotation, Attributes, BufferConfig, Config, Exporter, ExporterConfig, Link, Logger, MessageEvent, Propagation, SpanContext, SpanEventListener, Status, TracerConfig, TraceState} from '@opencensus/core';
 
 export * from './common/time-util';
 export * from './common/url-util';

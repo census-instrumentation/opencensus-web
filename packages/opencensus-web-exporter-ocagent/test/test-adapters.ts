@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
-import * as webTypes from '@opencensus/web-core';
+import * as webCore from '@opencensus/web-core';
 import {adaptRootSpan} from '../src/adapters';
 import * as apiTypes from '../src/api-types';
-import {MockRootSpan, MockSpan} from './mock-trace-types';
 import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
 const API_SPAN_KIND_UNSPECIFIED: apiTypes.SpanKindUnspecified = 0;
@@ -35,42 +33,39 @@ describe('Core to API Span adapters', () => {
     restoreGetterOrValue(performance, 'timeOrigin', realTimeOrigin);
   });
 
-  it('adapts @opencensus/core span to grpc-gateway properties', () => {
-    const coreRootSpan: coreTypes.RootSpan = new MockRootSpan(
-        {
-          id: 'a56a50b90c653f00',
-          traceId: '69f223f58668171cedf0c9eab06f0d36',
-          parentSpanId: 'b56a50b90c653f00',
-          name: 'test1',
-          kind: webTypes.SpanKind.SERVER,
-          startTime: new Date(1535683887003),
-          endTime: new Date(1535683887005),
-          attributes: {
-            'a': 'abc',
-            'b': 123,
-            'c': false,
-            'd': 1.1,
-            'e': NaN,
-            'f': -5000,
-          },
-          annotations: [{
-            description: 'annotation1',
-            timestamp: 1535683887009.5,
-            attributes: {'xyz': 999},
-          }],
-          links: [{
-            traceId: '79f223f58668171cedf0c9eab06f0d36',
-            spanId: 'b56a50b90c653f00',
-            type: webTypes.LinkType.CHILD_LINKED_SPAN,
-            attributes: {
-              'd': 'def',
-              'e': 456,
-              'f': true,
-            },
-          }],
-          status: {code: 7},
-        },
-        []);
+  it('adapts @opencensus/web-core span to grpc-gateway properties', () => {
+    mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
+    const rootSpan = new webCore.RootSpan(new webCore.Tracer());
+    rootSpan.id = 'a56a50b90c653f00';
+    rootSpan.traceId = '69f223f58668171cedf0c9eab06f0d36';
+    rootSpan.parentSpanId = 'b56a50b90c653f00', rootSpan.name = 'test1';
+    rootSpan.kind = webCore.SpanKind.SERVER;
+    rootSpan.startPerfTime = 5.001;
+    rootSpan.endPerfTime = 30.000001;
+    rootSpan.attributes = {
+      'a': 'abc',
+      'b': 123,
+      'c': false,
+      'd': 1.1,
+      'e': NaN,
+      'f': -5000,
+    };
+    rootSpan.annotations = [{
+      description: 'annotation1',
+      timestamp: 1535683887009.5,
+      attributes: {'xyz': 999},
+    }];
+    rootSpan.links = [{
+      traceId: '79f223f58668171cedf0c9eab06f0d36',
+      spanId: 'b56a50b90c653f00',
+      type: webCore.LinkType.CHILD_LINKED_SPAN,
+      attributes: {
+        'd': 'def',
+        'e': 456,
+        'f': true,
+      },
+    }];
+    rootSpan.status = {code: 7};
 
     const expectedApiSpan: apiTypes.Span = {
       traceId: 'afIj9YZoFxzt8MnqsG8NNg==',
@@ -78,8 +73,8 @@ describe('Core to API Span adapters', () => {
       parentSpanId: 'tWpQuQxlPwA=',
       name: {value: 'test1'},
       kind: API_SPAN_KIND_SERVER,
-      startTime: '2018-08-31T02:51:27.003Z',
-      endTime: '2018-08-31T02:51:27.005Z',
+      startTime: '2019-01-20T16:00:00.005001000Z',
+      endTime: '2019-01-20T16:00:00.030000001Z',
       attributes: {
         attributeMap: {
           'a': {stringValue: {value: 'abc'}},
@@ -120,71 +115,16 @@ describe('Core to API Span adapters', () => {
       tracestate: {},
     };
 
-    const apiSpans = adaptRootSpan(coreRootSpan);
+    const apiSpans = adaptRootSpan(rootSpan);
 
     expect(apiSpans.length).toBe(1);
     expect(apiSpans[0]).toEqual(expectedApiSpan);
   });
 
   it('adapts child spans of the root span', () => {
-    const coreRootSpan: coreTypes.RootSpan = new MockRootSpan(
-        {
-          id: 'a66a50b90c653f00',
-          traceId: '89f223f58668171cedf0c9eab06f0d36',
-          name: 'root',
-          startTime: new Date(1535683887001),
-          endTime: new Date(1535683887009),
-        },
-        [new MockSpan({
-          parentSpanId: 'a66a50b90c653f00',
-          id: 'c66a50b90c653f00',
-          traceId: '89f223f58668171cedf0c9eab06f0d36',
-          name: 'child',
-          startTime: new Date(1535683887003),
-          endTime: new Date(1535683887005),
-        })]);
-
-    const apiSpans = adaptRootSpan(coreRootSpan);
-
-    const expectedApiSpans: apiTypes.Span[] = [
-      {
-        traceId: 'ifIj9YZoFxzt8MnqsG8NNg==',
-        spanId: 'pmpQuQxlPwA=',
-        tracestate: {},
-        parentSpanId: '',
-        name: {value: 'root'},
-        kind: API_SPAN_KIND_UNSPECIFIED,
-        startTime: '2018-08-31T02:51:27.001Z',
-        endTime: '2018-08-31T02:51:27.009Z',
-        attributes: {attributeMap: {}},
-        timeEvents: {timeEvent: []},
-        sameProcessAsParentSpan: true,
-        links: {link: []},
-        status: {code: 0},
-      },
-      {
-        traceId: 'ifIj9YZoFxzt8MnqsG8NNg==',
-        spanId: 'xmpQuQxlPwA=',
-        tracestate: {},
-        parentSpanId: 'pmpQuQxlPwA=',
-        name: {value: 'child'},
-        kind: API_SPAN_KIND_UNSPECIFIED,
-        startTime: '2018-08-31T02:51:27.003Z',
-        endTime: '2018-08-31T02:51:27.005Z',
-        attributes: {attributeMap: {}},
-        timeEvents: {timeEvent: []},
-        sameProcessAsParentSpan: true,
-        links: {link: []},
-        status: {code: 0},
-      },
-    ];
-    expect(apiSpans).toEqual(expectedApiSpans);
-  });
-
-  it('adapts perf times of web spans as high-res timestamps', () => {
     mockGetterOrValue(performance, 'timeOrigin', 1548000000000);
-    const tracer = new webTypes.Tracer();
-    const webSpan1 = new webTypes.Span();
+    const tracer = new webCore.Tracer();
+    const webSpan1 = new webCore.Span();
     webSpan1.id = '000000000000000a';
     webSpan1.traceId = '00000000000000000000000000000001';
     webSpan1.startPerfTime = 10.1;
@@ -192,23 +132,23 @@ describe('Core to API Span adapters', () => {
     webSpan1.messageEvents = [{
       id: '1',
       timestamp: 19.002,
-      type: webTypes.MessageEventType.SENT,
+      type: webCore.MessageEventType.SENT,
       uncompressedSize: 22,
       compressedSize: 15,
     }];
-    const webRootSpan = new webTypes.RootSpan(tracer);
-    webRootSpan.spans = [webSpan1];
-    webRootSpan.startPerfTime = 5.001;
-    webRootSpan.endPerfTime = 30.000001;
-    webRootSpan.id = '000000000000000b';
-    webRootSpan.traceId = '00000000000000000000000000000001';
-    webRootSpan.annotations = [{
+    const rootSpan = new webCore.RootSpan(tracer);
+    rootSpan.spans = [webSpan1];
+    rootSpan.startPerfTime = 5.001;
+    rootSpan.endPerfTime = 30.000001;
+    rootSpan.id = '000000000000000b';
+    rootSpan.traceId = '00000000000000000000000000000001';
+    rootSpan.annotations = [{
       timestamp: 41.001,
       description: 'annotation with perf time',
       attributes: {attr1: true},
     }];
 
-    const apiSpans = adaptRootSpan(webRootSpan);
+    const apiSpans = adaptRootSpan(rootSpan);
 
     const expectedApiSpans: apiTypes.Span[] = [
       {
