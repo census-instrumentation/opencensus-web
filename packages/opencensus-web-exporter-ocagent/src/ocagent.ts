@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterConfig, RootSpan} from '@opencensus/core';
+import {Exporter, ExporterConfig, RootSpan} from '@opencensus/web-core';
 
 import {adaptRootSpan} from './adapters';
 import * as apiTypes from './api-types';

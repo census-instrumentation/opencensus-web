@@ -14,22 +14,27 @@
  * limitations under the License.
  */
 
+import * as webCore from '@opencensus/web-core';
+
 import {OCAgentExporter} from '../src';
 import * as apiTypes from '../src/api-types';
-import {MockRootSpan} from './mock-trace-types';
+import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
 const BUFFER_SIZE = 1;
 const BUFFER_TIMEOUT = 100;
 
-const MOCK_SPAN_CONFIG = {
-  id: 'a56a50b90c653f00',
-  traceId: '69f223f58668171cedf0c9eab06f0d36',
-  startTime: new Date(1546560000000),
-  endTime: new Date(1546560000001),
-};
+function makeMockRootSpan(name: string): webCore.RootSpan {
+  const span = new webCore.RootSpan(new webCore.Tracer());
+  span.name = name;
+  span.id = 'a56a50b90c653f00';
+  span.traceId = '69f223f58668171cedf0c9eab06f0d36';
+  span.startPerfTime = 0;
+  span.endPerfTime = 1;
+  return span;
+}
 
-const SPAN1 = new MockRootSpan({name: '1', ...MOCK_SPAN_CONFIG}, []);
-const SPAN2 = new MockRootSpan({name: '2', ...MOCK_SPAN_CONFIG}, []);
+const SPAN1 = makeMockRootSpan('1');
+const SPAN2 = makeMockRootSpan('2');
 
 const SPAN1_API_JSON: apiTypes.Span = {
   traceId: 'afIj9YZoFxzt8MnqsG8NNg==',
@@ -38,8 +43,8 @@ const SPAN1_API_JSON: apiTypes.Span = {
   parentSpanId: '',
   name: {value: '1'},
   kind: 0,
-  startTime: '2019-01-04T00:00:00.000Z',
-  endTime: '2019-01-04T00:00:00.001Z',
+  startTime: '2019-01-04T00:00:00.000000000Z',
+  endTime: '2019-01-04T00:00:00.001000000Z',
   attributes: {attributeMap: {}},
   timeEvents: {timeEvent: []},
   links: {link: []},
@@ -53,8 +58,8 @@ const SPAN2_API_JSON: apiTypes.Span = {
   parentSpanId: '',
   name: {value: '2'},
   kind: 0,
-  startTime: '2019-01-04T00:00:00.000Z',
-  endTime: '2019-01-04T00:00:00.001Z',
+  startTime: '2019-01-04T00:00:00.000000000Z',
+  endTime: '2019-01-04T00:00:00.001000000Z',
   attributes: {attributeMap: {}},
   timeEvents: {timeEvent: []},
   links: {link: []},
@@ -65,9 +70,12 @@ const SPAN2_API_JSON: apiTypes.Span = {
 describe('OCAgentExporter', () => {
   let exporter: OCAgentExporter;
   let xhrSendSpy: jasmine.Spy;
+  let realTimeOrigin: number;
 
   beforeEach(() => {
     jasmine.clock().install();
+    realTimeOrigin = performance.timeOrigin;
+    mockGetterOrValue(performance, 'timeOrigin', 1546560000000);
 
     spyOn(XMLHttpRequest.prototype, 'open');
     xhrSendSpy = spyOn(XMLHttpRequest.prototype, 'send');
@@ -84,6 +92,7 @@ describe('OCAgentExporter', () => {
 
   afterEach(() => {
     jasmine.clock().uninstall();
+    restoreGetterOrValue(performance, 'timeOrigin', realTimeOrigin);
   });
 
   function verifySpansExported(apiSpans: apiTypes.Span[]) {

@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import {Exporter} from '@opencensus/core';
+import {Exporter, RootSpan, Tracer} from '@opencensus/web-core';
 import {ExporterBuffer} from '../src/exporter-buffer';
-import {MockRootSpan} from './mock-trace-types';
 
-const MOCK_SPAN_CONFIG = {
-  id: '',
-  traceId: '',
-  startTime: new Date(),
-  endTime: new Date(),
-};
-const SPAN1 = new MockRootSpan({name: '1', ...MOCK_SPAN_CONFIG}, []);
-const SPAN2 = new MockRootSpan({name: '2', ...MOCK_SPAN_CONFIG}, []);
-const SPAN3 = new MockRootSpan({name: '2', ...MOCK_SPAN_CONFIG}, []);
+const TRACER = new Tracer();
+const SPAN1 = new RootSpan(TRACER);
+const SPAN2 = new RootSpan(TRACER);
+const SPAN3 = new RootSpan(TRACER);
 const BUFFER_SIZE = 1;
 const BUFFER_TIMEOUT = 100;
 
