@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 
 import {Tracer} from '../src/trace/model/tracer';
 import {NOOP_EXPORTER, Tracing} from '../src/trace/model/tracing';
@@ -22,8 +22,8 @@ import {NOOP_EXPORTER, Tracing} from '../src/trace/model/tracing';
 describe('Tracing', () => {
   let tracing: Tracing;
   let tracer: Tracer;
-  let oldExporter: coreTypes.Exporter;
-  let newExporter: coreTypes.Exporter;
+  let oldExporter: webTypes.Exporter;
+  let newExporter: webTypes.Exporter;
 
   beforeEach(() => {
     tracing = new Tracing();
@@ -33,7 +33,7 @@ describe('Tracing', () => {
     spyOn(tracer, 'start');
     oldExporter = tracing.exporter;
     newExporter =
-        jasmine.createSpyObj<coreTypes.Exporter>('mockExporter', ['publish']);
+        jasmine.createSpyObj<webTypes.Exporter>('mockExporter', ['publish']);
   });
 
   describe('default exporter', () => {

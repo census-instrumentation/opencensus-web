@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 import {NoopExporter} from '../../exporters/noop_exporter';
 import {Tracer} from './tracer';
 
 export const NOOP_EXPORTER = new NoopExporter();
 
 /** Main interface for tracing. */
-export class Tracing implements coreTypes.Tracing {
+export class Tracing implements webTypes.Tracing {
   /** Object responsible for managing a trace. */
   readonly tracer = new Tracer();
 
@@ -32,7 +32,7 @@ export class Tracing implements coreTypes.Tracing {
   active = true;
 
   /** Sets tracer and exporter config. */
-  start(config?: coreTypes.Config): coreTypes.Tracing {
+  start(config?: webTypes.Config): webTypes.Tracing {
     this.tracer.start(config || {});
     if (config) {
       if (config.exporter) this.registerExporter(config.exporter);
@@ -48,7 +48,7 @@ export class Tracing implements coreTypes.Tracing {
    * @param exporter The exporter to send the traces to.
    * @return The tracing object.
    */
-  registerExporter(exporter: coreTypes.Exporter): coreTypes.Tracing {
+  registerExporter(exporter: webTypes.Exporter): webTypes.Tracing {
     this.tracer.unregisterSpanEventListener(this.exporter);
     this.exporter = exporter;
     this.tracer.registerSpanEventListener(exporter);
@@ -59,7 +59,7 @@ export class Tracing implements coreTypes.Tracing {
    * Sets the exporter back to the no-op exporter.
    * @return The tracing object.
    */
-  unregisterExporter(exporter: coreTypes.Exporter): coreTypes.Tracing {
+  unregisterExporter(exporter: webTypes.Exporter): webTypes.Tracing {
     this.registerExporter(NOOP_EXPORTER);
     return this;
   }

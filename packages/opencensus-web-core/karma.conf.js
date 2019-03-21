@@ -29,7 +29,7 @@ module.exports = (config) => {
     files: ['test/index.ts'],
     preprocessors: {'test/index.ts': ['webpack']},
     // Use webpack so that tree-shaking will remove all Node.js dependencies of
-    // the `@opencensus/core` library, since they are not actually used in this
+    // the `@opencensus/web-types` library, since they are not actually used in this
     // package's compiled JS code. Only the TypeScript interfaces from
     // `@opecensus/core` are used.
     webpack: webpackConfig,

@@ -19,11 +19,10 @@ export {RootSpan} from './trace/model/root-span';
 export {Span} from './trace/model/span';
 export {Tracer} from './trace/model/tracer';
 export {Tracing} from './trace/model/tracing';
-export * from './trace/model/enums';
 export * from './trace/model/attribute-keys';
 
-// Re-export types this uses from @opencensus/core.
-export {Annotation, Attributes, BufferConfig, Config, Exporter, ExporterConfig, Link, Logger, MessageEvent, Propagation, SpanContext, SpanEventListener, Status, TracerConfig, TraceState} from '@opencensus/core';
+// Re-export types this uses from @opencensus/web-types.
+export {Annotation, Attributes, BufferConfig, CanonicalCode, Config, Exporter, ExporterConfig, Link, LinkType, Logger, MessageEvent, MessageEventType, Propagation, SpanContext, SpanEventListener, SpanKind, Status, TracerConfig, TraceState} from '@opencensus/web-types';
 
 export * from './common/time-util';
 export * from './common/url-util';

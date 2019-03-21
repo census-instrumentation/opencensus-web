@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 
-export class NoopExporter implements coreTypes.Exporter {
-  publish(roots: coreTypes.RootSpan[]): Promise<number|string|void> {
+export class NoopExporter implements webTypes.Exporter {
+  publish(roots: webTypes.RootSpan[]): Promise<number|string|void> {
     return Promise.resolve();
   }
 
-  onStartSpan(root: coreTypes.RootSpan) {}
+  onStartSpan(root: webTypes.RootSpan) {}
 
-  onEndSpan(root: coreTypes.RootSpan) {}
+  onEndSpan(root: webTypes.RootSpan) {}
 }

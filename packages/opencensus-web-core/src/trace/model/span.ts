@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 
 import {randomSpanId} from '../../common/id-util';
 import {getDateForPerfTime} from '../../common/time-util';
-
-import {CanonicalCode, LinkType, MessageEventType, SpanKind} from './enums';
 
 /** Default span name if none is specified. */
 const DEFAULT_SPAN_NAME = 'unnamed';
 
 /** A span represents a single operation within a trace. */
-export class Span implements coreTypes.Span {
+export class Span implements webTypes.Span {
   constructor(
       /** The ID of this span. Defaults to a random span ID. */
       public id = randomSpanId()) {}
@@ -45,35 +43,35 @@ export class Span implements coreTypes.Span {
   traceId = '';
 
   /** Trace state associated with span */
-  traceState: coreTypes.TraceState = '';
+  traceState: webTypes.TraceState = '';
 
   /** The display name of the span. */
   name = DEFAULT_SPAN_NAME;
 
   /** Kind of span. */
-  kind: SpanKind = SpanKind.UNSPECIFIED;
+  kind: webTypes.SpanKind = webTypes.SpanKind.UNSPECIFIED;
 
   /** An object to log information to. Logs to the JS console by default. */
-  logger: coreTypes.Logger = console;
+  logger: webTypes.Logger = console;
 
   /**
    * Status associated with this span. Defaults to OK status. Note that the
    * `code` is not an HTTP status, but is a specific trace status code. See:
    * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md#mapping-from-http-status-codes-to-trace-status-codes
    */
-  status: coreTypes.Status = {code: CanonicalCode.OK};
+  status: webTypes.Status = {code: webTypes.CanonicalCode.OK};
 
   /** A set of attributes, each in the format [KEY]:[VALUE] */
-  attributes: coreTypes.Attributes = {};
+  attributes: webTypes.Attributes = {};
 
   /** Text annotations with a set of attributes. */
-  annotations: coreTypes.Annotation[] = [];
+  annotations: webTypes.Annotation[] = [];
 
   /** Event describing messages sent/received between Spans. */
-  messageEvents: coreTypes.MessageEvent[] = [];
+  messageEvents: webTypes.MessageEvent[] = [];
 
   /** Pointers from the current span to another span */
-  links: coreTypes.Link[] = [];
+  links: webTypes.Link[] = [];
 
   /** Start time of the span as measured by the browser performance clock. */
   startPerfTime = 0;
@@ -95,7 +93,7 @@ export class Span implements coreTypes.Span {
 
   /**
    * Trace parameter configuration. Not used by OpenCensus Web, but
-   * kept for interface compatibility with @opencensus/core.
+   * kept for interface compatibility with @opencensus/web-types.
    */
   readonly activeTraceParams = {};
 
@@ -107,7 +105,7 @@ export class Span implements coreTypes.Span {
   /**
    * Indicates if span was started. This is always true for opencensus-web for
    * code simplicity purposes but kept for interface compatibility with
-   * @opencensus/core.
+   * @opencensus/web-types.
    */
   readonly started = true;
 
@@ -130,7 +128,7 @@ export class Span implements coreTypes.Span {
   }
 
   /** Gives the TraceContext of the span. */
-  get spanContext(): coreTypes.SpanContext {
+  get spanContext(): webTypes.SpanContext {
     return {
       traceId: this.traceId,
       spanId: this.id,
@@ -156,7 +154,7 @@ export class Span implements coreTypes.Span {
    *     Defaults to `performance.now()`.
    */
   addAnnotation(
-      description: string, attributes: coreTypes.Attributes = {},
+      description: string, attributes: webTypes.Attributes = {},
       timestamp: number = performance.now()) {
     this.annotations.push({description, attributes, timestamp});
   }
@@ -169,8 +167,8 @@ export class Span implements coreTypes.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: LinkType,
-      attributes: coreTypes.Attributes = {}) {
+      traceId: string, spanId: string, type: webTypes.LinkType,
+      attributes: webTypes.Attributes = {}) {
     this.links.push({traceId, spanId, type, attributes});
   }
   /**
@@ -181,7 +179,7 @@ export class Span implements coreTypes.Span {
    *     Defaults to `performance.now()`.
    */
   addMessageEvent(
-      type: MessageEventType, id: string,
+      type: webTypes.MessageEventType, id: string,
       timestamp: number = performance.now()) {
     this.messageEvents.push({type, id, timestamp});
   }
@@ -191,7 +189,7 @@ export class Span implements coreTypes.Span {
    * @param code The canonical status code.
    * @param message optional A developer-facing error message.
    */
-  setStatus(code: CanonicalCode, message?: string) {
+  setStatus(code: webTypes.CanonicalCode, message?: string) {
     this.status = {code, message};
   }
 

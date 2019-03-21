@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 import {NoHeadersPropagation} from '../propagation/no_headers_propagation';
 import {AlwaysSampler} from '../sampler/sampler';
 import {RootSpan} from './root-span';
@@ -23,7 +23,7 @@ import {Span} from './span';
 const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
 
 /** Tracer manages the current root span and trace header propagation. */
-export class Tracer implements coreTypes.Tracer {
+export class Tracer implements webTypes.Tracer {
   /** Get and set the currentRootSpan of the tracer. */
   currentRootSpan: RootSpan = new RootSpan(this);
 
@@ -35,13 +35,13 @@ export class Tracer implements coreTypes.Tracer {
   sampler = new AlwaysSampler();
 
   /** An object to log information to. Logs to the JS console by default. */
-  logger: coreTypes.Logger = console;
+  logger: webTypes.Logger = console;
 
   /** Trace context header propagation behavior. */
   propagation = NO_HEADERS_PROPAGATION;
 
   /** Event listeners for spans managed by the tracer. */
-  eventListeners: coreTypes.SpanEventListener[] = [];
+  eventListeners: webTypes.SpanEventListener[] = [];
 
   /**
    * Active status from tracer instance - this is always true for
@@ -51,7 +51,7 @@ export class Tracer implements coreTypes.Tracer {
 
   /**
    * Trace parameter configuration. Not used by OpenCensus Web, but
-   * kept for interface compatibility with @opencensus/core.
+   * kept for interface compatibility with @opencensus/web-types.
    */
   readonly activeTraceParams = {};
 
@@ -60,7 +60,7 @@ export class Tracer implements coreTypes.Tracer {
    * `propagation` based on the given config. The `samplingRate` property of
    * `config` is currently ignored.
    */
-  start(config: coreTypes.TracerConfig): Tracer {
+  start(config: webTypes.TracerConfig): Tracer {
     this.logger = config.logger || console;
     this.propagation = config.propagation || NO_HEADERS_PROPAGATION;
     return this;
@@ -80,7 +80,7 @@ export class Tracer implements coreTypes.Tracer {
    * @param fn Callback function
    * @returns The callback return
    */
-  startRootSpan<T>(options: coreTypes.TraceOptions, fn: (root: RootSpan) => T):
+  startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: RootSpan) => T):
       T {
     this.currentRootSpan = new RootSpan(this, options);
     this.currentRootSpan.start();
@@ -88,24 +88,24 @@ export class Tracer implements coreTypes.Tracer {
   }
 
   /** Notifies listeners of the span start. */
-  onStartSpan(root: coreTypes.RootSpan) {
+  onStartSpan(root: webTypes.RootSpan) {
     for (const listener of this.eventListeners) {
       listener.onStartSpan(root);
     }
   }
 
   /** Notifies listeners of the span end. */
-  onEndSpan(root: coreTypes.RootSpan) {
+  onEndSpan(root: webTypes.RootSpan) {
     for (const listener of this.eventListeners) {
       listener.onEndSpan(root);
     }
   }
 
-  registerSpanEventListener(listener: coreTypes.SpanEventListener) {
+  registerSpanEventListener(listener: webTypes.SpanEventListener) {
     this.eventListeners.push(listener);
   }
 
-  unregisterSpanEventListener(listener: coreTypes.SpanEventListener) {
+  unregisterSpanEventListener(listener: webTypes.SpanEventListener) {
     this.eventListeners = this.eventListeners.filter((l) => l !== listener);
   }
 
@@ -119,7 +119,7 @@ export class Tracer implements coreTypes.Tracer {
    * @param kind Span kind
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, kind?: coreTypes.SpanKind): Span {
+  startChildSpan(name?: string, kind?: webTypes.SpanKind): Span {
     return this.currentRootSpan.startChildSpan(name, kind);
   }
 
@@ -128,10 +128,10 @@ export class Tracer implements coreTypes.Tracer {
    * currently only supports a single trace context at a time, this just returns
    * the function.
    */
-  wrap<T>(fn: coreTypes.Func<T>): coreTypes.Func<T> {
+  wrap<T>(fn: webTypes.Func<T>): webTypes.Func<T> {
     return fn;
   }
 
   /** Binds trace context to NodeJS event emitter. No-op for opencensus-web. */
-  wrapEmitter(emitter: NodeJS.EventEmitter) {}
+  wrapEmitter(emitter: webTypes.NodeJsEventEmitter) {}
 }

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 import {randomSpanId, randomTraceId} from '../../common/id-util';
 
 /** Propagation implementation that does not set or get headers. */
-export class NoHeadersPropagation implements coreTypes.Propagation {
-  extract(getter: coreTypes.HeaderGetter): coreTypes.SpanContext|null {
+export class NoHeadersPropagation implements webTypes.Propagation {
+  extract(getter: webTypes.HeaderGetter): webTypes.SpanContext|null {
     return null;
   }
 
-  inject(setter: coreTypes.HeaderSetter, spanContext: coreTypes.SpanContext) {}
+  inject(setter: webTypes.HeaderSetter, spanContext: webTypes.SpanContext) {}
 
-  generate(): coreTypes.SpanContext {
+  generate(): webTypes.SpanContext {
     return {traceId: randomTraceId(), spanId: randomSpanId()};
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {SpanKind} from '../src/trace/model/enums';
+import {SpanKind} from '@opencensus/web-types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Tracer} from '../src/trace/model/tracer';
 
