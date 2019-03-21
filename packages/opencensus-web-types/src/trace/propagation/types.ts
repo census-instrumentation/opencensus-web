@@ -14,12 +14,27 @@
  * limitations under the License.
  */
 
-export * from './common/types';
-export * from './exporters/types';
-export * from './node/types';
-export * from './trace/config/types';
-export * from './trace/instrumentation/types';
-export * from './trace/model/types';
-export * from './trace/propagation/types';
-export * from './trace/sampler/types';
-export * from './trace/types';
+import {SpanContext} from '../model/types';
+
+/**
+ * An transport and environment neutral API for getting request headers.
+ */
+export interface HeaderGetter {
+  getHeader(name: string): string|string[]|undefined;
+}
+
+/**
+ * A transport and environment neutral API for setting headers.
+ */
+export interface HeaderSetter {
+  setHeader(name: string, value: string): void;
+}
+
+/**
+ *  Propagation interface
+ */
+export interface Propagation {
+  extract(getter: HeaderGetter): SpanContext|null;
+  inject(setter: HeaderSetter, spanContext: SpanContext): void;
+  generate(): SpanContext;
+}
