@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2019, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview This script copies (and lightly pathces) type definitions from
+ * @fileoverview This script copies (and lightly patches) type definitions from
  * the @opencensus/core package. This allows sharing types with @opencensus/core
  * without directly depending on it as an NPM package, which is tricky because
  * @opencensus/core pulls in various Node-specific dependencies.
@@ -30,6 +30,7 @@ const process = require('process');
 const util = require('util');
 
 const exec = util.promisify(require('child_process').exec);
+const exists = util.promisify(fs.exists);
 const mkdtemp = util.promisify(fs.mkdtemp);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -54,12 +55,15 @@ const FILES_TO_COPY = [
 const OPENCENSUS_NODE_URL =
     'http://github.com/census-instrumentation/opencensus-node';
 
-copyFiles();
+copyFiles().then(() => {}, (err) => {
+  console.error(err);
+  process.exit(1);
+});
 
 async function copyFiles() {
   if (process.argv.length < 3) {
     throw new Error(
-        'Must specify git tag of `@opencensus/core` copy types from.');
+        'Must specify git tag of @opencensus/core copy types from.');
   }
   const openCensusNodeTag = process.argv[2];
 
@@ -68,19 +72,23 @@ async function copyFiles() {
   // Clone and checkout the @opencensus/core repo in a temp directory.
   const tempDir = await mkdtemp(path.join(os.tmpdir(), 'opencensus-core-'));
   console.log(`Cloning to temp directory: ${tempDir}`);
-  await execAndLog(`git clone ${OPENCENSUS_NODE_URL}`, {cwd: tempDir});
+  await logAndExec(`git clone ${OPENCENSUS_NODE_URL}`, {cwd: tempDir});
   const srcDir =
       path.join(tempDir, 'opencensus-node/packages/opencensus-core/src');
-  await execAndLog(`git checkout ${openCensusNodeTag}`, {cwd: srcDir});
+  await logAndExec(`git checkout ${openCensusNodeTag}`, {cwd: srcDir});
 
   console.log('Patching and copying type files ...');
   const destDir = path.join(__dirname, '../src');
 
   for (const srcFile of FILES_TO_COPY) {
+    console.log(`Processing ${srcFile} ...`);
     const srcPath = path.join(srcDir, srcFile);
     const destPath = path.join(destDir, srcFile);
 
-    console.log(`Processing ${srcFile} ...`);
+    if (!(await exists(srcPath))) {
+      throw new Error(`Source file ${destPath} does not exist!`)
+    }
+
     const contents = await readFile(srcPath, {encoding: 'utf8'});
     const patchedContents = getPatchedContents(srcFile, contents);
     await exec(`mkdir -p ${path.dirname(destPath)}`);
@@ -89,7 +97,7 @@ async function copyFiles() {
   }
 }
 
-async function execAndLog(cmd, options) {
+async function logAndExec(cmd, options) {
   console.log(cmd);
   return exec(cmd, options);
 }
