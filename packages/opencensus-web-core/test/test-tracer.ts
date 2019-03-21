@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
-import {SpanKind} from '../src/trace/model/enums';
+import * as webTypes from '@opencensus/web-types';
 import {RootSpan} from '../src/trace/model/root-span';
 import {Tracer} from '../src/trace/model/tracer';
 
 describe('Tracer', () => {
   let tracer: Tracer;
-  let listener: coreTypes.SpanEventListener;
+  let listener: webTypes.SpanEventListener;
 
   beforeEach(() => {
     tracer = new Tracer();
-    listener = jasmine.createSpyObj<coreTypes.SpanEventListener>(
+    listener = jasmine.createSpyObj<webTypes.SpanEventListener>(
         'listener', ['onStartSpan', 'onEndSpan']);
     tracer.eventListeners = [listener];
   });
@@ -33,8 +32,8 @@ describe('Tracer', () => {
   describe('start', () => {
     it('sets logger and propagation based on config', () => {
       const mockLogger =
-          jasmine.createSpyObj<coreTypes.Logger>('logger', ['info']);
-      const mockPropagation = jasmine.createSpyObj<coreTypes.Propagation>(
+          jasmine.createSpyObj<webTypes.Logger>('logger', ['info']);
+      const mockPropagation = jasmine.createSpyObj<webTypes.Propagation>(
           'propagation', ['generate']);
 
       const result =
@@ -80,7 +79,7 @@ describe('Tracer', () => {
 
   describe('registerSpanEventListener', () => {
     it('adds to listeners', () => {
-      const newListener = jasmine.createSpyObj<coreTypes.SpanEventListener>(
+      const newListener = jasmine.createSpyObj<webTypes.SpanEventListener>(
           'newListener', ['onStartSpan', 'onEndSpan']);
       tracer.registerSpanEventListener(newListener);
       expect(tracer.eventListeners).toEqual([listener, newListener]);
@@ -105,9 +104,9 @@ describe('Tracer', () => {
   describe('startChildSpan', () => {
     it('starts a child span of the current root span', () => {
       spyOn(tracer.currentRootSpan, 'startChildSpan');
-      tracer.startChildSpan('child1', SpanKind.CLIENT);
+      tracer.startChildSpan('child1', webTypes.SpanKind.CLIENT);
       expect(tracer.currentRootSpan.startChildSpan)
-          .toHaveBeenCalledWith('child1', SpanKind.CLIENT);
+          .toHaveBeenCalledWith('child1', webTypes.SpanKind.CLIENT);
     });
   });
 

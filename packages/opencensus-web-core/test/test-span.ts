@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LinkType, MessageEventType} from '../src/trace/model/enums';
+import {LinkType, MessageEventType} from '@opencensus/web-types';
 import {Span} from '../src/trace/model/span';
 import {mockGetterOrValue, restoreGetterOrValue} from './util';
 

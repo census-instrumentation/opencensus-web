@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 
 /** Sampler that samples every trace. */
-export class AlwaysSampler implements coreTypes.Sampler {
+export class AlwaysSampler implements webTypes.Sampler {
   readonly description = 'always';
 
   shouldSample(traceId: string): boolean {

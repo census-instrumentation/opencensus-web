@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-import * as coreTypes from '@opencensus/core';
+import * as webTypes from '@opencensus/web-types';
 import {randomTraceId} from '../../common/id-util';
-import {SpanKind} from './enums';
 import {Span} from './span';
 
 /** Simple mock root span for use in use tests. */
-export class RootSpan extends Span implements coreTypes.RootSpan {
+export class RootSpan extends Span implements webTypes.RootSpan {
   /** A list of child spans. */
   spans: Span[] = [];
 
   constructor(
       /** Trace associated with this root span. */
-      private readonly tracer: coreTypes.Tracer,
+      private readonly tracer: webTypes.Tracer,
       /** A trace options object to build the root span. */
-      context?: coreTypes.TraceOptions) {
+      context?: webTypes.TraceOptions) {
     super();
 
     if (context) {
       this.name = context.name;
-      this.kind = context.kind || SpanKind.UNSPECIFIED;
+      this.kind = context.kind || webTypes.SpanKind.UNSPECIFIED;
 
       const spanContext = context.spanContext;
       if (spanContext) {
@@ -52,8 +51,8 @@ export class RootSpan extends Span implements coreTypes.RootSpan {
    * @param kind Span kind if not using options object.
    */
   startChildSpan(
-      nameOrOptions?: string|{name: string, kind: SpanKind},
-      kind?: SpanKind): Span {
+      nameOrOptions?: string|{name: string, kind: webTypes.SpanKind},
+      kind?: webTypes.SpanKind): Span {
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;
