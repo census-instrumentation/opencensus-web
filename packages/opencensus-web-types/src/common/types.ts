@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-export * from './common/types';
-export * from './exporters/types';
-export * from './node/types';
-export * from './trace/config/types';
-export * from './trace/instrumentation/types';
-export * from './trace/model/types';
-export * from './trace/propagation/types';
-export * from './trace/sampler/types';
-export * from './trace/types';
+// tslint:disable:no-any
+export type LogFunction = (message: any, ...args: any[]) => void;
+
+/** Defines an logger interface. */
+export interface Logger {
+  /** Logger verbosity level. If omitted, `debug` level is assumed. */
+  level?: string;
+
+  error: LogFunction;
+  warn: LogFunction;
+  info: LogFunction;
+  debug: LogFunction;
+}
+
+/** Defines an logger options interface. */
+export interface LoggerOptions {
+  level?: string;
+}

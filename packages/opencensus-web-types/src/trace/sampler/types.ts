@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-export * from './common/types';
-export * from './exporters/types';
-export * from './node/types';
-export * from './trace/config/types';
-export * from './trace/instrumentation/types';
-export * from './trace/model/types';
-export * from './trace/propagation/types';
-export * from './trace/sampler/types';
-export * from './trace/types';
+
+/** This interface represent a sampler . */
+export interface Sampler {
+  /**
+   * A string that uniquely describes the sampling behavior of this instance.
+   */
+  readonly description: string;
+
+  /**
+   * Checks if trace belong the sample.
+   * @param traceId Used to check the probability.
+   * @returns a boolean. True if the traceId is in probability
+   * False if the traceId is not in probability.
+   */
+  shouldSample(traceId: string): boolean;
+}

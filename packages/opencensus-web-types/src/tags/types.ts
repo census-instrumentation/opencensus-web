@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-export * from './common/types';
-export * from './exporters/types';
-export * from './node/types';
-export * from './trace/config/types';
-export * from './trace/instrumentation/types';
-export * from './trace/model/types';
-export * from './trace/propagation/types';
-export * from './trace/sampler/types';
-export * from './trace/types';
+/** TagKey represents a tag key */
+export interface TagKey {
+  /** The name of the key. */
+  readonly name: string;
+}
+
+/** TagValue represents a tag value */
+export interface TagValue {
+  /** The value of a tag. */
+  readonly value: string;
+}
