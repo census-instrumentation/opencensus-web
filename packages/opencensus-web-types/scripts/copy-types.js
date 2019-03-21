@@ -1,5 +1,5 @@
 /**
- * Copyright 2018, OpenCensus Authors
+ * Copyright 2019, OpenCensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview This script copies (and lightly pathces) type definitions from
+ * @fileoverview This script copies (and lightly patches) type definitions from
  * the @opencensus/core package. This allows sharing types with @opencensus/core
  * without directly depending on it as an NPM package, which is tricky because
  * @opencensus/core pulls in various Node-specific dependencies.
@@ -59,7 +59,7 @@ copyFiles();
 async function copyFiles() {
   if (process.argv.length < 3) {
     throw new Error(
-        'Must specify git tag of `@opencensus/core` copy types from.');
+        'Must specify git tag of @opencensus/core copy types from.');
   }
   const openCensusNodeTag = process.argv[2];
 
@@ -68,10 +68,10 @@ async function copyFiles() {
   // Clone and checkout the @opencensus/core repo in a temp directory.
   const tempDir = await mkdtemp(path.join(os.tmpdir(), 'opencensus-core-'));
   console.log(`Cloning to temp directory: ${tempDir}`);
-  await execAndLog(`git clone ${OPENCENSUS_NODE_URL}`, {cwd: tempDir});
+  await logAndExec(`git clone ${OPENCENSUS_NODE_URL}`, {cwd: tempDir});
   const srcDir =
       path.join(tempDir, 'opencensus-node/packages/opencensus-core/src');
-  await execAndLog(`git checkout ${openCensusNodeTag}`, {cwd: srcDir});
+  await logAndExec(`git checkout ${openCensusNodeTag}`, {cwd: srcDir});
 
   console.log('Patching and copying type files ...');
   const destDir = path.join(__dirname, '../src');
@@ -89,7 +89,7 @@ async function copyFiles() {
   }
 }
 
-async function execAndLog(cmd, options) {
+async function logAndExec(cmd, options) {
   console.log(cmd);
   return exec(cmd, options);
 }
