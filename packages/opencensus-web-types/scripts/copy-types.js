@@ -30,6 +30,7 @@ const process = require('process');
 const util = require('util');
 
 const exec = util.promisify(require('child_process').exec);
+const exists = util.promisify(fs.exists);
 const mkdtemp = util.promisify(fs.mkdtemp);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -54,7 +55,10 @@ const FILES_TO_COPY = [
 const OPENCENSUS_NODE_URL =
     'http://github.com/census-instrumentation/opencensus-node';
 
-copyFiles();
+copyFiles().then(() => {}, (err) => {
+  console.error(err);
+  process.exit(1);
+});
 
 async function copyFiles() {
   if (process.argv.length < 3) {
@@ -77,10 +81,14 @@ async function copyFiles() {
   const destDir = path.join(__dirname, '../src');
 
   for (const srcFile of FILES_TO_COPY) {
+    console.log(`Processing ${srcFile} ...`);
     const srcPath = path.join(srcDir, srcFile);
     const destPath = path.join(destDir, srcFile);
 
-    console.log(`Processing ${srcFile} ...`);
+    if (!(await exists(srcPath))) {
+      throw new Error(`Source file ${destPath} does not exist!`)
+    }
+
     const contents = await readFile(srcPath, {encoding: 'utf8'});
     const patchedContents = getPatchedContents(srcFile, contents);
     await exec(`mkdir -p ${path.dirname(destPath)}`);
