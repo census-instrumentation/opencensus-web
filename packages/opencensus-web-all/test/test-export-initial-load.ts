@@ -15,26 +15,26 @@
  */
 
 import {exportRootSpanAfterLoadEvent} from '../src/export-initial-load';
-import {OpenCensusWebConfig, WindowWithOcwGlobals} from '../src/types';
+import {WindowWithOcwGlobals} from '../src/types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 describe('exportRootSpanAfterLoadEvent', () => {
-  let realOcwConfig: OpenCensusWebConfig|undefined;
+  let realOcwAgent: string|undefined;
   beforeEach(() => {
     jasmine.clock().install();
     spyOn(XMLHttpRequest.prototype, 'open');
     spyOn(XMLHttpRequest.prototype, 'send');
     spyOn(XMLHttpRequest.prototype, 'setRequestHeader');
-    realOcwConfig = windowWithOcwGlobals.ocwConfig;
+    realOcwAgent = windowWithOcwGlobals.ocwAgent;
   });
   afterEach(() => {
     jasmine.clock().uninstall();
-    windowWithOcwGlobals.ocwConfig = realOcwConfig;
+    windowWithOcwGlobals.ocwAgent = realOcwAgent;
   });
 
-  it('exports spans to agent if sampled and agent configured', () => {
-    windowWithOcwGlobals.ocwConfig = {sampled: true, agent: 'http://agent'};
+  it('exports spans to agent if agent is configured', () => {
+    windowWithOcwGlobals.ocwAgent = 'http://agent';
     exportRootSpanAfterLoadEvent();
     jasmine.clock().tick(300000);
     expect(XMLHttpRequest.prototype.open)
@@ -42,16 +42,8 @@ describe('exportRootSpanAfterLoadEvent', () => {
     expect(XMLHttpRequest.prototype.send).toHaveBeenCalled();
   });
 
-  it('does not export if not sampled', () => {
-    windowWithOcwGlobals.ocwConfig = {agent: 'http://agent'};
-    exportRootSpanAfterLoadEvent();
-    jasmine.clock().tick(300000);
-    expect(XMLHttpRequest.prototype.open).not.toHaveBeenCalled();
-    expect(XMLHttpRequest.prototype.send).not.toHaveBeenCalled();
-  });
-
   it('does not export if agent not configured', () => {
-    windowWithOcwGlobals.ocwConfig = {sampled: true};
+    windowWithOcwGlobals.ocwAgent = undefined;
     exportRootSpanAfterLoadEvent();
     jasmine.clock().tick(300000);
     expect(XMLHttpRequest.prototype.open).not.toHaveBeenCalled();
