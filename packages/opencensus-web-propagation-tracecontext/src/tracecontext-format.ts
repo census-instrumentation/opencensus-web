@@ -64,7 +64,7 @@ export function spanContextToTraceParent(spanContext: SpanContext): string {
  * Propagates span context through Trace Context format propagation.
  *
  * Based on the Trace Context specification:
- * https://w3c.github.io/distributed-tracing/report-trace-context.html
+ * https://www.w3.org/TR/trace-context/
  */
 export class TraceContextFormat implements Propagation {
   /**
@@ -111,7 +111,6 @@ export class TraceContextFormat implements Propagation {
       traceId: randomTraceId(),
       spanId: randomSpanId(),
       options: DEFAULT_OPTIONS,
-      traceState: undefined,
     };
   }
 }
