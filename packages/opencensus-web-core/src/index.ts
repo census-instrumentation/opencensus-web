@@ -22,7 +22,7 @@ export {Tracing} from './trace/model/tracing';
 export * from './trace/model/attribute-keys';
 
 // Re-export types this uses from @opencensus/web-types.
-export {Annotation, Attributes, BufferConfig, CanonicalCode, Config, Exporter, ExporterConfig, Link, LinkType, Logger, MessageEvent, MessageEventType, Propagation, SpanContext, SpanEventListener, SpanKind, Status, TracerConfig, TraceState} from '@opencensus/web-types';
+export {Annotation, Attributes, BufferConfig, CanonicalCode, Config, Exporter, ExporterConfig, HeaderGetter, HeaderSetter, Link, LinkType, Logger, MessageEvent, MessageEventType, Propagation, SpanContext, SpanEventListener, SpanKind, Status, TracerConfig, TraceState} from '@opencensus/web-types';
 
 export * from './common/time-util';
 export * from './common/url-util';

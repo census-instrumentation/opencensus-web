@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-describe('the empty library', () => {
-  it('does nothing', () => {});
-});
+import './test-tracecontext-format';

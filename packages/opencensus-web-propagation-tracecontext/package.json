@@ -60,7 +60,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@opencensus/web-types": "^0.0.1"
+    "@opencensus/web-core": "^0.0.1"
   },
   "sideEffects": false
 }
