@@ -69,8 +69,8 @@ export function spanContextToTraceParent(spanContext: SpanContext): string {
 export class TraceContextFormat implements Propagation {
   /**
    * Gets the trace context from a request headers. If there is no trace context
-   * in the headers, or if the parsed `traceId` or `spanId` is invalid, an empty
-   * context is returned.
+   * in the headers, or if the parsed `traceId` or `spanId` is invalid, null
+   * returned.
    */
   extract(getter: HeaderGetter): SpanContext|null {
     const traceParentHeader = getter.getHeader(TRACE_PARENT);
