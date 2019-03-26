@@ -16,41 +16,35 @@
 
 import {PerformanceLongTaskTiming, WindowWithLongTasks} from '@opencensus/web-instrumentation-perf';
 
-/** OpenCensus Web configuration that can be set on `window`. */
-export declare interface OpenCensusWebConfig {
-  /**
-   * Whether the initial load root span should be sampled for trace. This is
-   * only a hint and should not be used to enforce sampling since clients could
-   * simply ignore this field.
-   */
-  sampled?: boolean;
-  /** Trace ID for the initial load spans. */
-  traceId?: string;
-  /** Span ID for the initial load fetch client span. */
-  spanId?: string;
-  /**
-   * Start time of server fetch request for initial navigation HTML in server
-   * time epoch milliseconds. This is used to correct for clock skew between
-   * client and server before exporting spans.
-   */
-  reqStartTime?: number;
-  /**
-   * Duration of the server fetch request for initial HTML in server
-   * milliseconds. This is also used to correct for clock skew.
-   */
-  reqDuration?: number;
+/** Type for `window` object with variables OpenCensus Web interacts with. */
+export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {
   /**
    * HTTP root URL of the agent endpoint to write traces to.
    * Example 'https://my-oc-agent-deployment.com:55678'
    */
-  agent?: string;
-}
-
-/**
- * Type for the `window` object with the variables OpenCensus Web interacts
- * with.
- */
-export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {
+  ocwAgent?: string;
+  /**
+   * For the initial page load, web browsers do not send any custom headers,
+   * which means that the server will not receive trace context headers.
+   * However, we still want the server side request for the initial page load to
+   * be recorded as a child span of the client side web timing span. So we can
+   * have servers programmatically set a `traceparent` header to give their
+   * request span a parent span ID. That simulated trace context header can then
+   * be sent back to the client as a global variable to use for setting its
+   * trace ID and request load client span ID, as well as for making a sampling
+   * decision.
+   * This header value is in the format of
+   *     [version]-[trace ID in hex]-[span ID in hex]-[trace flags]
+   * For example:
+   *    00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
+   * See https://www.w3.org/TR/trace-context/ for details.
+   */
+  traceparent?: string;
+  /**
+   * List to collect long task timings as they are observed. This is on the
+   * window so that the code to instrument the long tasks and the code that
+   * exports it can be in different JS bundles. This enables deferring loading
+   * the export code until it is needed.
+   */
   ocwLt?: PerformanceLongTaskTiming[];
-  ocwConfig?: OpenCensusWebConfig;
 }

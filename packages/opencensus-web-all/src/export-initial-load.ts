@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {adjustPerfTimeOrigin, tracing} from '@opencensus/web-core';
+import {tracing} from '@opencensus/web-core';
 import {OCAgentExporter} from '@opencensus/web-exporter-ocagent';
 import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries} from '@opencensus/web-instrumentation-perf';
 
-import {OpenCensusWebConfig, WindowWithOcwGlobals} from './types';
+import {WindowWithOcwGlobals} from './types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -34,42 +34,32 @@ const TRACE_ENDPOINT = '/v1/trace';
 
 /**
  * Waits until after the document `load` event fires, and then uses the
- * `window.ocwConfig` settings to configure an OpenCensus agent exporter and
+ * `window.ocwAgent` setting to configure an OpenCensus agent exporter and
  * export the spans for the initial page load.
  */
 export function exportRootSpanAfterLoadEvent() {
-  const config = windowWithOcwGlobals.ocwConfig;
-  if (!config || !config.agent || !config.sampled) {
+  if (!windowWithOcwGlobals.ocwAgent) {
     console.log('Not configured to export page load spans.');
     return;
   }
 
-  tracing.registerExporter(
-      new OCAgentExporter({agentEndpoint: `${config.agent}${TRACE_ENDPOINT}`}));
+  tracing.registerExporter(new OCAgentExporter(
+      {agentEndpoint: `${windowWithOcwGlobals.ocwAgent}${TRACE_ENDPOINT}`}));
 
   if (document.readyState === 'complete') {
-    exportInitialLoadSpans(config);
+    exportInitialLoadSpans();
   } else {
     window.addEventListener('load', () => {
-      exportInitialLoadSpans(config);
+      exportInitialLoadSpans();
     });
   }
 }
 
-function exportInitialLoadSpans(config: OpenCensusWebConfig) {
+function exportInitialLoadSpans() {
   setTimeout(() => {
     const perfEntries = getPerfEntries();
 
-    // Adjust the performance time origin with server time if we have it.
-    if (perfEntries.navigationTiming && config.reqStartTime &&
-        config.reqDuration) {
-      adjustPerfTimeOrigin(
-          config.reqStartTime, config.reqDuration,
-          perfEntries.navigationTiming);
-    }
-
-    const root = getInitialLoadRootSpan(
-        tracing.tracer, perfEntries, config.spanId, config.traceId);
+    const root = getInitialLoadRootSpan(tracing.tracer, perfEntries);
 
     clearPerfEntries();
     // Notify that the span has ended to trigger export.
