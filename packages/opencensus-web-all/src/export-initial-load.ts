@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import {tracing} from '@opencensus/web-core';
+import {isSampled, tracing} from '@opencensus/web-core';
 import {OCAgentExporter} from '@opencensus/web-exporter-ocagent';
 import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries} from '@opencensus/web-instrumentation-perf';
 
+import {getInitialLoadSpanContext} from './initial-load-context';
 import {WindowWithOcwGlobals} from './types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
@@ -57,9 +58,13 @@ export function exportRootSpanAfterLoadEvent() {
 
 function exportInitialLoadSpans() {
   setTimeout(() => {
+    const spanContext = getInitialLoadSpanContext();
+    if (!isSampled(spanContext)) return;  // Don't export if not sampled.
+
     const perfEntries = getPerfEntries();
 
-    const root = getInitialLoadRootSpan(tracing.tracer, perfEntries);
+    const root = getInitialLoadRootSpan(
+        tracing.tracer, perfEntries, spanContext.spanId, spanContext.traceId);
 
     clearPerfEntries();
     // Notify that the span has ended to trigger export.

@@ -19,6 +19,7 @@ export {RootSpan} from './trace/model/root-span';
 export {Span} from './trace/model/span';
 export {Tracer} from './trace/model/tracer';
 export {Tracing} from './trace/model/tracing';
+export * from './trace/model/util';
 export * from './trace/model/attribute-keys';
 
 // Re-export types this uses from @opencensus/web-types.
