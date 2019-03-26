@@ -28,17 +28,17 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
  * marked sampled.
  */
 export function getInitialLoadSpanContext(): SpanContext {
-  if (!windowWithOcwGlobals.traceparent) return randomSampledSpanContext();
+  if (!windowWithOcwGlobals.traceparent) return alwaysSampledSpanContext();
   const spanContext =
       traceParentToSpanContext(windowWithOcwGlobals.traceparent);
   if (!spanContext) {
     console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
-    return randomSampledSpanContext();
+    return alwaysSampledSpanContext();
   }
   return spanContext;
 }
 
-function randomSampledSpanContext() {
+function alwaysSampledSpanContext() {
   return {
     traceId: randomTraceId(),
     spanId: randomSpanId(),
