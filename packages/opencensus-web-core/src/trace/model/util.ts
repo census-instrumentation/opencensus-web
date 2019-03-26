@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-// This file is an entry point for the webpack test configuration, so this
-// should import from all test files.
+import {SpanContext} from '@opencensus/web-types';
 
-import './test-id-util';
-import './test-root-span';
-import './test-span';
-import './test-time-util';
-import './test-trace-model-util';
-import './test-tracer';
-import './test-tracing';
-import './test-url-util';
+const IS_SAMPLED_BIT = 0x1;
+
+/** Returns whether sampling hint bit of the span context `options` is set. */
+export function isSampled(spanContext: SpanContext) {
+  const options = spanContext.options;
+  if (!options) return false;
+  return !!(options & IS_SAMPLED_BIT);
+}

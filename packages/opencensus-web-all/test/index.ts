@@ -15,3 +15,4 @@
  */
 
 import './test-export-initial-load';
+import './test-initial-load-context';

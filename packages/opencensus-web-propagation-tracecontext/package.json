@@ -1,5 +1,5 @@
 {
-  "name": "@opencensus/web-propagation-tracecontxt",
+  "name": "@opencensus/web-propagation-tracecontext",
   "version": "0.0.1",
   "description":
     "OpenCensus Trace Context format propagation for the web browser",
