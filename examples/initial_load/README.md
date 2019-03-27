@@ -10,7 +10,7 @@ and client side spans for the initial page load to the [OpenCensus agent](https:
 To run this example in local development mode, you will need to run the [OpenCensus
 agent](https://github.com/census-instrumentation/opencensus-service).
 
-First set your `GOPATH` environment variable and ten install the agent by
+First set your `GOPATH` environment variable and then install the agent by
 running:
 
 ```bash
