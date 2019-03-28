@@ -24,7 +24,8 @@ Then create a `config.yaml` file following the
 receivers:
   opencensus:
     address: "127.0.0.1:55678"
-
+    cors_allowed_origins:
+      - http://localhost:*
 exporters:
   # Pick and configure an exporter e.g. stackdriver, zipkin, aws-xray, honeycomb
 ```
@@ -63,6 +64,51 @@ the trace viewer for the exporter you set up and view the trace of your initial
 page load. It will be named `Nav./index.html` (or just `Nav./` if you left off
 the actual `index.html` part when you visited the URL).
 
-## Deploying to Kubernetes
+## Deploying to GKE (Kubernetes on Google Cloud Platform)
 
-TODO(draffensperger): develop example Kubernetes deployment instructions.
+### 1. Install needed tools
+
+Install [gcloud](https://cloud.google.com/sdk/install).
+Then run `gcloud components install kubectl` to install `kubectl`.
+
+### 2. Set up GKE cluster and 
+
+You can create a cluster with the following commands:
+
+```bash
+gcloud services enable container.googleapis.com
+gcloud container clusters create opencensus-web-demo --enable-autoupgrade --num-nodes=1 --zone=us-central1-a
+```
+
+### 3. Deploy the OpenCensus Agent
+
+To deploy the agent, run the following commands:
+
+```bash
+# Get the project you are using with gcloud
+PROJECT_ID="$(gcloud config list --format 'value(core.project)')"
+
+# Substitute the project ID in the k8s config and deploy it
+cat ./kubernetes/oc-agent-cors.template.yaml | \
+  sed "s/PROJECT-ID-PLACEHOLDER/$PROJECT_ID/" | \
+  kubectl apply -f -
+```
+Note that this uses the [omnition/opencensus-agent](./kubernetes/agent-cors.yaml)
+container from the Docker Hub. You can also build your own container by
+following the
+[OpenCensus Agent](https://github.com/census-instrumentation/opencensus-service#opencensus-agent)
+docs.
+
+### 4. Deploy the demo application
+
+Run the command `kubectl get svc oc-agent-service` to check if the 
+`EXTERNAL-IP` column has been filled in. If it is still pending, then wait a bit
+and run it again until it's available.
+
+Once you the agent has an external IP, you can deploy the example service that
+uses it by running the following commands:
+
+```bash
+```
+
+kubectl get svc oc-agent-service -o=custom-columns="IP ADDRESS:.status.loadBalancer.ingress[*].ip" | tail -n 1

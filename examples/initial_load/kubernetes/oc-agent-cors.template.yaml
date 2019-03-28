@@ -1,0 +1,59 @@
+# # OpenCensus Agent config 2
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oc-agent-conf
+  namespace: default
+data:
+  oc-agent-config: |
+    receivers:
+      opencensus:
+        address: ":55678"
+        cors_allowed_origins:
+          - "*"
+    stackdriver:
+      project: PROJECT-ID-PLACEHOLDER
+      enable_tracing: true
+      enable_metrics: false
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: oc-agent-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: oc-agent-deployment
+    spec:
+      containers:
+        - name: oc-agent-container
+          image: omnition/opencensus-agent:latest
+          volumeMounts:
+            - name: oc-agent-config-vol
+              readOnly: true
+              mountPath: /conf
+          args: ["--config=/conf/oc-agent-config.yaml"]
+          ports:
+            - containerPort: 55678
+      volumes:
+        - name: oc-agent-config-vol
+          configMap:
+            name: oc-agent-conf
+            items:
+              - key: oc-agent-config
+                path: oc-agent-config.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oc-agent-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: oc-agent-deployment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 55678
