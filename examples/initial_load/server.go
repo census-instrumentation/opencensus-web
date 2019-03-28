@@ -34,9 +34,9 @@ import (
 var agentEndpoint = flag.String("agent", "http://localhost:55678", "HTTP(S) endpoint of the OpenCensus agent")
 
 // Use local webpack server on port 8080 by default.
-var ocwScriptEndpoint = flag.String("ocw_script", "http://localhost:8080", "HTTP(S) endpoint that serves OpenCensus Web JS script")
+var ocwScriptEndpoint = flag.String("ocw_script_prefix", "http://localhost:8080", "HTTP(S) endpoint that serves OpenCensus Web JS script")
 
-var listenAddr = flag.String("listen", "localhost:8000", "")
+var listenAddr = flag.String("listen", "127.0.0.1:8000", "")
 
 // Data rendered to the HTML template
 type pageData struct {
@@ -61,6 +61,8 @@ func main() {
 
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/", handleRequest)
+	fs := http.FileServer(http.Dir("static"))
+	serveMux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	var handler http.Handler = serveMux
 	handler = &ochttp.Handler{
@@ -74,7 +76,7 @@ func main() {
 	handler = ensureTraceHeader(handler)
 
 	fmt.Printf("OC Web initial load example server listening on %v\n", *listenAddr)
-	http.ListenAndServe(*listenAddr, handler)
+	log.Fatal(http.ListenAndServe(*listenAddr, handler))
 }
 
 // Adds a random traceparent header if none is specified. This is needed

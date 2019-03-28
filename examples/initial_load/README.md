@@ -71,13 +71,19 @@ the actual `index.html` part when you visited the URL).
 Install [gcloud](https://cloud.google.com/sdk/install).
 Then run `gcloud components install kubectl` to install `kubectl`.
 
-### 2. Set up GKE cluster and 
+### 2. Set up GKE cluster and configure container registry
 
-You can create a cluster with the following commands:
+To create a cluster with the following commands:
 
 ```bash
 gcloud services enable container.googleapis.com
 gcloud container clusters create opencensus-web-demo --enable-autoupgrade --num-nodes=1 --zone=us-central1-a
+```
+You also need to enable Google Container Registry (GCR) on your GCP project and configure the docker CLI to authenticate to GCR:
+
+```bash
+gcloud services enable containerregistry.googleapis.com
+gcloud auth configure-docker -q
 ```
 
 ### 3. Deploy the OpenCensus Agent
@@ -90,7 +96,7 @@ PROJECT_ID="$(gcloud config list --format 'value(core.project)')"
 
 # Substitute the project ID in the k8s config and deploy it
 cat ./kubernetes/oc-agent-cors.template.yaml | \
-  sed "s/PROJECT-ID-PLACEHOLDER/$PROJECT_ID/" | \
+  sed "s/{{PROJECT-ID}}/$PROJECT_ID/" | \
   kubectl apply -f -
 ```
 Note that this uses the [omnition/opencensus-agent](./kubernetes/agent-cors.yaml)
@@ -98,6 +104,23 @@ container from the Docker Hub. You can also build your own container by
 following the
 [OpenCensus Agent](https://github.com/census-instrumentation/opencensus-service#opencensus-agent)
 docs.
+
+### 5. Build the demo application container
+
+First build the OpenCensus Web scripts that will be deployed with the
+application:
+
+```bash
+npm run build:prod --prefix=../../packages/opencensus-web-all
+cp ../../packages/opencensus-web-all/dist/*.js ./static
+```
+Then build the server container and push it to GCR:
+
+```bash
+PROJECT_ID="$(gcloud config list --format 'value(core.project)')"
+docker build . -t gcr.io/$PROJECT_ID/oc-web-initial-load:latest
+gcloud docker -- push gcr.io/$PROJECT_ID/oc-web-initial-load:latest
+```
 
 ### 4. Deploy the demo application
 
@@ -109,6 +132,16 @@ Once you the agent has an external IP, you can deploy the example service that
 uses it by running the following commands:
 
 ```bash
+PROJECT_ID="$(gcloud config list --format 'value(core.project)')"
+AGENT_IP="$(kubectl get svc oc-agent-service \
+    -o=custom-columns="IP ADDRESS:.status.loadBalancer.ingress[*].ip" | \
+    tail -n 1)"
+cat ./kubernetes/initial-load-demo.template.yaml | \
+  sed "s/{{PROJECT-ID}}/$PROJECT_ID/; s/{{AGENT-IP}}/$AGENT_IP/" | \
+  kubectl apply -f -
 ```
 
-kubectl get svc oc-agent-service -o=custom-columns="IP ADDRESS:.status.loadBalancer.ingress[*].ip" | tail -n 1
+Then run `kubectl get svc oc-web-initial-load-service` to see the external IP
+address for the demo app, which you can then visit in your browser.
+
+You can then view traces in the [Stackdriver Trace](https://console.cloud.google.com/traces/traces) console in GCP. The traces will be named `Nav./`.
