@@ -31,7 +31,7 @@ import (
 )
 
 // Use a local agent by default to help in local development.
-var agentEndpoint = flag.String("agent", "http://localhost:55678", "HTTP(S) endpoint of the OpenCensus agent")
+var agentHostAndPort = flag.String("agent", "localhost:55678", "Host:port of OpenCensus agent")
 
 // Use local webpack server on port 8080 by default.
 var ocwScriptEndpoint = flag.String("ocw_script_prefix", "http://localhost:8080", "HTTP(S) endpoint that serves OpenCensus Web JS script")
@@ -41,12 +41,16 @@ var listenAddr = flag.String("listen", "127.0.0.1:8000", "")
 // Data rendered to the HTML template
 type pageData struct {
 	Traceparent       string
-	AgentEndpoint     string
-	OcwScriptEndpoint string
+	AgentHostAndPort  template.URL
+	OcwScriptEndpoint template.URL
 }
 
 func main() {
-	exp, err := ocagent.NewExporter(ocagent.WithInsecure(), ocagent.WithServiceName("hello-server"))
+	flag.Parse()
+	exp, err := ocagent.NewExporter(
+		ocagent.WithInsecure(),
+		ocagent.WithAddress(*agentHostAndPort),
+		ocagent.WithServiceName("hello-server"))
 	if err != nil {
 		log.Fatalf("Failed to create the agent exporter: %v", err)
 	}
@@ -106,8 +110,8 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	_, renderSpan := trace.StartSpan(r.Context(), "Render template")
 	data := pageData{
 		Traceparent:       r.Header.Get("traceparent"),
-		AgentEndpoint:     *agentEndpoint,
-		OcwScriptEndpoint: *ocwScriptEndpoint,
+		AgentHostAndPort:  template.URL(*agentHostAndPort),
+		OcwScriptEndpoint: template.URL(*ocwScriptEndpoint),
 	}
 	tmpl.Execute(w, data)
 	renderSpan.End()

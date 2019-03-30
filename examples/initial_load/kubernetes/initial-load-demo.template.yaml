@@ -28,8 +28,9 @@ spec:
         - name: oc-web-initial-load-container
           image: gcr.io/{{PROJECT-ID}}/oc-web-initial-load:latest
           args: [
-            "--agent=http://{{AGENT-IP}}",
-            "--ocw_script_prefix=/static/",
+            "--listen=:8000",
+            "--agent={{AGENT-IP}}:80",
+            "--ocw_script_prefix=/static",
           ]
           ports:
             - containerPort: 8000

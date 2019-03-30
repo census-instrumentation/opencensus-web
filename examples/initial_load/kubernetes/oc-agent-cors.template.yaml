@@ -25,10 +25,11 @@ data:
         address: ":55678"
         cors_allowed_origins:
           - "*"
-    stackdriver:
-      project: {{PROJECT-ID}}
-      enable_tracing: true
-      enable_metrics: false
+    exporters:
+      stackdriver:
+        project: {{PROJECT-ID}}
+        enable_tracing: true
+        enable_metrics: false
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
