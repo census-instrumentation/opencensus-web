@@ -23,7 +23,7 @@
 
     <script>
       traceparent = "{{.Traceparent}}";
-      ocwAgent = "{{.AgentEndpoint}}";
+      ocwAgent = "http://{{.AgentHostAndPort}}";
     </script>
     <script src="{{.OcwScriptEndpoint}}/initial-load-all.js" async></script>
     <footer>

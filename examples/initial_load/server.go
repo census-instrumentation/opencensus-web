@@ -31,22 +31,26 @@ import (
 )
 
 // Use a local agent by default to help in local development.
-var agentEndpoint = flag.String("agent", "http://localhost:55678", "HTTP(S) endpoint of the OpenCensus agent")
+var agentHostAndPort = flag.String("agent", "localhost:55678", "Host:port of OpenCensus agent")
 
 // Use local webpack server on port 8080 by default.
-var ocwScriptEndpoint = flag.String("ocw_script", "http://localhost:8080", "HTTP(S) endpoint that serves OpenCensus Web JS script")
+var ocwScriptEndpoint = flag.String("ocw_script_prefix", "http://localhost:8080", "HTTP(S) endpoint that serves OpenCensus Web JS script")
 
-var listenAddr = flag.String("listen", "localhost:8000", "")
+var listenAddr = flag.String("listen", ":8000", "")
 
 // Data rendered to the HTML template
 type pageData struct {
 	Traceparent       string
-	AgentEndpoint     string
-	OcwScriptEndpoint string
+	AgentHostAndPort  template.URL
+	OcwScriptEndpoint template.URL
 }
 
 func main() {
-	exp, err := ocagent.NewExporter(ocagent.WithInsecure(), ocagent.WithServiceName("hello-server"))
+	flag.Parse()
+	exp, err := ocagent.NewExporter(
+		ocagent.WithInsecure(),
+		ocagent.WithAddress(*agentHostAndPort),
+		ocagent.WithServiceName("hello-server"))
 	if err != nil {
 		log.Fatalf("Failed to create the agent exporter: %v", err)
 	}
@@ -61,6 +65,8 @@ func main() {
 
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/", handleRequest)
+	fs := http.FileServer(http.Dir("static"))
+	serveMux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	var handler http.Handler = serveMux
 	handler = &ochttp.Handler{
@@ -74,7 +80,7 @@ func main() {
 	handler = ensureTraceHeader(handler)
 
 	fmt.Printf("OC Web initial load example server listening on %v\n", *listenAddr)
-	http.ListenAndServe(*listenAddr, handler)
+	log.Fatal(http.ListenAndServe(*listenAddr, handler))
 }
 
 // Adds a random traceparent header if none is specified. This is needed
@@ -104,8 +110,8 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	_, renderSpan := trace.StartSpan(r.Context(), "Render template")
 	data := pageData{
 		Traceparent:       r.Header.Get("traceparent"),
-		AgentEndpoint:     *agentEndpoint,
-		OcwScriptEndpoint: *ocwScriptEndpoint,
+		AgentHostAndPort:  template.URL(*agentHostAndPort),
+		OcwScriptEndpoint: template.URL(*ocwScriptEndpoint),
 	}
 	tmpl.Execute(w, data)
 	renderSpan.End()
