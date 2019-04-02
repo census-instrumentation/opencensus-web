@@ -28,4 +28,4 @@ COPY index.html /
 COPY ./static/*.js /static/
 COPY --from=build ./root/example_server /
 ENTRYPOINT ["/example_server"]
-EXPOSE 8000 8000
+EXPOSE 8000

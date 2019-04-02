@@ -112,6 +112,7 @@ application:
 
 ```bash
 npm run build:prod --prefix=../../packages/opencensus-web-all
+mkdir -p static
 cp ../../packages/opencensus-web-all/dist/*.js ./static
 ```
 Then build the server container and push it to GCR:
@@ -128,8 +129,8 @@ Run the command `kubectl get svc oc-agent-service` to check if the
 `EXTERNAL-IP` column has been filled in. If it is still pending, then wait a bit
 and run it again until it's available.
 
-Once you the agent has an external IP, you can deploy the example service that
-uses it by running the following commands:
+Once the agent has an external IP, you can deploy the example service that uses
+it by running the following commands:
 
 ```bash
 PROJECT_ID="$(gcloud config list --format 'value(core.project)')"
