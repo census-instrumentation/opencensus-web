@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {isSampled, tracing} from '@opencensus/web-core';
+import {isSampled, setPerfTimeOrigin, tracing} from '@opencensus/web-core';
 import {OCAgentExporter} from '@opencensus/web-exporter-ocagent';
-import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries} from '@opencensus/web-instrumentation-perf';
+import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries, PerformanceResourceTimingExtended} from '@opencensus/web-instrumentation-perf';
 
 import {getInitialLoadSpanContext} from './initial-load-context';
 import {WindowWithOcwGlobals} from './types';
@@ -28,7 +28,7 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
  * time for any other post-load handlers to run first so that the work to export
  * spans does not slow down the user experience.
  */
-const WAIT_TIME_AFTER_LOAD_MS = 2000;  // 2 seconds
+// const WAIT_TIME_AFTER_LOAD_MS = 2000;  // 2 seconds
 
 /** Trace endpoint in the OC agent. */
 const TRACE_ENDPOINT = '/v1/trace';
@@ -64,18 +64,31 @@ function fixClockSkew(done: () => void) {
     done();
     return;
   }
-  const timeUrl = `${agent}/${TIME_ENDPOINT}`;
+  const timeUrl = `${agent}${TIME_ENDPOINT}`;
 
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = () => {
     if (xhr.readyState == 4 && xhr.status == 200) {
       const agentTime = Number(xhr.response);
       const agentTimePerfEntry = performance.getEntriesByType('resource')
-                                     .filter(t => t.name === timeUrl)[0];
-      debugger;
+                                     .filter(t => t.name === timeUrl)[0] as
+          PerformanceResourceTimingExtended;
+      setTimeOrigin(agentTime, agentTimePerfEntry);
+      done();
     }
   };
-  done();
+  xhr.open('GET', timeUrl);
+  xhr.send();
+}
+
+function setTimeOrigin(
+    agentTime: number, agentTimePerfEntry: PerformanceResourceTimingExtended) {
+  const clientStart = agentTimePerfEntry.requestStart;
+  const clientEnd = agentTimePerfEntry.responseStart;
+  const networkTime = clientEnd - clientStart;  // Assume server took ~0 time.
+  const halfNetworkTime = networkTime / 2;
+  const clientStartInServerTime = agentTime - halfNetworkTime;
+  setPerfTimeOrigin(clientStartInServerTime - clientStart);
 }
 
 function exportInitialLoadSpans() {
