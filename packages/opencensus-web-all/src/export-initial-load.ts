@@ -68,10 +68,11 @@ function fixClockSkew(done: () => void) {
 
   const xhr = new XMLHttpRequest();
   xhr.onreadystatechange = () => {
-    if (xhr.readyState == 4 && xhr.status == 200) {
+    if (xhr.readyState === 4 && xhr.status === 200) {
       const agentTime = Number(xhr.response);
-      const agentTimePerfEntry = performance.getEntriesByType('resource')
-                                     .filter(t => t.name === timeUrl)[0] as
+      const agentTimePerfEntry =
+          performance.getEntriesByType('resource')
+              .filter(t => t.name.endsWith(TIME_ENDPOINT))[0] as
           PerformanceResourceTimingExtended;
       setTimeOrigin(agentTime, agentTimePerfEntry);
       done();
