@@ -33,6 +33,8 @@ const WAIT_TIME_AFTER_LOAD_MS = 2000;  // 2 seconds
 /** Trace endpoint in the OC agent. */
 const TRACE_ENDPOINT = '/v1/trace';
 
+const TIME_ENDPOINT = '/v1/time';
+
 /**
  * Waits until after the document `load` event fires, and then uses the
  * `window.ocwAgent` setting to configure an OpenCensus agent exporter and
@@ -56,8 +58,28 @@ export function exportRootSpanAfterLoadEvent() {
   }
 }
 
+function fixClockSkew(done: () => void) {
+  const agent = windowWithOcwGlobals.ocwAgent;
+  if (!agent) {
+    done();
+    return;
+  }
+  const timeUrl = `${agent}/${TIME_ENDPOINT}`;
+
+  const xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState == 4 && xhr.status == 200) {
+      const agentTime = Number(xhr.response);
+      const agentTimePerfEntry = performance.getEntriesByType('resource')
+                                     .filter(t => t.name === timeUrl)[0];
+      debugger;
+    }
+  };
+  done();
+}
+
 function exportInitialLoadSpans() {
-  setTimeout(() => {
+  fixClockSkew(() => {
     const spanContext = getInitialLoadSpanContext();
     if (!isSampled(spanContext)) return;  // Don't export if not sampled.
 
@@ -69,5 +91,5 @@ function exportInitialLoadSpans() {
     clearPerfEntries();
     // Notify that the span has ended to trigger export.
     tracing.tracer.onEndSpan(root);
-  }, WAIT_TIME_AFTER_LOAD_MS);
+  });
 }

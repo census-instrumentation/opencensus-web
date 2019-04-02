@@ -15,14 +15,20 @@
  */
 
 let perfOriginPolyfill = 0;
+let setPerfTime = 0;
 
 /** Returns the origin of the browser performance clock in epoch millis. */
 export function getPerfTimeOrigin(): number {
+  if (setPerfTime) return setPerfTime;
   if (performance.timeOrigin) return performance.timeOrigin;
   if (!perfOriginPolyfill) {
     perfOriginPolyfill = Date.now() - performance.now();
   }
   return perfOriginPolyfill;
+}
+
+export function setPerfTimeOrigin(time: number) {
+  setPerfTime = time;
 }
 
 /** Converts a browser performance timestamp into a Date. */
