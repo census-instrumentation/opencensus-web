@@ -19,8 +19,8 @@ WORKDIR /root
 ADD go.mod .
 ADD go.sum .
 ADD server.go .
-RUN go get -d -v
-RUN CGO_ENABLED=0 go build -o example_server
+RUN GO111MODULE=on go get -d -v
+RUN GO111MODULE=on CGO_ENABLED=0 go build -o example_server
 
 # Then put the server binary and needed files into an empty container
 FROM scratch
