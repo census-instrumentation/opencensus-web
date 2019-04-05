@@ -43,3 +43,6 @@ dist/
 
 #istanbul files
 coverage/
+
+#static JS files in examples
+static/
