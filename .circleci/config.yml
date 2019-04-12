@@ -14,5 +14,19 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: npm install
-      - run: npm test
+      - run:
+          name: Install modules and dependencies.
+          command: npm install
+      - run:
+          name: Check code style and linting
+          command: npm run check
+      - run:
+          name: Ensure code compiles to JS.
+          command: npm run compile
+      - run:
+          name: Run unit tests.
+          command: npm run test
+      - run:
+          name: Submit coverage data to codecov.
+          command: npm run codecov
+          when: always
