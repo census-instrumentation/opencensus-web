@@ -9,6 +9,7 @@
     "build": "webpack",
     "test": "karma start --single-run",
     "test:start": "karma start",
+    "codecov": "codecov -f coverage/*.json",
     "clean": "rimraf build/*",
     "check": "gts check",
     "compile": "tsc -p .",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.4",
+    "codecov": "^3.3.0",
     "gts": "^0.9.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine": "^3.3.1",
