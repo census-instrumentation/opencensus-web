@@ -11,18 +11,13 @@ release_tags: &release_tags
 version: 2.0
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/node:11-browsers
     steps:
       - checkout
       - run:
           name: Install modules and dependencies.
           command: npm install
-      - run:
-          name: Check code style and linting
-          command: npm run check
-      - run:
-          name: Ensure code compiles to JS.
-          command: npm run compile
       - run:
           name: Run unit tests.
           command: npm run test
