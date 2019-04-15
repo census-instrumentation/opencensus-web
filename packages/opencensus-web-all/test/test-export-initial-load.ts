@@ -46,17 +46,17 @@ describe('exportRootSpanAfterLoadEvent', () => {
     spyOn(XMLHttpRequest.prototype, 'open');
     sendSpy = spyOn(XMLHttpRequest.prototype, 'send');
     spyOn(XMLHttpRequest.prototype, 'setRequestHeader');
-    realOcwAgent = windowWithOcwGlobals.ocwAgent;
+    realOcwAgent = windowWithOcwGlobals.ocAgent;
     realTraceparent = windowWithOcwGlobals.traceparent;
   });
   afterEach(() => {
     jasmine.clock().uninstall();
-    windowWithOcwGlobals.ocwAgent = realOcwAgent;
+    windowWithOcwGlobals.ocAgent = realOcwAgent;
     windowWithOcwGlobals.traceparent = realTraceparent;
   });
 
   it('exports spans to agent if agent is configured', () => {
-    windowWithOcwGlobals.ocwAgent = 'http://agent';
+    windowWithOcwGlobals.ocAgent = 'http://agent';
     windowWithOcwGlobals.traceparent = undefined;
 
     exportRootSpanAfterLoadEvent();
@@ -68,7 +68,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
   });
 
   it('does not export if agent not configured', () => {
-    windowWithOcwGlobals.ocwAgent = undefined;
+    windowWithOcwGlobals.ocAgent = undefined;
     windowWithOcwGlobals.traceparent = undefined;
 
     exportRootSpanAfterLoadEvent();
@@ -79,7 +79,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
   });
 
   it('uses trace and span ID from window.traceparent if specified', () => {
-    windowWithOcwGlobals.ocwAgent = 'http://agent';
+    windowWithOcwGlobals.ocAgent = 'http://agent';
     const traceId = '0af7651916cd43dd8448eb211c80319c';
     const spanId = 'b7ad6b7169203331';
     windowWithOcwGlobals.traceparent = `00-${traceId}-${spanId}-01`;
@@ -97,7 +97,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
   });
 
   it('does not export spans if traceparent sampling hint not set', () => {
-    windowWithOcwGlobals.ocwAgent = 'http://agent';
+    windowWithOcwGlobals.ocAgent = 'http://agent';
     windowWithOcwGlobals.traceparent =
         '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00';
 

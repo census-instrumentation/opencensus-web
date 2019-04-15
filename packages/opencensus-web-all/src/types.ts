@@ -22,7 +22,7 @@ export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {
    * HTTP root URL of the agent endpoint to write traces to.
    * Example 'https://my-oc-agent-deployment.com:55678'
    */
-  ocwAgent?: string;
+  ocAgent?: string;
   /**
    * For the initial page load, web browsers do not send any custom headers,
    * which means that the server will not receive trace context headers.
@@ -46,5 +46,5 @@ export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {
    * exports it can be in different JS bundles. This enables deferring loading
    * the export code until it is needed.
    */
-  ocwLt?: PerformanceLongTaskTiming[];
+  ocLt?: PerformanceLongTaskTiming[];
 }
