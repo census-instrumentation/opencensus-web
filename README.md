@@ -9,7 +9,7 @@ OpenCensus Web is an implementation of OpenCensus, a toolkit for collecting
 application performance and behavior monitoring data. This library currently
 generates traces for the initial page load of a site in the browser. It supports
 sending the trace sampling decision and trace ID from the web server to the
-browser client to enable latency debuging across the stack.
+browser client to enable latency debugging across the stack.
 
 The library is in alpha stage and the API is subject to change.
 
@@ -69,7 +69,7 @@ Currently, the OpenCensus Web will sample all requests by default. This is
 useful for experimentation with the library but is not appropriate for a real
 application.
 
-OpenCensus Web also supports connecting the server side spand for the initial
+OpenCensus Web also supports connecting the server side spans for the initial
 HTML load with the client side span for the load from the browser's timing API.
 
 Because the browser does not send a trace context header for the initial page
@@ -115,7 +115,7 @@ release. If an element is part of an API that is only meant to be used by export
 opencensus libraries, then there is no deprecation period. Otherwise, we will deprecate it for 18
 months before removing it, if possible.
 
-**Alpha**: Libraries defined at a Alpha quality level can be unstable and could cause crashes or data loss. Alpha software may not contain all of the features that are planned for the final version. The API is subject to change.
+**Alpha**: Libraries defined at an Alpha quality level can be unstable and could cause crashes or data loss. Alpha software may not contain all of the features that are planned for the final version. The API is subject to change.
 
 ## License
 
