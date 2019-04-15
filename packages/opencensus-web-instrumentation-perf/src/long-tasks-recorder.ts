@@ -16,7 +16,7 @@
 
 import {PerformanceLongTaskTiming, PerformanceObserverEntryList, WindowWithLongTasks} from './perf-types';
 
-/** Cast `window` to be access the `ocwLt` field for long task timings.  */
+/** Cast `window` to be access the `ocLt` field for long task timings.  */
 const windowWithLongTasks = window as WindowWithLongTasks;
 
 /**
@@ -30,12 +30,12 @@ export function recordLongTasks() {
         new windowWithLongTasks.PerformanceObserver(onLongTasks);
     longTaskObserver.observe({entryTypes: ['longtask']});
   }
-  windowWithLongTasks.ocwLt = [];
+  windowWithLongTasks.ocLt = [];
 }
 
 function onLongTasks(entryList: PerformanceObserverEntryList) {
   // These must be PerformanceLongTaskTiming objects because we only observe
   // 'longtask' above.
-  windowWithLongTasks.ocwLt!.push(
+  windowWithLongTasks.ocLt!.push(
       ...(entryList.getEntries() as PerformanceLongTaskTiming[]));
 }

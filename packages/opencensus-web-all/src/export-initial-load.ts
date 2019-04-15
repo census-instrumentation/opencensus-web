@@ -35,17 +35,17 @@ const TRACE_ENDPOINT = '/v1/trace';
 
 /**
  * Waits until after the document `load` event fires, and then uses the
- * `window.ocwAgent` setting to configure an OpenCensus agent exporter and
+ * `window.ocAgent` setting to configure an OpenCensus agent exporter and
  * export the spans for the initial page load.
  */
 export function exportRootSpanAfterLoadEvent() {
-  if (!windowWithOcwGlobals.ocwAgent) {
+  if (!windowWithOcwGlobals.ocAgent) {
     console.log('Not configured to export page load spans.');
     return;
   }
 
   tracing.registerExporter(new OCAgentExporter(
-      {agentEndpoint: `${windowWithOcwGlobals.ocwAgent}${TRACE_ENDPOINT}`}));
+      {agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`}));
 
   if (document.readyState === 'complete') {
     exportInitialLoadSpans();

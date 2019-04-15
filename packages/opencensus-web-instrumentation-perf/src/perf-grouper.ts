@@ -16,7 +16,7 @@
 
 import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended, PerformancePaintTiming, PerformanceResourceTimingExtended, WindowWithLongTasks} from './perf-types';
 
-/** Cast `window` to be access the `ocwLt` field for long task timings.  */
+/** Cast `window` to be access the `ocLt` field for long task timings.  */
 const windowWithLongTasks = window as WindowWithLongTasks;
 
 /** Represent all collected performance timings grouped by type. */
@@ -39,7 +39,7 @@ export function getPerfEntries(): GroupedPerfEntries {
 
   const perf = window.performance;
 
-  const longTaskTimings = windowWithLongTasks.ocwLt;
+  const longTaskTimings = windowWithLongTasks.ocLt;
 
   const entries: GroupedPerfEntries = {
     resourceTimings: perf.getEntriesByType('resource') as
@@ -60,7 +60,7 @@ export function getPerfEntries(): GroupedPerfEntries {
 /** Clears resource timings, marks, measures and stored long task timings. */
 export function clearPerfEntries() {
   if (!window.performance) return;
-  windowWithLongTasks.ocwLt = [];
+  windowWithLongTasks.ocLt = [];
   performance.clearResourceTimings();
   performance.clearMarks();
   performance.clearMeasures();
