@@ -41,6 +41,12 @@ export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {
    */
   traceparent?: string;
   /**
+   * If the `traceparent` global variable described above is not present on the
+   * `window`, then a trace sampling decision will be made randomly with the
+   * specified sample rate. If not specified, a default sampling rate is used.
+   */
+  ocSampleRate?: number;
+  /**
    * List to collect long task timings as they are observed. This is on the
    * window so that the code to instrument the long tasks and the code that
    * exports it can be in different JS bundles. This enables deferring loading

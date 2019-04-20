@@ -24,11 +24,14 @@ const TRACE_ID_REGEX = /[0-9a-f]{32}/;
 
 describe('getInitialLoadSpanContext', () => {
   let realTraceparent: string|undefined;
+  let realOcSampleRate: number|undefined;
   beforeEach(() => {
     realTraceparent = windowWithOcwGlobals.traceparent;
+    realOcSampleRate = windowWithOcwGlobals.ocSampleRate;
   });
   afterEach(() => {
     windowWithOcwGlobals.traceparent = realTraceparent;
+    windowWithOcwGlobals.ocSampleRate = realOcSampleRate;
   });
 
   it('sets trace and span ID from global `traceparent` when specified', () => {
@@ -43,17 +46,38 @@ describe('getInitialLoadSpanContext', () => {
 
   it('generates a new random span context if `traceparent` unspecified', () => {
     windowWithOcwGlobals.traceparent = undefined;
+    spyOn(Math, 'random').and.returnValue(0);
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
     expect(spanContext.spanId).toMatch(SPAN_ID_REGEX);
     expect(spanContext.options).toBe(1);
+    expect(Math.random).toHaveBeenCalled();
   });
 
   it('generates a new random span context if `traceparent` is invalid', () => {
+    spyOn(Math, 'random').and.returnValue(0);
     windowWithOcwGlobals.traceparent = 'invalid trace parent header!';
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
     expect(spanContext.spanId).toMatch(SPAN_ID_REGEX);
     expect(spanContext.options).toBe(1);
+    expect(Math.random).toHaveBeenCalled();
+  });
+
+  describe('specifying the sampling rate with window.ocSampleRate', () => {
+    beforeEach(() => {
+      spyOn(Math, 'random').and.returnValue(0.5);
+      windowWithOcwGlobals.traceparent = undefined;
+    });
+    it('sets trace options to unsampled if random above sample rate', () => {
+      windowWithOcwGlobals.ocSampleRate = 0.1;
+      const spanContext = getInitialLoadSpanContext();
+      expect(spanContext.options).toBe(0);
+    });
+    it('sets trace options to sampled if random below sample rate', () => {
+      windowWithOcwGlobals.ocSampleRate = 1.0;
+      const spanContext = getInitialLoadSpanContext();
+      expect(spanContext.options).toBe(1);
+    });
   });
 });
