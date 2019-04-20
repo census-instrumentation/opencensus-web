@@ -15,7 +15,7 @@
  */
 
 /**
- * The version of the @opencensus/web-exporter-ocagent library. This will be
- * sent as metadata with the written traces.
+ * The version of the @opencensus/web-core library. This is sent as metadata
+ * with the written traces by the @opencensus/web-exporter-ocagent library.
  */
-export const EXPORTER_VERSION = '0.0.1';
+export const VERSION = '0.0.1';

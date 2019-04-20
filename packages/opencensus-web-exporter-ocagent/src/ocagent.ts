@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterConfig, RootSpan} from '@opencensus/web-core';
+import {Exporter, ExporterConfig, RootSpan, VERSION} from '@opencensus/web-core';
 
 import {adaptRootSpan} from './adapters';
 import * as apiTypes from './api-types';
 import {ExporterBuffer} from './exporter-buffer';
 import {EXPORTER_VERSION} from './version';
+
+/**
+ * Enum value for LibraryInfo.Language that indicates to the OpenCensus Agent
+ * that the generated spans/metrics are from the Web JS OpenCensus libary. See:
+ * https://github.com/census-instrumentation/opencensus-proto/blob/master/src/opencensus/proto/agent/common/v1/common.proto
+ */
+const WEB_JS_LIBRARY_LANGUAGE: apiTypes.LanguageWebJs = 10;
 
 // The value of XMLHttpRequest `readyState` property when the request is done.
 const XHR_READY_STATE_DONE = 4;
@@ -98,9 +105,9 @@ export class OCAgentExporter implements Exporter {
       identifier: {hostName: location.host},
       serviceInfo: {name: this.config.serviceName},
       libraryInfo: {
+        language: WEB_JS_LIBRARY_LANGUAGE,
         exporterVersion: EXPORTER_VERSION,
-        // TODO(draffensperger): Set coreLibraryVersion here once there is an
-        // OpenCensus web core library established.
+        coreLibraryVersion: VERSION,
       },
       attributes: this.config.attributes,
     };

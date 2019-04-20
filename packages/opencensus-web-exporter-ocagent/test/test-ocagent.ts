@@ -107,7 +107,11 @@ describe('OCAgentExporter', () => {
       node: {
         identifier: {hostName: window.location.host},
         serviceInfo: {name: 'testService'},
-        libraryInfo: {exporterVersion: '0.0.1'},
+        libraryInfo: {
+          language: 10,
+          coreLibraryVersion: '0.0.1',
+          exporterVersion: '0.0.1',
+        },
         attributes: {serviceAddr1: 'a'},
       },
       spans: apiSpans,
