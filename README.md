@@ -64,7 +64,7 @@ for instance:
 <script>
   ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
   // Sample all requests for trace, which is useful when testing.
-  // By default this is set to sample 1/1000 requests.
+  // By default this is set to sample 1/10000 requests.
   ocSampleRate = 1.0; 
 </script>
 ```

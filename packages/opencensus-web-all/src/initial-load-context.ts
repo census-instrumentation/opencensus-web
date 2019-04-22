@@ -25,7 +25,7 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
  * The default trace sampling rate if no `traceparent` and no `ocSampleRate`
  * are specified on the `window`.
  */
-const DEFAULT_SAMPLE_RATE = 0.001;
+const DEFAULT_SAMPLE_RATE = 0.0001;
 
 /**
  * Gets a span context for the initial page load from the `window.traceparent`,
