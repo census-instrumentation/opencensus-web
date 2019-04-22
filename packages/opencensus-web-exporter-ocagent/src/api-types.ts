@@ -66,14 +66,26 @@ export interface Node {
   attributes?: {[key: string]: string};
 }
 
-export interface LibraryInfo {
-  /**
-   * TODO(draffensperger): Get additional language option for web JavaScript,
-   * and then set the library version here.
-   */
+/** Unspecified library info language. */
+export type LanguageUnspecified = 0;
+/** Indicates that the spans were created by OpenCensus Web. */
+export type LanguageWebJs = 10;
+/**
+ * OpenCensus language used to create the spans. Most of the options are
+ * omitted since the spans produced by OpenCensus Web are always from the Web JS
+ * library.
+ */
+export type LibraryInfoLanguage = LanguageUnspecified|LanguageWebJs;
 
+/** Information on OpenCensus library that produced the spans/metrics. */
+export interface LibraryInfo {
+  /** Language of OpenCensus Library. */
+  language?: LibraryInfoLanguage;
+
+  /** Version of Agent exporter of Library. */
   exporterVersion?: string;
 
+  /** Version of OpenCensus Library. */
   coreLibraryVersion?: string;
 }
 
