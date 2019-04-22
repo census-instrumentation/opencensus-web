@@ -18,6 +18,8 @@ import * as webCore from '@opencensus/web-core';
 
 import {OCAgentExporter} from '../src';
 import * as apiTypes from '../src/api-types';
+import {EXPORTER_VERSION} from '../src/version';
+
 import {mockGetterOrValue, restoreGetterOrValue} from './util';
 
 const BUFFER_SIZE = 1;
@@ -109,8 +111,8 @@ describe('OCAgentExporter', () => {
         serviceInfo: {name: 'testService'},
         libraryInfo: {
           language: 10,
-          coreLibraryVersion: '0.0.1',
-          exporterVersion: '0.0.1',
+          coreLibraryVersion: webCore.VERSION,
+          exporterVersion: EXPORTER_VERSION,
         },
         attributes: {serviceAddr1: 'a'},
       },
