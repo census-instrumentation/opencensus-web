@@ -55,22 +55,26 @@ it from the `/static` folder of your site.
 Once the OpenCensus Web packages are released to NPM, you will also be able to
 include them in your JavaScript build pipeline as an imported dependency.
 
-In order to indicate the endpoint of the OpenCensus Agent so that traces can be
-written, you will need to include a snippet of JavaScript that sets the
-`ocAgent` global variable, for instance:
+In order to indicate the trace sampling rate and endpoint of the OpenCensus 
+Agent so that traces can be written, you will need to include a snippet of 
+JavaScript that sets the `ocAgent` and `ocSampleRate` global variables, 
+for instance:
 
 ```html
-<script>ocAgent = 'https://example.com/my-opencensus-agent-endpoint'</script>
+<script>
+  ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
+  // Sample all requests for trace, which is useful when testing.
+  // By default this is set to sample 1/10000 requests.
+  ocSampleRate = 1.0; 
+</script>
 ```
 
 ### 3. Optional: Send a trace parent and sampling decision from your server
 
-Currently, the OpenCensus Web will sample all requests by default. This is
-useful for experimentation with the library but is not appropriate for a real
-application.
-
 OpenCensus Web also supports connecting the server side spans for the initial
 HTML load with the client side span for the load from the browser's timing API.
+This works by having the server send its parent trace context (trace ID, span ID
+and trace sampling decision) to the client.
 
 Because the browser does not send a trace context header for the initial page
 navigation, the server needs to fake a trace context header in a middleware and

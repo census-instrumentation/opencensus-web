@@ -38,7 +38,7 @@ function hexToBase64(hexString: string): string {
 }
 
 describe('exportRootSpanAfterLoadEvent', () => {
-  let realOcwAgent: string|undefined;
+  let realOcAgent: string|undefined;
   let realTraceparent: string|undefined;
   let sendSpy: jasmine.Spy;
   beforeEach(() => {
@@ -46,25 +46,13 @@ describe('exportRootSpanAfterLoadEvent', () => {
     spyOn(XMLHttpRequest.prototype, 'open');
     sendSpy = spyOn(XMLHttpRequest.prototype, 'send');
     spyOn(XMLHttpRequest.prototype, 'setRequestHeader');
-    realOcwAgent = windowWithOcwGlobals.ocAgent;
+    realOcAgent = windowWithOcwGlobals.ocAgent;
     realTraceparent = windowWithOcwGlobals.traceparent;
   });
   afterEach(() => {
     jasmine.clock().uninstall();
-    windowWithOcwGlobals.ocAgent = realOcwAgent;
+    windowWithOcwGlobals.ocAgent = realOcAgent;
     windowWithOcwGlobals.traceparent = realTraceparent;
-  });
-
-  it('exports spans to agent if agent is configured', () => {
-    windowWithOcwGlobals.ocAgent = 'http://agent';
-    windowWithOcwGlobals.traceparent = undefined;
-
-    exportRootSpanAfterLoadEvent();
-
-    jasmine.clock().tick(300000);
-    expect(XMLHttpRequest.prototype.open)
-        .toHaveBeenCalledWith('POST', 'http://agent/v1/trace');
-    expect(XMLHttpRequest.prototype.send).toHaveBeenCalled();
   });
 
   it('does not export if agent not configured', () => {
@@ -96,7 +84,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
     expect(sendBody).toContain(hexToBase64(traceId));
   });
 
-  it('does not export spans if traceparent sampling hint not set', () => {
+  it('does not export spans if traceparent sampling hint set to zero', () => {
     windowWithOcwGlobals.ocAgent = 'http://agent';
     windowWithOcwGlobals.traceparent =
         '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00';
@@ -106,5 +94,30 @@ describe('exportRootSpanAfterLoadEvent', () => {
     jasmine.clock().tick(300000);
     expect(XMLHttpRequest.prototype.open).not.toHaveBeenCalled();
     expect(XMLHttpRequest.prototype.send).not.toHaveBeenCalled();
+  });
+
+  it('does not export spans if traceparent unset and random is big', () => {
+    spyOn(Math, 'random').and.returnValue(0.99);
+    windowWithOcwGlobals.ocAgent = 'http://agent';
+    windowWithOcwGlobals.traceparent = '';
+
+    exportRootSpanAfterLoadEvent();
+
+    jasmine.clock().tick(300000);
+    expect(XMLHttpRequest.prototype.open).not.toHaveBeenCalled();
+    expect(XMLHttpRequest.prototype.send).not.toHaveBeenCalled();
+  });
+
+  it('exports spans if traceparent unset and random number is small', () => {
+    spyOn(Math, 'random').and.returnValue(0);
+    windowWithOcwGlobals.ocAgent = 'http://agent';
+    windowWithOcwGlobals.traceparent = undefined;
+
+    exportRootSpanAfterLoadEvent();
+
+    jasmine.clock().tick(300000);
+    expect(XMLHttpRequest.prototype.open)
+        .toHaveBeenCalledWith('POST', 'http://agent/v1/trace');
+    expect(XMLHttpRequest.prototype.send).toHaveBeenCalled();
   });
 });

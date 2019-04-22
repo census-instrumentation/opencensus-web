@@ -22,26 +22,36 @@ import {WindowWithOcwGlobals} from './types';
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 /**
+ * The default trace sampling rate if no `traceparent` and no `ocSampleRate`
+ * are specified on the `window`.
+ */
+const DEFAULT_SAMPLE_RATE = 0.0001;
+
+/**
  * Gets a span context for the initial page load from the `window.traceparent`,
  * or generates a new random span context if it is missing. For now the new
  * random span context generated if `window.traceparent` is missing is always
  * marked sampled.
  */
 export function getInitialLoadSpanContext(): SpanContext {
-  if (!windowWithOcwGlobals.traceparent) return alwaysSampledSpanContext();
+  if (!windowWithOcwGlobals.traceparent) return randomSampledSpanContext();
   const spanContext =
       traceParentToSpanContext(windowWithOcwGlobals.traceparent);
   if (!spanContext) {
     console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
-    return alwaysSampledSpanContext();
+    return randomSampledSpanContext();
   }
   return spanContext;
 }
 
-function alwaysSampledSpanContext() {
+function randomSampledSpanContext() {
+  const sampleRate = windowWithOcwGlobals.ocSampleRate || DEFAULT_SAMPLE_RATE;
   return {
     traceId: randomTraceId(),
     spanId: randomSpanId(),
-    options: 0x1,  // Sampled
+    // Math.random returns a number in the 0-1 range (inclusive of 0 but not 1).
+    // That means we should use the strict `<` operator to compare it to the
+    // sample rate. A value of 1 for `options` indicates trace sampling.
+    options: Math.random() < sampleRate ? 1 : 0,
   };
 }
