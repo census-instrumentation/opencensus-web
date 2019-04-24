@@ -4,7 +4,7 @@
 *For overview and usage info see the main [OpenCensus Web readme][oc-web-readme-url].*
 
 This OpenCensus Web agent exporter allows browser clients to send traces to the 
-[OpenCensus Agent][opencensus-service-url] via HTTP/JSON, which is the [agent
+[OpenCensus Agent][opencensus-service-url] via HTTP/JSON, which the [agent
 supports][oc-agent-http-url] via `grpc-gateway`.
 
 The library is in alpha stage and the API is subject to change.

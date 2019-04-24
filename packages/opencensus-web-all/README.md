@@ -14,7 +14,7 @@ The library is in alpha stage and the API is subject to change.
 To generate production minified JS bundles run `npm run build:prod`. For
 non-minified bundles use `npm run build:dev`.
 
-To server the bundles from a local webpack server run `npm run
+To serve the bundles from a local webpack server run `npm run
 start:webpack-server`.
 
 ## Generated scripts

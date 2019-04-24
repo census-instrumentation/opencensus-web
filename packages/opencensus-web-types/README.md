@@ -5,7 +5,7 @@
 
 This package provides TypeScript interfaces and enums for the OpenCensus core 
 trace and metrics model. These are copied from the OpenCensus Node 
-[@opencensus/core][opencensus-core-url] package
+[@opencensus/core][opencensus-core-url] package.
 
 The library is in alpha stage and the API is subject to change.
 
