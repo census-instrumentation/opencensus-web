@@ -8,11 +8,29 @@ release_tags: &release_tags
   tags:
     only: /^v\d+(\.\d+){2}(-.*)?$/
 
+
+docker_config: &docker_config
+  docker:
+    - image: circleci/node:11-browsers
+
 version: 2.0
+workflows:
+  version: 2
+  test_and_publish:
+    jobs:
+      - test:
+          filters: *release_tags
+      - publish_npm:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            <<: *release_tags
+
 jobs:
-  build:
-    docker:
-      - image: circleci/node:11-browsers
+  test:
+    <<: *docker_config
     steps:
       - checkout
       - run:
@@ -25,3 +43,39 @@ jobs:
           name: Submit coverage data to codecov.
           command: npm run codecov
           when: always
+  publish_npm:
+    <<: *docker_config
+    steps:
+      - checkout
+      - run:
+          name: Install modules and dependencies.
+          command: npm install
+      - run:
+          name: Set NPM authentication.
+          # Publish to NPM via the Google wombat bot that manages auth tokens,
+          # so each token has authority to publish to just a single package.
+          command: echo "//wombat-dressing-room.appspot.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run: |
+          cd packages/opencensus-web-all
+          NPM_TOKEN="$WOMBAT_TOKEN_ALL"
+          npm publish --registry https://wombat-dressing-room.appspot.com
+      - run: |
+          cd packages/opencensus-web-core
+          NPM_TOKEN="$WOMBAT_TOKEN_CORE"
+          npm publish --registry https://wombat-dressing-room.appspot.com
+      - run: |
+          cd packages/opencensus-web-exporter-ocagent
+          NPM_TOKEN="$WOMBAT_TOKEN_EXPORTER_OCAGENT"
+          npm publish --registry https://wombat-dressing-room.appspot.com
+      - run: |
+          cd packages/opencensus-web-instrumentation-perf
+          NPM_TOKEN="$WOMBAT_TOKEN_INSTRUMENTATION_PERF"
+          npm publish --registry https://wombat-dressing-room.appspot.com
+      - run: |
+          cd packages/opencensus-web-propagation-tracecontext
+          NPM_TOKEN="$WOMBAT_TOKEN_PROPAGATION_TRACECONTEXT"
+          npm publish --registry https://wombat-dressing-room.appspot.com
+      - run: |
+          cd packages/opencensus-web-types
+          NPM_TOKEN="$WOMBAT_TOKEN_TYPES"
+          npm publish --registry https://wombat-dressing-room.appspot.com
