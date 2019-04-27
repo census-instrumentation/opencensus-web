@@ -45,9 +45,8 @@ draft notes are satisfactory.
 
 ## Merge and pull
 
-Merge the PR, and pull the changes locally (using the commands in the first 
-step). Ensure that `chore(multiple): x.y.z release proposal` is the most recent
-commit.
+Merge the PR, and ensure that `chore(multiple): x.y.z release proposal` is the
+most recent commit.
 
 ## Publish the GitHub Release
 
