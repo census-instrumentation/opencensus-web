@@ -39,6 +39,8 @@
   "files": [
     "build/src/**/*.js",
     "build/src/**/*.d.ts",
+    "dist/*.js",
+    "dist/*.js.map",
     "doc",
     "CHANGELOG.md",
     "LICENSE",
