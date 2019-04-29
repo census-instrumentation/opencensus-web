@@ -1,15 +1,13 @@
 {
   "name": "@opencensus/web-all",
-  "version": "0.0.1",
-  "description":
-    "OpenCensus Web All combines all the main OpenCensus Web packages to provide distributions for easy use in web applications via <script> tags.",
+  "version": "0.0.2",
+  "description": "OpenCensus Web All combines all the main OpenCensus Web packages to provide distributions for easy use in web applications via <script> tags.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
     "build:prod": "webpack --config ./webpack/prod-bundles.config.js",
     "build:dev": "webpack --config ./webpack/dev-bundles.config.js",
-    "start:webpack-server":
-      "webpack-dev-server --config ./webpack/dev-bundles.config.js",
+    "start:webpack-server": "webpack-dev-server --config ./webpack/dev-bundles.config.js",
     "test": "karma start --single-run",
     "test:start": "karma start",
     "codecov": "codecov -f coverage/*.json",
@@ -71,10 +69,12 @@
     "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.1",
-    "@opencensus/web-exporter-ocagent": "^0.0.1",
-    "@opencensus/web-instrumentation-perf": "^0.0.1",
-    "@opencensus/web-propagation-tracecontext": "^0.0.1"
+    "@opencensus/web-core": "^0.0.2",
+    "@opencensus/web-exporter-ocagent": "^0.0.2",
+    "@opencensus/web-instrumentation-perf": "^0.0.2",
+    "@opencensus/web-propagation-tracecontext": "^0.0.2"
   },
-  "sideEffects": ["./src/entrypoints/*.ts"]
+  "sideEffects": [
+    "./src/entrypoints/*.ts"
+  ]
 }
