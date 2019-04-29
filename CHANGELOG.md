@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.2
+
+Add JS bundles and source maps to the NPM files for @opencensus/web-all (#66),
+which were incorrectly not included before. This enables linking the JS
+bundles in `<script>` tags via the unpkg.com or jsdelivr.com CDNs for NPM files.
+
 ## 0.0.1 - 2019-04-26
 
 - TypeScript interfaces and enums extracted from the `@opencensus/core`
