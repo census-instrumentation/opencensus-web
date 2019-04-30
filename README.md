@@ -1,5 +1,6 @@
 # OpenCensus - A stats collection and distributed tracing framework
 [![Gitter chat][gitter-image]][gitter-url]
+[![NPM Published Version][npm-img]][npm-url]
 [![circleci][circleci-image]][circleci-url]
 [![codecov][codecov-image]][codecov-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
@@ -15,10 +16,48 @@ The library is in alpha stage and the API is subject to change.
 
 Please join [gitter][gitter-url] for help or feedback on this project.
 
-## Usage
+## Features
 
-**NOTE**: *These usage instructions will likely change as the project matures.
-The goal is to make this easier to use over time!*
+### Trace spans for initial load including server side HTML rendering
+
+Here's a sample trace from OpenCensus Web that was exported to
+[Zipkin][zipkin-url]. Notice that there is an overall `nav./` span for the user
+navigation experience until the browser `load` event fires. There are also 
+`/` spans for the client and server side measurements of the initial HTML load.
+The server side spans also indicates how much time was spent parsing and 
+rendering the template:
+
+![zipkin-waterfall](images/zipkin_waterfall.png)
+
+These spans are generated via the browser's
+[Navigation Timing][navigation-timing-url] and
+[Resource Timing][resource-timing-url] APIs. Notice also the `long js task`
+span, which indicates a CPU-bound JavaScript event loop that took more than 50ms
+as measured by the [Long Tasks][long-tasks-url] browser API.
+
+### Span annotations for DOM and network events
+
+The OpenCensus Web spans also include detailed annotations for DOM load events
+like `domInteractive` and `first-paint`, as well as network events like
+`domainLookupStart` and `secureConnectionStart`. Here is a similar trace
+exported to [Stckdriver Trace][stackdriver-trace-url] with the annotations
+expanded:
+
+![stackdriver-trace-events](images/stackdriver_trace_events.png)
+
+These annotations also comine from the
+[Resource Timing API][resource-timing-url]. Note that for resources fetched via
+CORS, you will need to specify the
+[Timing-Allow-Origin header][timing-allow-origin-url].
+
+### Export traces to Zipkin, Jaeger, Stackdriver, DataDog, Honeycomb and more
+
+The OpenCensus Web library exports traces via the
+[OpenCensus Agent][oc-agent-url], which can then export them to a variety of
+trace backends. See the
+[OpenCensus Agent/Collector exporter docs][oc-agent-exporter-url] for details.
+
+## Usage
 
 See the [examples/initial_load][examples-initial-load-url] folder for a full
 example of how to use OpenCensus Web in an application. Below are
@@ -27,9 +66,8 @@ the steps that are currently needed to use it.
 ### 1. Deploy the OpenCensus agent to collect traces
 
 The OpenCensus Web library currently only exports traces via the
-[OpenCensus Agent][oc-agent-url], which can then export them to a variety of
-tracing backends such as Zipkin, Jaeger, Stackdriver, DataDog, Honeycomb,
-and AWS X-Ray. See this [example's README][initial-load-example-url]
+[OpenCensus Agent][oc-agent-url], which can then export them to a trace backend
+(e.g. Zipkin, Stackdriver). See this [example's README][initial-load-example-url]
 for steps to run the agent locally or in the cloud.
 
 When you run the agent in the cloud you will need to expose it to your
@@ -39,34 +77,51 @@ traces to be written by authenticated end users.
 
 ### 2. Use the OpenCensus Web library code in your application
 
-To include the OpenCensus Web library code, clone this repo and the build the JS
-bundles:
-```bash
-git clone https://github.com/census-instrumentation/opencensus-web
-cd packages/opencensus-web-all
-npm run build:prod
+#### Using via a `<script>` tag
+
+You can use OpenCensus Web via a `<script>` tag that makes uses of the
+<unpkg.com> CDN that serves files from NPM packages.
+
+The script tag should go before the `</body>`. You will also need to set the
+`ocAgent` endpoint in a different `<script>` and may also specify the 
+trace sample rate via an `ocSampleRate` global variable as well.
+```html
+...
+  <script src="https://unpkg.com/@opencensus/web-all@0.0.2/dist/initial-load-all.js"
+          integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+          async crossorigin="anonymous">
+  </script>
+  <script>
+    // HTTP endpoint of the OpenCensus Agent you ran and exposed to the internet
+    // in Step 1 above.
+    ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
+
+    // Sample all requests for trace, which is useful when testing.
+    // By default this is set to sample 1/10000 requests.
+    ocSampleRate = 1.0; 
+  </script>
+</body>
 ```
 
-Then you copy the script `./dist/initial-load-all.js` as a static asset
-of your application, and include it in a `<script>` tag, e.g. 
-`<script src="/static/initial-load-all.js"></script>` assuming you were serving
-it from the `/static` folder of your site.
+You can also host the `initial-load-all.js` bundle from your own site. For
+docs on how to build the bundle see the
+[@opencensus/web-all readme][package-web-all].
 
-Once the OpenCensus Web packages are released to NPM, you will also be able to
-include them in your JavaScript build pipeline as an imported dependency.
+#### Using as NPM dependency in existing JS build
 
-In order to indicate the trace sampling rate and endpoint of the OpenCensus 
-Agent so that traces can be written, you will need to include a snippet of 
-JavaScript that sets the `ocAgent` and `ocSampleRate` global variables, 
-for instance:
+If you already have a JS build pipeline using e.g. webpack or similar, you can 
+do `npm install @opencensus/web-all`, and then set the configuration variables
+and trigger the recording and exporting of the initial load spans as follows:
 
-```html
-<script>
-  ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
-  // Sample all requests for trace, which is useful when testing.
-  // By default this is set to sample 1/10000 requests.
-  ocSampleRate = 1.0; 
-</script>
+```js
+import { exportRootSpanAfterLoadEvent } from '@opencensus/web-all';
+
+window.ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
+window.ocSampleRate = 1.0; // Sample at 100% for test only. Default is 1/10000.
+
+// Send the root span and child spans for the initial page load to the
+// OpenCensus agent if this request was sampled for trace.
+exportRootSpanAfterLoadEvent();
 ```
 
 ### 3. Optional: Send a trace parent and sampling decision from your server
@@ -80,7 +135,27 @@ Because the browser does not send a trace context header for the initial page
 navigation, the server needs to fake a trace context header in a middleware and
 then send that trace context header back to the client as a global `traceparent`
 variable. The `traceparent` variable should be in the
-[trace context W3C draft format][trace-context-url].
+[trace context W3C draft format][trace-context-url]. For example:
+
+```html
+  ...
+  <script src="https://unpkg.com/@opencensus/web-all@0.0.2/dist/initial-load-all.js"
+          integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+          async crossorigin="anonymous">
+  </script>
+  <script>
+    ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
+    // Set the `traceparent` in the server's HTML template code. It should be
+    // dynamically generated server side to have the server's request trace ID,
+    // a parent span ID that was set on the server's request span, and the trace
+    // flags to indicate the server's sampling decision (01 = sampled, 00 = not
+    // sampled).
+    traceparent = '00-{{ServerTraceId}}-{{ServerParentSpanId}}-{{ServerTraceFlags}}';
+    // We don't need to specify `ocSampleRate` since the trace sampling decision
+    // is coming from the `traceparent` global variable instead.
+  </script>
+</body>
+```
 
 To see a full example of how the middleware to generate a trace context header
 and send it back to the client, see the
@@ -137,8 +212,13 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [initial-load-example-url]: https://github.com/census-instrumentation/opencensus-web/tree/master/examples/initial_load
 [license-image]: https://img.shields.io/badge/license-Apache_2.0-green.svg?style=flat
 [license-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/LICENSE
+[long-tasks-url]: https://w3c.github.io/longtasks/
 [navigation-timing-url]: https://www.w3.org/TR/navigation-timing-2/
+[npm-img]: https://badge.fury.io/js/%40opencensus%2Fweb-all.svg
+[npm-url]: https://www.npmjs.com/package/@opencensus/web-all
+[oc-agent-exporter-url]: https://github.com/census-instrumentation/opencensus-service/tree/master/exporter
 [oc-agent-url]: https://github.com/census-instrumentation/opencensus-service
+[oc-web-issue-url]: https://github.com/census-instrumentation/opencensus-web/issues/new/choose
 [opencensus-node-url]: https://github.com/census-instrumentation/opencensus-node
 [opencensus-service-url]: https://github.com/census-instrumentation/opencensus-service
 [package-core]: https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-core
@@ -152,4 +232,8 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [semver-url]: http://semver.org/
 [snyk-image]: https://snyk.io/test/github/census-instrumentation/opencensus-web/badge.svg?style=flat
 [snyk-url]: https://snyk.io/test/github/census-instrumentation/opencensus-web
+[stackdriver-trace-url]: https://cloud.google.com/trace/
+[timing-allow-origin-url]: https://www.w3.org/TR/resource-timing-2/#dfn-timing-allow-origin
 [trace-context-url]: https://www.w3.org/TR/trace-context/
+[tsickle-url]: https://github.com/angular/tsickle
+[zipkin-url]: https://zipkin.io/

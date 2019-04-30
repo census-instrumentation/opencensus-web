@@ -27,7 +27,6 @@ data:
           - "*"
     exporters:
       stackdriver:
-        project: {{PROJECT-ID}}
         enable_tracing: true
         enable_metrics: false
 ---
@@ -44,7 +43,7 @@ spec:
     spec:
       containers:
         - name: oc-agent-container
-          image: omnition/opencensus-agent:latest
+          image: omnition/opencensus-agent:0.1.6
           volumeMounts:
             - name: oc-agent-config-vol
               readOnly: true
