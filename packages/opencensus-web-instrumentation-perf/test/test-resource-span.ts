@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {SpanKind} from '@opencensus/web-core';
-import {PerformanceResourceTimingExtended} from '../src/perf-types';
-import {getResourceSpan} from '../src/resource-span';
+import { SpanKind } from '@opencensus/web-core';
+import { PerformanceResourceTimingExtended } from '../src/perf-types';
+import { getResourceSpan } from '../src/resource-span';
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const USER_AGENT = 'Mozilla/5.0 TEST';
@@ -42,7 +42,7 @@ describe('getResourceSpan', () => {
       encodedBodySize: 0,
       entryType: 'resource',
       fetchStart: 266.9,
-      initiatorType: 'link',  // Implies GET method
+      initiatorType: 'link', // Implies GET method
       name: 'http://localhost:4200/style.css',
       nextHopProtocol: 'h2',
       redirectEnd: 0,
@@ -59,8 +59,11 @@ describe('getResourceSpan', () => {
       toJSON: () => ({}),
     };
 
-    const span =
-        getResourceSpan(resourceTimingWithoutDetails, TRACE_ID, PARENT_SPAN_ID);
+    const span = getResourceSpan(
+      resourceTimingWithoutDetails,
+      TRACE_ID,
+      PARENT_SPAN_ID
+    );
     expect(span.id).toMatch(SPAN_ID_REGEX);
     expect(span.traceId).toBe(TRACE_ID);
     expect(span.parentSpanId).toBe(PARENT_SPAN_ID);
@@ -69,8 +72,8 @@ describe('getResourceSpan', () => {
     expect(span.startPerfTime).toBe(resourceTimingWithoutDetails.startTime);
     expect(span.endPerfTime).toBe(resourceTimingWithoutDetails.responseEnd);
     expect(span.annotations).toEqual([
-      {timestamp: 266.9, description: 'fetchStart', attributes: {}},
-      {timestamp: 280.1, description: 'responseEnd', attributes: {}},
+      { timestamp: 266.9, description: 'fetchStart', attributes: {} },
+      { timestamp: 280.1, description: 'responseEnd', attributes: {} },
     ]);
     expect(span.attributes).toEqual({
       'http.host': 'localhost:4200',
@@ -102,7 +105,7 @@ describe('getResourceSpan', () => {
       transferSize: 1300,
       encodedBodySize: 1100,
       decodedBodySize: 1000,
-      entryType: 'xmlhttprequest',  // May not be a GET
+      entryType: 'xmlhttprequest', // May not be a GET
       initiatorType: 'link',
       name: 'http://localhost:4200/style.css',
       nextHopProtocol: 'h2',
@@ -111,25 +114,28 @@ describe('getResourceSpan', () => {
       toJSON: () => ({}),
     };
 
-    const span =
-        getResourceSpan(resourceTimingWithDetails, TRACE_ID, PARENT_SPAN_ID);
+    const span = getResourceSpan(
+      resourceTimingWithDetails,
+      TRACE_ID,
+      PARENT_SPAN_ID
+    );
     expect(span.id).toMatch(SPAN_ID_REGEX);
     expect(span.annotations).toEqual([
-      {timestamp: 1, description: 'fetchStart', attributes: {}},
-      {timestamp: 2, description: 'domainLookupStart', attributes: {}},
-      {timestamp: 3, description: 'domainLookupEnd', attributes: {}},
-      {timestamp: 4, description: 'connectStart', attributes: {}},
-      {timestamp: 5, description: 'connectEnd', attributes: {}},
+      { timestamp: 1, description: 'fetchStart', attributes: {} },
+      { timestamp: 2, description: 'domainLookupStart', attributes: {} },
+      { timestamp: 3, description: 'domainLookupEnd', attributes: {} },
+      { timestamp: 4, description: 'connectStart', attributes: {} },
+      { timestamp: 5, description: 'connectEnd', attributes: {} },
       {
         timestamp: 6,
         description: 'secureConnectionStart',
         attributes: {},
       },
-      {timestamp: 7, description: 'redirectStart', attributes: {}},
-      {timestamp: 8, description: 'redirectEnd', attributes: {}},
-      {timestamp: 9, description: 'requestStart', attributes: {}},
-      {timestamp: 100, description: 'responseStart', attributes: {}},
-      {timestamp: 11, description: 'responseEnd', attributes: {}},
+      { timestamp: 7, description: 'redirectStart', attributes: {} },
+      { timestamp: 8, description: 'redirectEnd', attributes: {} },
+      { timestamp: 9, description: 'requestStart', attributes: {} },
+      { timestamp: 100, description: 'responseStart', attributes: {} },
+      { timestamp: 11, description: 'responseEnd', attributes: {} },
     ]);
     expect(span.attributes).toEqual({
       'http.url': 'http://localhost:4200/style.css',

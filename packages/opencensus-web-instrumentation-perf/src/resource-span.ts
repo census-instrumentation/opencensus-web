@@ -15,8 +15,8 @@
  */
 
 import * as webCore from '@opencensus/web-core';
-import {PerformanceResourceTimingExtended} from './perf-types';
-import {annotationsForPerfTimeFields} from './util';
+import { PerformanceResourceTimingExtended } from './perf-types';
+import { annotationsForPerfTimeFields } from './util';
 
 /** PerformanceEntry time event fields to create as span annotations. */
 const PERFORMANCE_ENTRY_EVENTS = [
@@ -36,8 +36,11 @@ const PERFORMANCE_ENTRY_EVENTS = [
 
 /** Returns a `Span` based on a browser performance API resource timing. */
 export function getResourceSpan(
-    resourceTiming: PerformanceResourceTimingExtended, traceId: string,
-    parentSpanId: string, spanId?: string): webCore.Span {
+  resourceTiming: PerformanceResourceTimingExtended,
+  traceId: string,
+  parentSpanId: string,
+  spanId?: string
+): webCore.Span {
   const span = new webCore.Span(spanId);
   span.traceId = traceId;
   span.parentSpanId = parentSpanId;
@@ -47,14 +50,17 @@ export function getResourceSpan(
   span.kind = webCore.SpanKind.CLIENT;
   span.endPerfTime = resourceTiming.responseEnd;
   span.attributes = getResourceSpanAttributes(resourceTiming, parsedUrl);
-  span.annotations =
-      annotationsForPerfTimeFields(resourceTiming, PERFORMANCE_ENTRY_EVENTS);
+  span.annotations = annotationsForPerfTimeFields(
+    resourceTiming,
+    PERFORMANCE_ENTRY_EVENTS
+  );
   return span;
 }
 
 function getResourceSpanAttributes(
-    resourceTiming: PerformanceResourceTimingExtended,
-    parsedUrl: webCore.ParsedUrl): webCore.Attributes {
+  resourceTiming: PerformanceResourceTimingExtended,
+  parsedUrl: webCore.ParsedUrl
+): webCore.Attributes {
   const attrs: webCore.Attributes = {};
   attrs[webCore.ATTRIBUTE_HTTP_URL] = resourceTiming.name;
   attrs[webCore.ATTRIBUTE_HTTP_HOST] = parsedUrl.host;
@@ -63,7 +69,7 @@ function getResourceSpanAttributes(
 
   if (resourceTiming.nextHopProtocol) {
     attrs[webCore.ATTRIBUTE_HTTP_NEXT_HOP_PROTOCOL] =
-        resourceTiming.nextHopProtocol;
+      resourceTiming.nextHopProtocol;
   }
 
   const initiatorType = resourceTiming.initiatorType;
@@ -79,11 +85,11 @@ function getResourceSpanAttributes(
   }
   if (resourceTiming.encodedBodySize) {
     attrs[webCore.ATTRIBUTE_HTTP_RESP_ENCODED_BODY_SIZE] =
-        resourceTiming.encodedBodySize;
+      resourceTiming.encodedBodySize;
   }
   if (resourceTiming.decodedBodySize) {
     attrs[webCore.ATTRIBUTE_HTTP_RESP_DECODED_BODY_SIZE] =
-        resourceTiming.decodedBodySize;
+      resourceTiming.decodedBodySize;
   }
   return attrs;
 }

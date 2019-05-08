@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {BufferConfig, Exporter, RootSpan} from '@opencensus/web-core';
+import { BufferConfig, Exporter, RootSpan } from '@opencensus/web-core';
 
 /**
  * Controls the sending of traces to exporters.
@@ -30,10 +30,11 @@ export class ExporterBuffer {
   private queue: RootSpan[] = [];
 
   constructor(
-      /** The service to send the collected spans. */
-      private readonly exporter: Exporter,
-      /** Configuration object to specify bufferTimeout and bufferSize. */
-      private readonly config: BufferConfig) {}
+    /** The service to send the collected spans. */
+    private readonly exporter: Exporter,
+    /** Configuration object to specify bufferTimeout and bufferSize. */
+    private readonly config: BufferConfig
+  ) {}
 
   /**
    * Adds a root span to the buffer. The buffer will be flushed if the queue

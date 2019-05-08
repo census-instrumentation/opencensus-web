@@ -34,7 +34,10 @@ interface IndexableObject {
  *    `restoreGetterOrValue` below.
  */
 export function mockGetterOrValue<T>(
-    object: T, property: keyof T, mockValue: unknown) {
+  object: T,
+  property: keyof T,
+  mockValue: unknown
+) {
   if (isGetter(object, property)) {
     spyOnProperty(object, property).and.returnValue(mockValue);
   } else {
@@ -52,7 +55,10 @@ export function mockGetterOrValue<T>(
  * restored automatically. For normal values, this just sets the value.
  */
 export function restoreGetterOrValue<T, K extends keyof T>(
-    object: T, property: K, value: T[K]) {
+  object: T,
+  property: K,
+  value: T[K]
+) {
   if (isGetter(object, property)) return;
   object[property] = value;
 }

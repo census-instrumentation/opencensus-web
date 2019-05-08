@@ -15,6 +15,10 @@
  */
 
 export * from './perf-types';
-export {getInitialLoadRootSpan} from './initial-load-root-span';
-export {recordLongTasks} from './long-tasks-recorder';
-export {GroupedPerfEntries, getPerfEntries, clearPerfEntries} from './perf-grouper';
+export { getInitialLoadRootSpan } from './initial-load-root-span';
+export { recordLongTasks } from './long-tasks-recorder';
+export {
+  GroupedPerfEntries,
+  getPerfEntries,
+  clearPerfEntries,
+} from './perf-grouper';

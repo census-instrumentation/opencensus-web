@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {recordLongTasks} from '@opencensus/web-instrumentation-perf';
+import { recordLongTasks } from '@opencensus/web-instrumentation-perf';
 
 if (window.performance) {
   if (performance.setResourceTimingBufferSize) {

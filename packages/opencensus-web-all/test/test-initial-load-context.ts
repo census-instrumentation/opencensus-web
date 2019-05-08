@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {getInitialLoadSpanContext} from '../src/initial-load-context';
-import {WindowWithOcwGlobals} from '../src/types';
+import { getInitialLoadSpanContext } from '../src/initial-load-context';
+import { WindowWithOcwGlobals } from '../src/types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -23,8 +23,8 @@ const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const TRACE_ID_REGEX = /[0-9a-f]{32}/;
 
 describe('getInitialLoadSpanContext', () => {
-  let realTraceparent: string|undefined;
-  let realOcSampleRate: number|undefined;
+  let realTraceparent: string | undefined;
+  let realOcSampleRate: number | undefined;
   beforeEach(() => {
     realTraceparent = windowWithOcwGlobals.traceparent;
     realOcSampleRate = windowWithOcwGlobals.ocSampleRate;
@@ -35,8 +35,7 @@ describe('getInitialLoadSpanContext', () => {
   });
 
   it('sets trace and span ID from global `traceparent` when specified', () => {
-    windowWithOcwGlobals.traceparent =
-        `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    windowWithOcwGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
     expect(getInitialLoadSpanContext()).toEqual({
       traceId: '0af7651916cd43dd8448eb211c80319c',
       spanId: 'b7ad6b7169203331',

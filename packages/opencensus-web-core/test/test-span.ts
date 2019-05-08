@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {LinkType, MessageEventType} from '@opencensus/web-types';
-import {Span} from '../src/trace/model/span';
-import {mockGetterOrValue, restoreGetterOrValue} from './util';
+import { LinkType, MessageEventType } from '@opencensus/web-types';
+import { Span } from '../src/trace/model/span';
+import { mockGetterOrValue, restoreGetterOrValue } from './util';
 
 describe('Span', () => {
   let span: Span;
@@ -99,32 +99,39 @@ describe('Span', () => {
   it('sets attribute when addAttribute called', () => {
     span.addAttribute('attr1', 23);
 
-    expect(span.attributes).toEqual({attr1: 23});
+    expect(span.attributes).toEqual({ attr1: 23 });
   });
 
   it('adds link when addLink called', () => {
     span.addLink(
-        /* traceId */ '00000000000000000000000000000001', /* spanId */
-        '000000000000000a', /* type */ LinkType.CHILD_LINKED_SPAN,
-        /* attributes */ {linkAttr: 2});
+      /* traceId */ '00000000000000000000000000000001' /* spanId */,
+      '000000000000000a',
+      /* type */ LinkType.CHILD_LINKED_SPAN,
+      /* attributes */ { linkAttr: 2 }
+    );
 
-    expect(span.links).toEqual([{
-      traceId: '00000000000000000000000000000001',
-      spanId: '000000000000000a',
-      type: LinkType.CHILD_LINKED_SPAN,
-      attributes: {linkAttr: 2},
-    }]);
+    expect(span.links).toEqual([
+      {
+        traceId: '00000000000000000000000000000001',
+        spanId: '000000000000000a',
+        type: LinkType.CHILD_LINKED_SPAN,
+        attributes: { linkAttr: 2 },
+      },
+    ]);
   });
 
   describe('addAnnotation', () => {
     it('adds annotation with specified timestamp', () => {
       span.addAnnotation(
-          'description1', {annotationAttr: 'a'}, /* timestamp */ 22);
+        'description1',
+        { annotationAttr: 'a' },
+        /* timestamp */ 22
+      );
 
       expect(span.annotations).toEqual([
         {
           description: 'description1',
-          attributes: {annotationAttr: 'a'},
+          attributes: { annotationAttr: 'a' },
           timestamp: 22,
         },
       ]);
@@ -134,11 +141,13 @@ describe('Span', () => {
       spyOn(performance, 'now').and.returnValue(88);
       expect(span.addAnnotation('description2'));
 
-      expect(span.annotations).toEqual([{
-        description: 'description2',
-        attributes: {},
-        timestamp: 88,
-      }]);
+      expect(span.annotations).toEqual([
+        {
+          description: 'description2',
+          attributes: {},
+          timestamp: 88,
+        },
+      ]);
     });
   });
 

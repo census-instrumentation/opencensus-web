@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {Logger} from '../../common/types';
-import {Exporter} from '../../exporters/types';
-import {PluginNames} from '../instrumentation/types';
-import {Propagation} from '../propagation/types';
+import { Logger } from '../../common/types';
+import { Exporter } from '../../exporters/types';
+import { PluginNames } from '../instrumentation/types';
+import { Propagation } from '../propagation/types';
 
 /** Interface configuration for a buffer. */
 export interface BufferConfig {
@@ -87,4 +87,4 @@ export interface TraceParams {
   numberOfLinksPerSpan?: number;
 }
 
-export type Config = TracingConfig&TracerConfig&BufferConfig;
+export type Config = TracingConfig & TracerConfig & BufferConfig;

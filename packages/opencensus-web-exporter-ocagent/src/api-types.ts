@@ -43,7 +43,7 @@ export interface Resource {
   type?: string;
 
   /** Set of labels that describe the resource. */
-  labels?: {[key: string]: string};
+  labels?: { [key: string]: string };
 }
 
 /**
@@ -63,7 +63,7 @@ export interface Node {
   serviceInfo?: ServiceInfo;
 
   /** Additional attributes. */
-  attributes?: {[key: string]: string};
+  attributes?: { [key: string]: string };
 }
 
 /** Unspecified library info language. */
@@ -75,7 +75,7 @@ export type LanguageWebJs = 10;
  * omitted since the spans produced by OpenCensus Web are always from the Web JS
  * library.
  */
-export type LibraryInfoLanguage = LanguageUnspecified|LanguageWebJs;
+export type LibraryInfoLanguage = LanguageUnspecified | LanguageWebJs;
 
 /** Information on OpenCensus library that produced the spans/metrics. */
 export interface LibraryInfo {
@@ -115,9 +115,9 @@ export interface ServiceInfo {
 }
 
 /** Type for the `tracestate`  */
-export type TraceState = {
-  [key: string]: string
-};
+export interface TraceState {
+  [key: string]: string;
+}
 
 /** Unspecified span kind. */
 export type SpanKindUnspecified = 0;
@@ -135,7 +135,7 @@ export type SpanKindClient = 2;
  * Type of span. Can be used to specify additional relationships between spans
  * in addition to a parent/child relationship.
  */
-export type SpanKind = SpanKindUnspecified|SpanKindServer|SpanKindClient;
+export type SpanKind = SpanKindUnspecified | SpanKindServer | SpanKindClient;
 
 /**
  * A span represents a single operation within a trace. Spans can be nested to
@@ -269,7 +269,9 @@ export type LinkTypeParentLinkedSpan = 2;
  * parent, or unspecified.
  */
 export type LinkType =
-    LinkTypeUnspecified|LinkTypeChildLinkedSpan|LinkTypeParentLinkedSpan;
+  | LinkTypeUnspecified
+  | LinkTypeChildLinkedSpan
+  | LinkTypeParentLinkedSpan;
 
 /**
  * A pointer from the current span to another span in the same trace or in a
@@ -429,7 +431,9 @@ export type MessageEventTypeSent = 1;
 export type MessageEventTypeReceived = 2;
 /** Indicates whether the message was sent or received. */
 export type MessageEventType =
-    MessageEventTypeUnspecified|MessageEventTypeSent|MessageEventTypeReceived;
+  | MessageEventTypeUnspecified
+  | MessageEventTypeSent
+  | MessageEventTypeReceived;
 
 /**
  * An event describing a message sent/received between Spans.
@@ -450,12 +454,12 @@ export interface MessageEvent {
   /**
    * The number of uncompressed bytes sent or received.
    */
-  uncompressedSize?: string|number;
+  uncompressedSize?: string | number;
   /**
    * The number of compressed bytes sent or received. If zero, assumed to be the
    * same size as uncompressed.
    */
-  compressedSize?: string|number;
+  compressedSize?: string | number;
 }
 
 /**
@@ -470,7 +474,7 @@ export interface AttributeValue {
    * A 64-bit signed integer. May be sent to the API as either number or string
    * type (string is needed to accurately express some 64-bit ints).
    */
-  intValue?: string|number;
+  intValue?: string | number;
   /**
    * A Boolean value represented by `true` or `false`.
    */

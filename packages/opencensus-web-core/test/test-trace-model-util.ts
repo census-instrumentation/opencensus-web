@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import {isSampled} from '../src/trace/model/util';
+import { isSampled } from '../src/trace/model/util';
 
 describe('isSampled', () => {
   it('returns true if sampling bit is set', () => {
-    expect(isSampled({traceId: '', spanId: '', options: 1})).toBe(true);
-    expect(isSampled({traceId: '', spanId: '', options: 5})).toBe(true);
+    expect(isSampled({ traceId: '', spanId: '', options: 1 })).toBe(true);
+    expect(isSampled({ traceId: '', spanId: '', options: 5 })).toBe(true);
   });
   it('returns false if sampling bit is not set', () => {
-    expect(isSampled({traceId: '', spanId: '', options: 0})).toBe(false);
-    expect(isSampled({traceId: '', spanId: '', options: 4})).toBe(false);
+    expect(isSampled({ traceId: '', spanId: '', options: 0 })).toBe(false);
+    expect(isSampled({ traceId: '', spanId: '', options: 4 })).toBe(false);
   });
 });

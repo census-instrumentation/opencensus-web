@@ -43,8 +43,7 @@ export const ATTRIBUTE_HTTP_URL = `${HTTP_PREFIX}url`;
  * The ALPH Protocol ID of the network protocol used to make the request. See:
  * https://www.w3.org/TR/resource-timing-2/#dom-performanceresourcetiming-nexthopprotocol
  */
-export const ATTRIBUTE_HTTP_NEXT_HOP_PROTOCOL =
-    `${HTTP_PREFIX}next_hop_protocol`;
+export const ATTRIBUTE_HTTP_NEXT_HOP_PROTOCOL = `${HTTP_PREFIX}next_hop_protocol`;
 /**
  * The type of resource that initiated the HTTP request. See:
  * https://www.w3.org/TR/resource-timing-2/#dom-performanceresourcetiming-initiatortype
@@ -59,14 +58,12 @@ export const ATTRIBUTE_HTTP_RESP_SIZE = `${HTTP_PREFIX}resp_size`;
  * The size in bytes of the compressed response body. See
  * https://www.w3.org/TR/resource-timing-2/#dom-performanceresourcetiming-encodedbodysize
  */
-export const ATTRIBUTE_HTTP_RESP_ENCODED_BODY_SIZE =
-    `${HTTP_PREFIX}resp_encoded_body_size`;
+export const ATTRIBUTE_HTTP_RESP_ENCODED_BODY_SIZE = `${HTTP_PREFIX}resp_encoded_body_size`;
 /**
  * The size in bytes of the uncompressed response body. See
  * https://www.w3.org/TR/resource-timing-2/#dom-performanceresourcetiming-decodedbodysize
  */
-export const ATTRIBUTE_HTTP_RESP_DECODED_BODY_SIZE =
-    `${HTTP_PREFIX}resp_decoded_body_size`;
+export const ATTRIBUTE_HTTP_RESP_DECODED_BODY_SIZE = `${HTTP_PREFIX}resp_decoded_body_size`;
 
 /** Attribute prefix for spans that represent navigations in the browser. */
 const NAVIGATION_PREFIX = 'nav.';
@@ -79,8 +76,7 @@ export const ATTRIBUTE_NAV_TYPE = `${NAVIGATION_PREFIX}type`;
  * Number of redirects since the last non-redirect navigation. See
  * https://www.w3.org/TR/navigation-timing-2/#dom-performancenavigationtiming-redirectcount
  */
-export const ATTRIBUTE_NAV_REDIRECT_COUNT =
-    `${NAVIGATION_PREFIX}redirect_count`;
+export const ATTRIBUTE_NAV_REDIRECT_COUNT = `${NAVIGATION_PREFIX}redirect_count`;
 
 /**
  * Attribute prefix for spans that are for "long tasks" (long JS event loops).

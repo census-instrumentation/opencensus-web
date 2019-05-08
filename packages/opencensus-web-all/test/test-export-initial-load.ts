@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {exportRootSpanAfterLoadEvent} from '../src/export-initial-load';
-import {WindowWithOcwGlobals} from '../src/types';
+import { exportRootSpanAfterLoadEvent } from '../src/export-initial-load';
+import { WindowWithOcwGlobals } from '../src/types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -29,17 +29,18 @@ function hexToBase64(hexString: string): string {
   const match = hexString.match(/\w{2}/g);
   if (!match) return '';
   return window.btoa(
-      match
-          .map(
-              (hexByteChars) =>
-                  // tslint:disable-next-line:ban Needed to parse hexadecimal.
-              String.fromCharCode(parseInt(hexByteChars, 16)))
-          .join(''));
+    match
+      .map(hexByteChars =>
+        // tslint:disable-next-line:ban Needed to parse hexadecimal.
+        String.fromCharCode(parseInt(hexByteChars, 16))
+      )
+      .join('')
+  );
 }
 
 describe('exportRootSpanAfterLoadEvent', () => {
-  let realOcAgent: string|undefined;
-  let realTraceparent: string|undefined;
+  let realOcAgent: string | undefined;
+  let realTraceparent: string | undefined;
   let sendSpy: jasmine.Spy;
   beforeEach(() => {
     jasmine.clock().install();
@@ -75,8 +76,10 @@ describe('exportRootSpanAfterLoadEvent', () => {
     exportRootSpanAfterLoadEvent();
 
     jasmine.clock().tick(300000);
-    expect(XMLHttpRequest.prototype.open)
-        .toHaveBeenCalledWith('POST', 'http://agent/v1/trace');
+    expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith(
+      'POST',
+      'http://agent/v1/trace'
+    );
     expect(XMLHttpRequest.prototype.send).toHaveBeenCalledTimes(1);
     // Check that trace and span ID from `window.traceparent` are in body sent.
     const sendBody = sendSpy.calls.argsFor(0)[0];
@@ -87,7 +90,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
   it('does not export spans if traceparent sampling hint set to zero', () => {
     windowWithOcwGlobals.ocAgent = 'http://agent';
     windowWithOcwGlobals.traceparent =
-        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00';
+      '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00';
 
     exportRootSpanAfterLoadEvent();
 
@@ -116,8 +119,10 @@ describe('exportRootSpanAfterLoadEvent', () => {
     exportRootSpanAfterLoadEvent();
 
     jasmine.clock().tick(300000);
-    expect(XMLHttpRequest.prototype.open)
-        .toHaveBeenCalledWith('POST', 'http://agent/v1/trace');
+    expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith(
+      'POST',
+      'http://agent/v1/trace'
+    );
     expect(XMLHttpRequest.prototype.send).toHaveBeenCalled();
   });
 });

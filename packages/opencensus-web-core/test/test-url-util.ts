@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {parseUrl} from '../src/common/url-util';
+import { parseUrl } from '../src/common/url-util';
 
 describe('parseUrl', () => {
   it('parses a URL into its various components', () => {
-    const parsedUrl =
-        parseUrl('https://example.com:3000/pathname/?search=test#hash');
+    const parsedUrl = parseUrl(
+      'https://example.com:3000/pathname/?search=test#hash'
+    );
 
     expect(parsedUrl.protocol).toBe('https:');
     expect(parsedUrl.hostname).toBe('example.com');
@@ -32,8 +33,9 @@ describe('parseUrl', () => {
   });
 
   it('correctly parases a url without a port', () => {
-    const parsedUrl =
-        parseUrl('http://example.com/path1/path2?search=test&format=json');
+    const parsedUrl = parseUrl(
+      'http://example.com/path1/path2?search=test&format=json'
+    );
 
     expect(parsedUrl.protocol).toBe('http:');
     expect(parsedUrl.hostname).toBe('example.com');

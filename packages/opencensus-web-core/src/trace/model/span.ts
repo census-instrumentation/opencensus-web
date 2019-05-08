@@ -16,8 +16,8 @@
 
 import * as webTypes from '@opencensus/web-types';
 
-import {randomSpanId} from '../../common/id-util';
-import {getDateForPerfTime} from '../../common/time-util';
+import { randomSpanId } from '../../common/id-util';
+import { getDateForPerfTime } from '../../common/time-util';
 
 /** Default span name if none is specified. */
 const DEFAULT_SPAN_NAME = 'unnamed';
@@ -25,8 +25,9 @@ const DEFAULT_SPAN_NAME = 'unnamed';
 /** A span represents a single operation within a trace. */
 export class Span implements webTypes.Span {
   constructor(
-      /** The ID of this span. Defaults to a random span ID. */
-      public id = randomSpanId()) {}
+    /** The ID of this span. Defaults to a random span ID. */
+    public id = randomSpanId()
+  ) {}
 
   /** If the parent span is in another process. */
   remoteParent = false;
@@ -59,7 +60,7 @@ export class Span implements webTypes.Span {
    * `code` is not an HTTP status, but is a specific trace status code. See:
    * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/HTTP.md#mapping-from-http-status-codes-to-trace-status-codes
    */
-  status: webTypes.Status = {code: webTypes.CanonicalCode.OK};
+  status: webTypes.Status = { code: webTypes.CanonicalCode.OK };
 
   /** A set of attributes, each in the format [KEY]:[VALUE] */
   attributes: webTypes.Attributes = {};
@@ -132,7 +133,7 @@ export class Span implements webTypes.Span {
     return {
       traceId: this.traceId,
       spanId: this.id,
-      options: 0x1,  // always traced
+      options: 0x1, // always traced
       traceState: this.traceState,
     };
   }
@@ -142,7 +143,7 @@ export class Span implements webTypes.Span {
    * @param key Describes the value added.
    * @param value What value to set for the attribute.
    */
-  addAttribute(key: string, value: string|number|boolean) {
+  addAttribute(key: string, value: string | number | boolean) {
     this.attributes[key] = value;
   }
 
@@ -154,9 +155,11 @@ export class Span implements webTypes.Span {
    *     Defaults to `performance.now()`.
    */
   addAnnotation(
-      description: string, attributes: webTypes.Attributes = {},
-      timestamp: number = performance.now()) {
-    this.annotations.push({description, attributes, timestamp});
+    description: string,
+    attributes: webTypes.Attributes = {},
+    timestamp: number = performance.now()
+  ) {
+    this.annotations.push({ description, attributes, timestamp });
   }
 
   /**
@@ -167,9 +170,12 @@ export class Span implements webTypes.Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: webTypes.LinkType,
-      attributes: webTypes.Attributes = {}) {
-    this.links.push({traceId, spanId, type, attributes});
+    traceId: string,
+    spanId: string,
+    type: webTypes.LinkType,
+    attributes: webTypes.Attributes = {}
+  ) {
+    this.links.push({ traceId, spanId, type, attributes });
   }
   /**
    * Adds a message event to the span.
@@ -179,9 +185,11 @@ export class Span implements webTypes.Span {
    *     Defaults to `performance.now()`.
    */
   addMessageEvent(
-      type: webTypes.MessageEventType, id: string,
-      timestamp: number = performance.now()) {
-    this.messageEvents.push({type, id, timestamp});
+    type: webTypes.MessageEventType,
+    id: string,
+    timestamp: number = performance.now()
+  ) {
+    this.messageEvents.push({ type, id, timestamp });
   }
 
   /**
@@ -190,7 +198,7 @@ export class Span implements webTypes.Span {
    * @param message optional A developer-facing error message.
    */
   setStatus(code: webTypes.CanonicalCode, message?: string) {
-    this.status = {code, message};
+    this.status = { code, message };
   }
 
   /** Starts span by setting `startTime` to now. */

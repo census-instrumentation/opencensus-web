@@ -15,8 +15,8 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import {NoopExporter} from '../../exporters/noop_exporter';
-import {Tracer} from './tracer';
+import { NoopExporter } from '../../exporters/noop_exporter';
+import { Tracer } from './tracer';
 
 export const NOOP_EXPORTER = new NoopExporter();
 

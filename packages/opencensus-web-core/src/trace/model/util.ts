@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {SpanContext} from '@opencensus/web-types';
+import { SpanContext } from '@opencensus/web-types';
 
 const IS_SAMPLED_BIT = 0x1;
 

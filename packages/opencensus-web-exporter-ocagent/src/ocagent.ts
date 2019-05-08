@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-import {Exporter, ExporterConfig, RootSpan, VERSION} from '@opencensus/web-core';
+import {
+  Exporter,
+  ExporterConfig,
+  RootSpan,
+  VERSION,
+} from '@opencensus/web-core';
 
-import {adaptRootSpan} from './adapters';
+import { adaptRootSpan } from './adapters';
 import * as apiTypes from './api-types';
-import {ExporterBuffer} from './exporter-buffer';
-import {EXPORTER_VERSION} from './version';
+import { ExporterBuffer } from './exporter-buffer';
+import { EXPORTER_VERSION } from './version';
 
 /**
  * Enum value for LibraryInfo.Language that indicates to the OpenCensus Agent
@@ -48,7 +53,7 @@ export interface OCAgentExporterOptions extends ExporterConfig {
    * Attributes about the web application writing the traces. This will be set
    * in the `attributes` field of the `Node` object written to the agent.
    */
-  attributes?: {[key: string]: string};
+  attributes?: { [key: string]: string };
 }
 
 /**
@@ -66,14 +71,14 @@ export class OCAgentExporter implements Exporter {
    * Sends a list of root spans to the service.
    * @param rootSpans A list of root spans to publish.
    */
-  publish(roots: RootSpan[]): Promise<number|string|void> {
+  publish(roots: RootSpan[]): Promise<number | string | void> {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', this.config.agentEndpoint);
     xhr.setRequestHeader('Content-Type', 'application/json');
     const request = this.getExportSpansRequest(roots);
     xhr.send(JSON.stringify(request));
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       xhr.onreadystatechange = () => {
         if (xhr.readyState === XHR_READY_STATE_DONE) resolve(xhr.status);
       };
@@ -91,19 +96,20 @@ export class OCAgentExporter implements Exporter {
     this.buffer.addToBuffer(root);
   }
 
-  private getExportSpansRequest(roots: RootSpan[]):
-      apiTypes.ExportTraceServiceRequest {
+  private getExportSpansRequest(
+    roots: RootSpan[]
+  ): apiTypes.ExportTraceServiceRequest {
     let spans: apiTypes.Span[] = [];
     for (const root of roots) {
       spans = spans.concat(adaptRootSpan(root));
     }
-    return {spans, node: this.getNodeForExport()};
+    return { spans, node: this.getNodeForExport() };
   }
 
   private getNodeForExport(): apiTypes.Node {
     return {
-      identifier: {hostName: location.host},
-      serviceInfo: {name: this.config.serviceName},
+      identifier: { hostName: location.host },
+      serviceInfo: { name: this.config.serviceName },
       libraryInfo: {
         language: WEB_JS_LIBRARY_LANGUAGE,
         exporterVersion: EXPORTER_VERSION,
