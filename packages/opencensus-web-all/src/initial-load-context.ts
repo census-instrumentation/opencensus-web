@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {randomSpanId, randomTraceId, SpanContext} from '@opencensus/web-core';
-import {traceParentToSpanContext} from '@opencensus/web-propagation-tracecontext';
+import { randomSpanId, randomTraceId, SpanContext } from '@opencensus/web-core';
+import { traceParentToSpanContext } from '@opencensus/web-propagation-tracecontext';
 
-import {WindowWithOcwGlobals} from './types';
+import { WindowWithOcwGlobals } from './types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -35,8 +35,9 @@ const DEFAULT_SAMPLE_RATE = 0.0001;
  */
 export function getInitialLoadSpanContext(): SpanContext {
   if (!windowWithOcwGlobals.traceparent) return randomSampledSpanContext();
-  const spanContext =
-      traceParentToSpanContext(windowWithOcwGlobals.traceparent);
+  const spanContext = traceParentToSpanContext(
+    windowWithOcwGlobals.traceparent
+  );
   if (!spanContext) {
     console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
     return randomSampledSpanContext();

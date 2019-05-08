@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter, Propagation, randomSpanId, randomTraceId, SpanContext} from '@opencensus/web-core';
+import {
+  HeaderGetter,
+  HeaderSetter,
+  Propagation,
+  randomSpanId,
+  randomTraceId,
+  SpanContext,
+} from '@opencensus/web-core';
 
 /**
  * @fileoverview Utilities to serialize/deserialize trace context (trace ID,
@@ -38,17 +45,18 @@ const TRACE_PARENT_REGEX = /^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$/;
  * Parses a traceparent header value into a SpanContext object, or null if the
  * traceparent value is invalid.
  */
-export function traceParentToSpanContext(traceParent: string): SpanContext|
-    null {
+export function traceParentToSpanContext(
+  traceParent: string
+): SpanContext | null {
   const match = traceParent.match(TRACE_PARENT_REGEX);
   if (!match) return null;
   const parts = traceParent.split('-');
   const traceId = parts[1];
-  if (traceId.match(/^0*$/)) return null;  // All zeros trace ID is invalid.
+  if (traceId.match(/^0*$/)) return null; // All zeros trace ID is invalid.
   const spanId = parts[2];
   // tslint:disable-next-line:ban Needed to parse hexadecimal.
   const options = parseInt(parts[3], 16);
-  return {traceId, spanId, options};
+  return { traceId, spanId, options };
 }
 
 /**
@@ -56,8 +64,9 @@ export function traceParentToSpanContext(traceParent: string): SpanContext|
  * that the length of the `traceId`, `spanId` and `options` are all valid.
  */
 export function spanContextToTraceParent(spanContext: SpanContext): string {
-  return `00-${spanContext.traceId}-${spanContext.spanId}-0${
-      (spanContext.options || DEFAULT_OPTIONS).toString(16)}`;
+  return `00-${spanContext.traceId}-${spanContext.spanId}-0${(
+    spanContext.options || DEFAULT_OPTIONS
+  ).toString(16)}`;
 }
 
 /**
@@ -72,20 +81,20 @@ export class TraceContextFormat implements Propagation {
    * in the headers, or if the parsed `traceId` or `spanId` is invalid, null
    * returned.
    */
-  extract(getter: HeaderGetter): SpanContext|null {
+  extract(getter: HeaderGetter): SpanContext | null {
     const traceParentHeader = getter.getHeader(TRACE_PARENT);
     if (!traceParentHeader) return null;
-    const traceParent = Array.isArray(traceParentHeader) ?
-        traceParentHeader[0] :
-        traceParentHeader;
+    const traceParent = Array.isArray(traceParentHeader)
+      ? traceParentHeader[0]
+      : traceParentHeader;
     const spanContext = traceParentToSpanContext(traceParent);
     if (!spanContext) return null;
 
     const traceStateHeader = getter.getHeader(TRACE_STATE);
     if (traceStateHeader) {
-      spanContext.traceState = Array.isArray(traceStateHeader) ?
-          traceStateHeader.join(',') :
-          traceStateHeader;
+      spanContext.traceState = Array.isArray(traceStateHeader)
+        ? traceStateHeader.join(',')
+        : traceStateHeader;
     }
     return spanContext;
   }

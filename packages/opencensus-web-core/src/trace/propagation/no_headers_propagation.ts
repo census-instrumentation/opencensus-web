@@ -15,17 +15,17 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import {randomSpanId, randomTraceId} from '../../common/id-util';
+import { randomSpanId, randomTraceId } from '../../common/id-util';
 
 /** Propagation implementation that does not set or get headers. */
 export class NoHeadersPropagation implements webTypes.Propagation {
-  extract(getter: webTypes.HeaderGetter): webTypes.SpanContext|null {
+  extract(getter: webTypes.HeaderGetter): webTypes.SpanContext | null {
     return null;
   }
 
   inject(setter: webTypes.HeaderSetter, spanContext: webTypes.SpanContext) {}
 
   generate(): webTypes.SpanContext {
-    return {traceId: randomTraceId(), spanId: randomSpanId()};
+    return { traceId: randomTraceId(), spanId: randomSpanId() };
   }
 }

@@ -45,11 +45,15 @@ export type toJSONFunction = () => {};
  * See:
  * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming
  */
-export declare interface PerformanceResourceTimingExtended extends
-    PerformanceEntry {
+export declare interface PerformanceResourceTimingExtended
+  extends PerformanceEntry {
   /** Index signature allows annotations generation from a list of fields. */
-  [index: string]: number|undefined|PerformanceServerTiming[]|string|
-      toJSONFunction;
+  [index: string]:
+    | number
+    | undefined
+    | PerformanceServerTiming[]
+    | string
+    | toJSONFunction;
 
   readonly serverTiming?: PerformanceServerTiming[];
 
@@ -78,8 +82,8 @@ export declare interface PerformanceResourceTimingExtended extends
  * See:
  * https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming
  */
-export declare interface PerformanceNavigationTimingExtended extends
-    PerformanceResourceTimingExtended {
+export declare interface PerformanceNavigationTimingExtended
+  extends PerformanceResourceTimingExtended {
   readonly initiatorType: 'navigation';
 
   readonly domComplete: number;
@@ -100,9 +104,12 @@ export declare interface PerformanceNavigationTimingExtended extends
  * See https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver
  */
 export declare interface PerformanceObserver {
-  new(callback:
-          (entries: PerformanceObserverEntryList,
-           observer: PerformanceObserver) => void): PerformanceObserver;
+  new (
+    callback: (
+      entries: PerformanceObserverEntryList,
+      observer: PerformanceObserver
+    ) => void
+  ): PerformanceObserver;
   disconnect(): void;
   observe(options: PerformanceObserverConfig): void;
   takeRecords(): PerformanceEntry[];
@@ -110,7 +117,13 @@ export declare interface PerformanceObserver {
 
 /** Types of entries that a PerformanceObserver can observe. */
 export type PerformanceObserverEntryType =
-    'frame'|'navigation'|'resource'|'mark'|'measure'|'paint'|'longtask';
+  | 'frame'
+  | 'navigation'
+  | 'resource'
+  | 'mark'
+  | 'measure'
+  | 'paint'
+  | 'longtask';
 
 /** Type for the config passed to the PerformanceObserver.observe method. */
 export declare interface PerformanceObserverConfig {
@@ -131,7 +144,7 @@ export declare interface PerformanceObserverEntryList {
  */
 export declare interface PerformancePaintTiming extends PerformanceEntry {
   readonly entryType: 'paint';
-  readonly name: 'first-paint'|'first-contentful-paint';
+  readonly name: 'first-paint' | 'first-contentful-paint';
 }
 
 /**
@@ -139,7 +152,7 @@ export declare interface PerformancePaintTiming extends PerformanceEntry {
  * See https://developer.mozilla.org/en-US/docs/Web/API/TaskAttributionTiming
  */
 export declare interface TaskAttributionTiming {
-  readonly containerType: 'iframe'|'embed'|'object';
+  readonly containerType: 'iframe' | 'embed' | 'object';
   readonly containerSrc: string;
   readonly containerId: string;
   readonly containerName: string;

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {Annotation, Attributes, SpanKind, Tracer} from '@opencensus/web-core';
-import {getInitialLoadRootSpan} from '../src/initial-load-root-span';
-import {GroupedPerfEntries} from '../src/perf-grouper';
+import { Annotation, Attributes, SpanKind, Tracer } from '@opencensus/web-core';
+import { getInitialLoadRootSpan } from '../src/initial-load-root-span';
+import { GroupedPerfEntries } from '../src/perf-grouper';
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const TRACE_ID_REGEX = /[0-9a-f]{32}/;
@@ -56,16 +56,18 @@ const PERF_ENTRIES: GroupedPerfEntries = {
       entryType: 'longtask',
       startTime: 11870.39999999979,
       duration: 1063.7000000024273,
-      attribution: [{
-        name: 'script',
-        entryType: 'taskattribution',
-        startTime: 0,
-        duration: 0,
-        containerType: 'iframe',
-        containerSrc: '',
-        containerId: '',
-        containerName: '',
-      }],
+      attribution: [
+        {
+          name: 'script',
+          entryType: 'taskattribution',
+          startTime: 0,
+          duration: 0,
+          containerType: 'iframe',
+          containerSrc: '',
+          containerId: '',
+          containerName: '',
+        },
+      ],
       toJSON: () => ({}),
     },
   ],
@@ -227,14 +229,14 @@ const EXPECTED_RESOURCE_ATTRIBUTES: Attributes = {
 };
 const EXPECTED_RESOURCE_ANNOTATIONS: Annotation[] = [
   {
-    'timestamp': 266.9999999925494,
-    'description': 'fetchStart',
-    'attributes': {},
+    timestamp: 266.9999999925494,
+    description: 'fetchStart',
+    attributes: {},
   },
   {
-    'timestamp': 280.1000000035856,
-    'description': 'responseEnd',
-    'attributes': {},
+    timestamp: 280.1000000035856,
+    description: 'responseEnd',
+    attributes: {},
   },
 ];
 
@@ -248,7 +250,11 @@ describe('getInitialLoadRootSpan', () => {
     const traceId = '0000000000000000000000000000000b';
 
     const root = getInitialLoadRootSpan(
-        new Tracer(), PERF_ENTRIES, navigationFetchSpanId, traceId);
+      new Tracer(),
+      PERF_ENTRIES,
+      navigationFetchSpanId,
+      traceId
+    );
 
     expect(root.name).toBe('Nav./');
     expect(root.kind).toBe(SpanKind.UNSPECIFIED);
@@ -270,10 +276,12 @@ describe('getInitialLoadRootSpan', () => {
     expect(navigationFetchSpan.kind).toBe(SpanKind.CLIENT);
     expect(navigationFetchSpan.startPerfTime).toBe(25.100000002566958);
     expect(navigationFetchSpan.endPerfTime).toBe(394.20000000245636);
-    expect(navigationFetchSpan.attributes)
-        .toEqual(EXPECTED_NAV_FETCH_ATTRIBUTES);
-    expect(navigationFetchSpan.annotations)
-        .toEqual(EXPECTED_NAV_FETCH_ANNOTATIONS);
+    expect(navigationFetchSpan.attributes).toEqual(
+      EXPECTED_NAV_FETCH_ATTRIBUTES
+    );
+    expect(navigationFetchSpan.annotations).toEqual(
+      EXPECTED_NAV_FETCH_ANNOTATIONS
+    );
 
     expect(resourceSpan.traceId).toBe(traceId);
     expect(resourceSpan.id).toMatch(SPAN_ID_REGEX);
@@ -294,9 +302,9 @@ describe('getInitialLoadRootSpan', () => {
     expect(longTaskSpan.endPerfTime).toBe(12934.100000002218);
     expect(longTaskSpan.attributes).toEqual({
       'long_task.attribution':
-          '[{"name":"script","entryType":"taskattribution","startTime":0,' +
-          '"duration":0,"containerType":"iframe","containerSrc":"",' +
-          '"containerId":"","containerName":""}]',
+        '[{"name":"script","entryType":"taskattribution","startTime":0,' +
+        '"duration":0,"containerType":"iframe","containerSrc":"",' +
+        '"containerId":"","containerName":""}]',
     });
     expect(longTaskSpan.annotations).toEqual([]);
   });

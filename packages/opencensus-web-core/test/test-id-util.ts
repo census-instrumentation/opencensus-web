@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import {randomSpanId, randomTraceId} from '../src/common/id-util';
+import { randomSpanId, randomTraceId } from '../src/common/id-util';
 
 const NUM_VERIFY_TRIALS = 10;
 
 function verifyGeneratesHexStringsOfLength(
-    generateFn: () => string, expectedLen: number) {
+  generateFn: () => string,
+  expectedLen: number
+) {
   const allHexStrs = new Set<string>();
   for (let i = 0; i < NUM_VERIFY_TRIALS; i++) {
     const hexStr = generateFn();

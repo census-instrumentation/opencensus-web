@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Tracer} from '../model/types';
+import { Tracer } from '../model/types';
 
 /** Interface Plugin to apply patch. */
 export interface Plugin {
@@ -28,41 +28,45 @@ export interface Plugin {
    * @param basedir module absolute path
    */
   enable(
-      // tslint:disable-next-line:no-any
-      moduleExports: any, tracer: Tracer, version: string,
-      options: PluginConfig,
-      // tslint:disable-next-line:no-any
-      basedir?: string): any;
+    // tslint:disable-next-line:no-any
+    moduleExports: any,
+    tracer: Tracer,
+    version: string,
+    options: PluginConfig,
+    basedir?: string
+  ): // tslint:disable-next-line:no-any
+  any;
   /** Method to disable the instrumentation  */
   disable(): void;
 }
 
-export type PluginConfig = {
+export interface PluginConfig {
   // tslint:disable-next-line:no-any
   [key: string]: any;
-};
+}
 
-export type NamedPluginConfig = {
-  module: string; config: PluginConfig;
-};
+export interface NamedPluginConfig {
+  module: string;
+  config: PluginConfig;
+}
 
 /**
  * Type PluginNames: each key should be the name of the module to trace,
  * and its value should be the name of the package  which has the
  * plugin implementation.
  */
-export type PluginNames = {
-  [pluginName: string]: string|NamedPluginConfig;
-};
+export interface PluginNames {
+  [pluginName: string]: string | NamedPluginConfig;
+}
 
-export type PluginInternalFilesVersion = {
-  [pluginName: string]: string
-};
+export interface PluginInternalFilesVersion {
+  [pluginName: string]: string;
+}
 
 /**
  * Each key should be the name of the module to trace, and its value
  * a mapping of a property name to a internal plugin file name.
  */
-export type PluginInternalFiles = {
+export interface PluginInternalFiles {
   [versions: string]: PluginInternalFilesVersion;
-};
+}

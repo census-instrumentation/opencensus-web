@@ -15,8 +15,8 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import {randomTraceId} from '../../common/id-util';
-import {Span} from './span';
+import { randomTraceId } from '../../common/id-util';
+import { Span } from './span';
 
 /** Simple mock root span for use in use tests. */
 export class RootSpan extends Span implements webTypes.RootSpan {
@@ -24,10 +24,11 @@ export class RootSpan extends Span implements webTypes.RootSpan {
   spans: Span[] = [];
 
   constructor(
-      /** Trace associated with this root span. */
-      private readonly tracer: webTypes.Tracer,
-      /** A trace options object to build the root span. */
-      context?: webTypes.TraceOptions) {
+    /** Trace associated with this root span. */
+    private readonly tracer: webTypes.Tracer,
+    /** A trace options object to build the root span. */
+    context?: webTypes.TraceOptions
+  ) {
     super();
 
     if (context) {
@@ -51,16 +52,17 @@ export class RootSpan extends Span implements webTypes.RootSpan {
    * @param kind Span kind if not using options object.
    */
   startChildSpan(
-      nameOrOptions?: string|{name: string, kind: webTypes.SpanKind},
-      kind?: webTypes.SpanKind): Span {
+    nameOrOptions?: string | { name: string; kind: webTypes.SpanKind },
+    kind?: webTypes.SpanKind
+  ): Span {
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;
 
     const spanName =
-        typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
+      typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
     const spanKind =
-        typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
+      typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
     if (spanName) child.name = spanName;
     if (spanKind) child.kind = spanKind;
 

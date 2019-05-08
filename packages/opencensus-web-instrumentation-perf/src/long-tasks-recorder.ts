@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import {PerformanceLongTaskTiming, PerformanceObserverEntryList, WindowWithLongTasks} from './perf-types';
+import {
+  PerformanceLongTaskTiming,
+  PerformanceObserverEntryList,
+  WindowWithLongTasks,
+} from './perf-types';
 
 /** Cast `window` to be access the `ocLt` field for long task timings.  */
 const windowWithLongTasks = window as WindowWithLongTasks;
@@ -26,9 +30,10 @@ const windowWithLongTasks = window as WindowWithLongTasks;
 export function recordLongTasks() {
   if (!windowWithLongTasks.performance) return;
   if (windowWithLongTasks.PerformanceObserver) {
-    const longTaskObserver =
-        new windowWithLongTasks.PerformanceObserver(onLongTasks);
-    longTaskObserver.observe({entryTypes: ['longtask']});
+    const longTaskObserver = new windowWithLongTasks.PerformanceObserver(
+      onLongTasks
+    );
+    longTaskObserver.observe({ entryTypes: ['longtask'] });
   }
   windowWithLongTasks.ocLt = [];
 }
@@ -37,5 +42,6 @@ function onLongTasks(entryList: PerformanceObserverEntryList) {
   // These must be PerformanceLongTaskTiming objects because we only observe
   // 'longtask' above.
   windowWithLongTasks.ocLt!.push(
-      ...(entryList.getEntries() as PerformanceLongTaskTiming[]));
+    ...(entryList.getEntries() as PerformanceLongTaskTiming[])
+  );
 }
