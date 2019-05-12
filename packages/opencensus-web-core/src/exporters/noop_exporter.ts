@@ -17,7 +17,7 @@
 import * as webTypes from '@opencensus/web-types';
 
 export class NoopExporter implements webTypes.Exporter {
-  publish(roots: webTypes.RootSpan[]): Promise<number|string|void> {
+  publish(roots: webTypes.RootSpan[]): Promise<number | string | void> {
     return Promise.resolve();
   }
 

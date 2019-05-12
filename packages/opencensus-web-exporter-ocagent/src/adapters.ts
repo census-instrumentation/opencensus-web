@@ -22,7 +22,7 @@ import * as apiTypes from './api-types';
  * assumed to be in browser performance clock millseconds, and timestamps after
  * it are assumed to be in epoch milliseconds.
  */
-const RECENT_EPOCH_MS = 1500000000000;  // July 13, 2017.
+const RECENT_EPOCH_MS = 1500000000000; // July 13, 2017.
 
 /**
  * Converts a RootSpan type from @opencensus/web-core to the Span JSON structure
@@ -35,7 +35,7 @@ export function adaptRootSpan(rootSpan: webCore.RootSpan): apiTypes.Span[] {
 }
 
 function adaptString(value: string): apiTypes.TruncatableString {
-  return {value};
+  return { value };
 }
 
 /** Converts hexadecimal string to base64 string. */
@@ -51,8 +51,9 @@ function hexToBase64(hexStr: string): string {
   return btoa(hexAsciiCharsStr);
 }
 
-function adaptTraceState(coreTraceState?: webCore.TraceState):
-    apiTypes.TraceState {
+function adaptTraceState(
+  coreTraceState?: webCore.TraceState
+): apiTypes.TraceState {
   if (!coreTraceState || !coreTraceState.length) return {};
   const entries = coreTraceState.split(',');
   const apiTraceState: apiTypes.TraceState = {};
@@ -63,15 +64,15 @@ function adaptTraceState(coreTraceState?: webCore.TraceState):
   return apiTraceState;
 }
 
-function adaptValue(value: boolean|string|number): apiTypes.AttributeValue {
+function adaptValue(value: boolean | string | number): apiTypes.AttributeValue {
   const valType = typeof value;
   if (valType === 'boolean') {
-    return {boolValue: value as boolean};
+    return { boolValue: value as boolean };
   }
   if (valType === 'number') {
-    return {doubleValue: value as number};
+    return { doubleValue: value as number };
   }
-  return {stringValue: adaptString(String(value))};
+  return { stringValue: adaptString(String(value)) };
 }
 
 function adaptAttributes(attributes: webCore.Attributes): apiTypes.Attributes {
@@ -79,7 +80,7 @@ function adaptAttributes(attributes: webCore.Attributes): apiTypes.Attributes {
   for (const key of Object.keys(attributes)) {
     attributeMap[key] = adaptValue(attributes[key]);
   }
-  return {attributeMap};
+  return { attributeMap };
 }
 
 function adaptAnnotation(annotation: webCore.Annotation): apiTypes.TimeEvent {
@@ -106,14 +107,15 @@ function adaptTimestampNumber(timestamp: number): string {
   return webCore.getIsoDateStrForPerfTime(timestamp);
 }
 
-function adaptMessageEvent(messageEvent: webCore.MessageEvent):
-    apiTypes.TimeEvent {
+function adaptMessageEvent(
+  messageEvent: webCore.MessageEvent
+): apiTypes.TimeEvent {
   return {
     time: adaptTimestampNumber(messageEvent.timestamp),
     messageEvent: {
       // tslint:disable-next-line:ban Needed to parse hexadecimal.
       id: String(parseInt(messageEvent.id, 16)),
-      type: messageEvent.type,  // Enum values match proto values
+      type: messageEvent.type, // Enum values match proto values
       uncompressedSize: messageEvent.uncompressedSize,
       compressedSize: messageEvent.compressedSize,
     },
@@ -121,11 +123,13 @@ function adaptMessageEvent(messageEvent: webCore.MessageEvent):
 }
 
 function adaptTimeEvents(
-    annotations: webCore.Annotation[],
-    messageEvents: webCore.MessageEvent[]): apiTypes.TimeEvents {
+  annotations: webCore.Annotation[],
+  messageEvents: webCore.MessageEvent[]
+): apiTypes.TimeEvents {
   return {
-    timeEvent: annotations.map(adaptAnnotation)
-                   .concat(messageEvents.map(adaptMessageEvent)),
+    timeEvent: annotations
+      .map(adaptAnnotation)
+      .concat(messageEvents.map(adaptMessageEvent)),
   };
 }
 
@@ -133,13 +137,13 @@ function adaptLink(link: webCore.Link): apiTypes.Link {
   return {
     traceId: hexToBase64(link.traceId),
     spanId: hexToBase64(link.spanId),
-    type: link.type,  // Enum values match proto values
+    type: link.type, // Enum values match proto values
     attributes: adaptAttributes(link.attributes),
   };
 }
 
 function adaptLinks(links: webCore.Link[]): apiTypes.Links {
-  return {link: links.map(adaptLink)};
+  return { link: links.map(adaptLink) };
 }
 
 /**
@@ -147,9 +151,10 @@ function adaptLinks(links: webCore.Link[]): apiTypes.Links {
  * clock time when available (if the span was a `webCore.Span` instance) or
  * otherwise using the more general `@opencensus/core` Date-typed times.
  */
-function adaptSpanTime(perfTime: number|undefined, fallbackTime: Date) {
-  return perfTime === undefined ? fallbackTime.toISOString() :
-                                  webCore.getIsoDateStrForPerfTime(perfTime);
+function adaptSpanTime(perfTime: number | undefined, fallbackTime: Date) {
+  return perfTime === undefined
+    ? fallbackTime.toISOString()
+    : webCore.getIsoDateStrForPerfTime(perfTime);
 }
 
 /** Interface to represent that a webCore.Span may be a webCore.Span */
@@ -169,9 +174,11 @@ function adaptSpan(span: webCore.Span): apiTypes.Span {
     tracestate: adaptTraceState(span.traceState),
     parentSpanId: hexToBase64(span.parentSpanId),
     name: adaptString(span.name),
-    kind: span.kind,  // Enum values match proto values.
-    startTime:
-        adaptSpanTime((span as MaybeWebSpan).startPerfTime, span.startTime),
+    kind: span.kind, // Enum values match proto values.
+    startTime: adaptSpanTime(
+      (span as MaybeWebSpan).startPerfTime,
+      span.startTime
+    ),
     endTime: adaptSpanTime((span as MaybeWebSpan).endPerfTime, span.endTime),
     attributes: adaptAttributes(span.attributes),
     timeEvents: adaptTimeEvents(span.annotations, span.messageEvents),

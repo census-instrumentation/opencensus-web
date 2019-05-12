@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import {isSampled, tracing} from '@opencensus/web-core';
-import {OCAgentExporter} from '@opencensus/web-exporter-ocagent';
-import {clearPerfEntries, getInitialLoadRootSpan, getPerfEntries} from '@opencensus/web-instrumentation-perf';
+import { isSampled, tracing } from '@opencensus/web-core';
+import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
+import {
+  clearPerfEntries,
+  getInitialLoadRootSpan,
+  getPerfEntries,
+} from '@opencensus/web-instrumentation-perf';
 
-import {getInitialLoadSpanContext} from './initial-load-context';
-import {WindowWithOcwGlobals} from './types';
+import { getInitialLoadSpanContext } from './initial-load-context';
+import { WindowWithOcwGlobals } from './types';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -28,7 +32,7 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
  * time for any other post-load handlers to run first so that the work to export
  * spans does not slow down the user experience.
  */
-const WAIT_TIME_AFTER_LOAD_MS = 2000;  // 2 seconds
+const WAIT_TIME_AFTER_LOAD_MS = 2000; // 2 seconds
 
 /** Trace endpoint in the OC agent. */
 const TRACE_ENDPOINT = '/v1/trace';
@@ -44,8 +48,11 @@ export function exportRootSpanAfterLoadEvent() {
     return;
   }
 
-  tracing.registerExporter(new OCAgentExporter(
-      {agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`}));
+  tracing.registerExporter(
+    new OCAgentExporter({
+      agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
+    })
+  );
 
   if (document.readyState === 'complete') {
     exportInitialLoadSpans();
@@ -59,12 +66,16 @@ export function exportRootSpanAfterLoadEvent() {
 function exportInitialLoadSpans() {
   setTimeout(() => {
     const spanContext = getInitialLoadSpanContext();
-    if (!isSampled(spanContext)) return;  // Don't export if not sampled.
+    if (!isSampled(spanContext)) return; // Don't export if not sampled.
 
     const perfEntries = getPerfEntries();
 
     const root = getInitialLoadRootSpan(
-        tracing.tracer, perfEntries, spanContext.spanId, spanContext.traceId);
+      tracing.tracer,
+      perfEntries,
+      spanContext.spanId,
+      spanContext.traceId
+    );
 
     clearPerfEntries();
     // Notify that the span has ended to trigger export.

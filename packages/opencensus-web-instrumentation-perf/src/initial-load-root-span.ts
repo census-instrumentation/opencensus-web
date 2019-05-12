@@ -14,12 +14,28 @@
  * limitations under the License.
  */
 
-import {Annotation, ATTRIBUTE_HTTP_URL, ATTRIBUTE_HTTP_USER_AGENT, ATTRIBUTE_LONG_TASK_ATTRIBUTION, ATTRIBUTE_NAV_TYPE, parseUrl, randomSpanId, randomTraceId, RootSpan, Span, SpanKind, Tracer} from '@opencensus/web-core';
+import {
+  Annotation,
+  ATTRIBUTE_HTTP_URL,
+  ATTRIBUTE_HTTP_USER_AGENT,
+  ATTRIBUTE_LONG_TASK_ATTRIBUTION,
+  ATTRIBUTE_NAV_TYPE,
+  parseUrl,
+  randomSpanId,
+  randomTraceId,
+  RootSpan,
+  Span,
+  SpanKind,
+  Tracer,
+} from '@opencensus/web-core';
 
-import {GroupedPerfEntries} from './perf-grouper';
-import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended} from './perf-types';
-import {getResourceSpan} from './resource-span';
-import {annotationsForPerfTimeFields} from './util';
+import { GroupedPerfEntries } from './perf-grouper';
+import {
+  PerformanceLongTaskTiming,
+  PerformanceNavigationTimingExtended,
+} from './perf-types';
+import { getResourceSpan } from './resource-span';
+import { annotationsForPerfTimeFields } from './util';
 
 /**
  * These are properties of PerformanceNavigationTiming that will be turned
@@ -53,9 +69,11 @@ const NAVIGATION_TIMING_EVENTS = [
  *     client spans for the initial HTML fetch.
  */
 export function getInitialLoadRootSpan(
-    tracer: Tracer, perfEntries: GroupedPerfEntries,
-    navigationFetchSpanId: string = randomSpanId(),
-    traceId: string = randomTraceId()): RootSpan {
+  tracer: Tracer,
+  perfEntries: GroupedPerfEntries,
+  navigationFetchSpanId: string = randomSpanId(),
+  traceId: string = randomTraceId()
+): RootSpan {
   const navTiming = perfEntries.navigationTiming;
   const navigationUrl = navTiming ? navTiming.name : location.href;
   const parsedNavigationUrl = parseUrl(navigationUrl);
@@ -79,14 +97,21 @@ export function getInitialLoadRootSpan(
     root.endPerfTime = navTiming.loadEventEnd;
     root.attributes[ATTRIBUTE_NAV_TYPE] = navTiming.type;
     const navFetchSpan = getNavigationFetchSpan(
-        navTiming, navigationUrl, traceId, root.id, navigationFetchSpanId);
+      navTiming,
+      navigationUrl,
+      traceId,
+      root.id,
+      navigationFetchSpanId
+    );
     root.spans.push(navFetchSpan);
   }
 
-  const resourceSpans = perfEntries.resourceTimings.map(
-      (resourceTiming) => getResourceSpan(resourceTiming, traceId, root.id));
-  const longTaskSpans = perfEntries.longTaskTimings.map(
-      (longTaskTiming) => getLongTaskSpan(longTaskTiming, traceId, root.id));
+  const resourceSpans = perfEntries.resourceTimings.map(resourceTiming =>
+    getResourceSpan(resourceTiming, traceId, root.id)
+  );
+  const longTaskSpans = perfEntries.longTaskTimings.map(longTaskTiming =>
+    getLongTaskSpan(longTaskTiming, traceId, root.id)
+  );
 
   root.spans = root.spans.concat(resourceSpans, longTaskSpans);
   return root;
@@ -94,9 +119,12 @@ export function getInitialLoadRootSpan(
 
 /** Returns a parent span for the HTTP request to retrieve the initial HTML. */
 function getNavigationFetchSpan(
-    navigationTiming: PerformanceNavigationTimingExtended,
-    navigationName: string, traceId: string, parentSpanId: string,
-    spanId: string): Span {
+  navigationTiming: PerformanceNavigationTimingExtended,
+  navigationName: string,
+  traceId: string,
+  parentSpanId: string,
+  spanId: string
+): Span {
   const span = getResourceSpan(navigationTiming, traceId, parentSpanId, spanId);
   span.startPerfTime = navigationTiming.fetchStart;
   return span;
@@ -104,27 +132,33 @@ function getNavigationFetchSpan(
 
 /** Formats a performance long task event as a span. */
 function getLongTaskSpan(
-    longTask: PerformanceLongTaskTiming, traceId: string,
-    parentSpanId: string): Span {
+  longTask: PerformanceLongTaskTiming,
+  traceId: string,
+  parentSpanId: string
+): Span {
   const span = new Span();
   span.traceId = traceId;
   span.parentSpanId = parentSpanId;
   span.name = 'Long JS task';
   span.startPerfTime = longTask.startTime;
   span.endPerfTime = longTask.startTime + longTask.duration;
-  span.attributes[ATTRIBUTE_LONG_TASK_ATTRIBUTION] =
-      JSON.stringify(longTask.attribution);
+  span.attributes[ATTRIBUTE_LONG_TASK_ATTRIBUTION] = JSON.stringify(
+    longTask.attribution
+  );
   return span;
 }
 
 /** Gets annotations for a navigation span including paint timings. */
-function getNavigationAnnotations(perfEntries: GroupedPerfEntries):
-    Annotation[] {
+function getNavigationAnnotations(
+  perfEntries: GroupedPerfEntries
+): Annotation[] {
   const navigation = perfEntries.navigationTiming;
   if (!navigation) return [];
 
-  const navAnnotations =
-      annotationsForPerfTimeFields(navigation, NAVIGATION_TIMING_EVENTS);
+  const navAnnotations = annotationsForPerfTimeFields(
+    navigation,
+    NAVIGATION_TIMING_EVENTS
+  );
 
   for (const paintTiming of perfEntries.paintTimings) {
     navAnnotations.push({

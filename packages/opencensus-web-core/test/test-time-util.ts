@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import {getDateForPerfTime, getIsoDateStrForPerfTime, getPerfTimeOrigin} from '../src/common/time-util';
-import {mockGetterOrValue, restoreGetterOrValue} from './util';
+import {
+  getDateForPerfTime,
+  getIsoDateStrForPerfTime,
+  getPerfTimeOrigin,
+} from '../src/common/time-util';
+import { mockGetterOrValue, restoreGetterOrValue } from './util';
 
 describe('time utils', () => {
   let realTimeOrigin: number;
@@ -53,15 +57,17 @@ describe('time utils', () => {
   describe('getIsoDateStrForPerfTime', () => {
     it('converts perf time to nanosecond-precise ISO date string', () => {
       mockGetterOrValue(performance, 'timeOrigin', 1535683887001);
-      expect(getIsoDateStrForPerfTime(0.000001))
-          .toEqual('2018-08-31T02:51:27.001000001Z');
+      expect(getIsoDateStrForPerfTime(0.000001)).toEqual(
+        '2018-08-31T02:51:27.001000001Z'
+      );
     });
 
     it('accurately combines milliseconds from origin and perf times', () => {
       mockGetterOrValue(performance, 'timeOrigin', 1535683887441.586);
 
-      expect(getIsoDateStrForPerfTime(658867.8000000073))
-          .toEqual('2018-08-31T03:02:26.309385938Z');
+      expect(getIsoDateStrForPerfTime(658867.8000000073)).toEqual(
+        '2018-08-31T03:02:26.309385938Z'
+      );
     });
   });
 });

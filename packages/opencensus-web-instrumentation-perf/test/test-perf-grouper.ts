@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-import {recordLongTasks} from '../src/long-tasks-recorder';
-import {clearPerfEntries, getPerfEntries} from '../src/perf-grouper';
-import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended, PerformanceObserver, PerformanceObserverConfig, PerformanceObserverEntryList, PerformancePaintTiming, PerformanceResourceTimingExtended} from '../src/perf-types';
+import { recordLongTasks } from '../src/long-tasks-recorder';
+import { clearPerfEntries, getPerfEntries } from '../src/perf-grouper';
+import {
+  PerformanceLongTaskTiming,
+  PerformanceNavigationTimingExtended,
+  PerformanceObserver,
+  PerformanceObserverConfig,
+  PerformanceObserverEntryList,
+  PerformancePaintTiming,
+  PerformanceResourceTimingExtended,
+} from '../src/perf-types';
 
 const LONG_TASK_1: PerformanceLongTaskTiming = {
   name: 'self',
@@ -131,9 +139,11 @@ describe('performance recorder functions', () => {
   class MockPerformanceObserver {
     config?: PerformanceObserverConfig;
     constructor(
-        readonly callback:
-            (entries: PerformanceObserverEntryList,
-             observer: PerformanceObserver) => void) {
+      readonly callback: (
+        entries: PerformanceObserverEntryList,
+        observer: PerformanceObserver
+      ) => void
+    ) {
       performanceObserver = this;
     }
     observe(config: PerformanceObserverConfig) {
@@ -143,17 +153,16 @@ describe('performance recorder functions', () => {
       // The cast is needed because TS interfaces with `new` can't be
       // implemented with classes. See
       // https://stackoverflow.com/questions/13407036/how-does-typescript-interfaces-with-construct-signatures-work
-      this.callback(entryList, this as unknown as PerformanceObserver);
+      this.callback(entryList, (this as unknown) as PerformanceObserver);
     }
   }
 
   const realPerformanceObserver = windowWithPerfObserver.PerformanceObserver;
-  let performanceObserver: MockPerformanceObserver|undefined;
+  let performanceObserver: MockPerformanceObserver | undefined;
 
   beforeEach(() => {
-    clearPerfEntries();  // Needed to reset long tasks list.
-    windowWithPerfObserver.PerformanceObserver =
-        MockPerformanceObserver as unknown as PerformanceObserver;
+    clearPerfEntries(); // Needed to reset long tasks list.
+    windowWithPerfObserver.PerformanceObserver = (MockPerformanceObserver as unknown) as PerformanceObserver;
   });
   afterEach(() => {
     windowWithPerfObserver.PerformanceObserver = realPerformanceObserver;
@@ -163,7 +172,7 @@ describe('performance recorder functions', () => {
     it('starts tracking long tasks', () => {
       recordLongTasks();
       expect(performanceObserver).toBeDefined();
-      expect(performanceObserver!.config).toEqual({entryTypes: ['longtask']});
+      expect(performanceObserver!.config).toEqual({ entryTypes: ['longtask'] });
     });
   });
 
@@ -171,11 +180,13 @@ describe('performance recorder functions', () => {
     it('combines perf entries for nav, paint, resource and long tasks', () => {
       recordLongTasks();
       performanceObserver!.sendMockPerfEntries(
-          new MockPerfEntryList([LONG_TASK_1, LONG_TASK_2]));
-      spyOn(performance, 'getEntriesByType')
-          .and.callFake((entryType: string) => {
-            return PERF_ENTRIES_BY_TYPE.get(entryType);
-          });
+        new MockPerfEntryList([LONG_TASK_1, LONG_TASK_2])
+      );
+      spyOn(performance, 'getEntriesByType').and.callFake(
+        (entryType: string) => {
+          return PERF_ENTRIES_BY_TYPE.get(entryType);
+        }
+      );
 
       expect(getPerfEntries()).toEqual({
         navigationTiming: NAVIGATION_ENTRY,
@@ -202,7 +213,8 @@ describe('performance recorder functions', () => {
     it('clears stored long tasks', () => {
       recordLongTasks();
       performanceObserver!.sendMockPerfEntries(
-          new MockPerfEntryList([LONG_TASK_1]));
+        new MockPerfEntryList([LONG_TASK_1])
+      );
       expect(getPerfEntries().longTaskTimings.length).toBe(1);
 
       clearPerfEntries();

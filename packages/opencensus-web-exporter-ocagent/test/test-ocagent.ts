@@ -16,11 +16,11 @@
 
 import * as webCore from '@opencensus/web-core';
 
-import {OCAgentExporter} from '../src';
+import { OCAgentExporter } from '../src';
 import * as apiTypes from '../src/api-types';
-import {EXPORTER_VERSION} from '../src/version';
+import { EXPORTER_VERSION } from '../src/version';
 
-import {mockGetterOrValue, restoreGetterOrValue} from './util';
+import { mockGetterOrValue, restoreGetterOrValue } from './util';
 
 const BUFFER_SIZE = 1;
 const BUFFER_TIMEOUT = 100;
@@ -43,14 +43,14 @@ const SPAN1_API_JSON: apiTypes.Span = {
   spanId: 'pWpQuQxlPwA=',
   tracestate: {},
   parentSpanId: '',
-  name: {value: '1'},
+  name: { value: '1' },
   kind: 0,
   startTime: '2019-01-04T00:00:00.000000000Z',
   endTime: '2019-01-04T00:00:00.001000000Z',
-  attributes: {attributeMap: {}},
-  timeEvents: {timeEvent: []},
-  links: {link: []},
-  status: {code: 0},
+  attributes: { attributeMap: {} },
+  timeEvents: { timeEvent: [] },
+  links: { link: [] },
+  status: { code: 0 },
   sameProcessAsParentSpan: true,
 };
 const SPAN2_API_JSON: apiTypes.Span = {
@@ -58,14 +58,14 @@ const SPAN2_API_JSON: apiTypes.Span = {
   spanId: 'pWpQuQxlPwA=',
   tracestate: {},
   parentSpanId: '',
-  name: {value: '2'},
+  name: { value: '2' },
   kind: 0,
   startTime: '2019-01-04T00:00:00.000000000Z',
   endTime: '2019-01-04T00:00:00.001000000Z',
-  attributes: {attributeMap: {}},
-  timeEvents: {timeEvent: []},
-  links: {link: []},
-  status: {code: 0},
+  attributes: { attributeMap: {} },
+  timeEvents: { timeEvent: [] },
+  links: { link: [] },
+  status: { code: 0 },
   sameProcessAsParentSpan: true,
 };
 
@@ -86,7 +86,7 @@ describe('OCAgentExporter', () => {
     exporter = new OCAgentExporter({
       serviceName: 'testService',
       agentEndpoint: 'fake-agent.com',
-      attributes: {serviceAddr1: 'a'},
+      attributes: { serviceAddr1: 'a' },
       bufferSize: BUFFER_SIZE,
       bufferTimeout: BUFFER_TIMEOUT,
     });
@@ -98,23 +98,27 @@ describe('OCAgentExporter', () => {
   });
 
   function verifySpansExported(apiSpans: apiTypes.Span[]) {
-    expect(XMLHttpRequest.prototype.open)
-        .toHaveBeenCalledWith('POST', 'fake-agent.com');
-    expect(XMLHttpRequest.prototype.setRequestHeader)
-        .toHaveBeenCalledWith('Content-Type', 'application/json');
+    expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith(
+      'POST',
+      'fake-agent.com'
+    );
+    expect(XMLHttpRequest.prototype.setRequestHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'application/json'
+    );
     expect(XMLHttpRequest.prototype.send).toHaveBeenCalledTimes(1);
     const sentBody = xhrSendSpy.calls.argsFor(0)[0];
     const sentJson = JSON.parse(sentBody);
     const expectedSentJson: apiTypes.ExportTraceServiceRequest = {
       node: {
-        identifier: {hostName: window.location.host},
-        serviceInfo: {name: 'testService'},
+        identifier: { hostName: window.location.host },
+        serviceInfo: { name: 'testService' },
         libraryInfo: {
           language: 10,
           coreLibraryVersion: webCore.VERSION,
           exporterVersion: EXPORTER_VERSION,
         },
-        attributes: {serviceAddr1: 'a'},
+        attributes: { serviceAddr1: 'a' },
       },
       spans: apiSpans,
     };

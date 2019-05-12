@@ -19,4 +19,4 @@ export * from '@opencensus/web-core';
 export * from '@opencensus/web-exporter-ocagent';
 export * from '@opencensus/web-instrumentation-perf';
 
-export {exportRootSpanAfterLoadEvent} from './export-initial-load';
+export { exportRootSpanAfterLoadEvent } from './export-initial-load';

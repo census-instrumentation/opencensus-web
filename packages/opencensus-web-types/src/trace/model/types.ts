@@ -15,12 +15,10 @@
  */
 
 import * as loggerTypes from '../../common/types';
-import {NodeJsEventEmitter} from '../../node/types';
+import { NodeJsEventEmitter } from '../../node/types';
 import * as configTypes from '../config/types';
-import {Propagation} from '../propagation/types';
+import { Propagation } from '../propagation/types';
 import * as samplerTypes from '../sampler/types';
-
-
 
 /** Default type for functions */
 // tslint:disable:no-any
@@ -28,7 +26,7 @@ export type Func<T> = (...args: any[]) => T;
 
 /** Maps a label to a string, number or boolean. */
 export interface Attributes {
-  [attributeKey: string]: string|number|boolean;
+  [attributeKey: string]: string | number | boolean;
 }
 
 /**
@@ -257,7 +255,7 @@ export enum MessageEventType {
   /** Indicates a sent message. */
   SENT = 1,
   /** Indicates a received message. */
-  RECEIVED = 2
+  RECEIVED = 2,
 }
 
 /**
@@ -276,7 +274,7 @@ export enum SpanKind {
    * Indicates that the span covers the client-side wrapper around an RPC or
    * other remote request.
    */
-  CLIENT = 2
+  CLIENT = 2,
 }
 
 /**
@@ -292,7 +290,7 @@ export enum LinkType {
   /** The linked span is a child of the current span. */
   CHILD_LINKED_SPAN = 1,
   /** The linked span is a parent of the current span. */
-  PARENT_LINKED_SPAN = 2
+  PARENT_LINKED_SPAN = 2,
 }
 
 /** Interface for Span */
@@ -386,7 +384,7 @@ export interface Span {
    * @param key Describes the value added.
    * @param value The result of an operation.
    */
-  addAttribute(key: string, value: string|number|boolean): void;
+  addAttribute(key: string, value: string | number | boolean): void;
 
   /**
    * Adds an annotation to the span.
@@ -395,7 +393,10 @@ export interface Span {
    * @param timestamp A timestamp for this event.
    */
   addAnnotation(
-      description: string, attributes?: Attributes, timestamp?: number): void;
+    description: string,
+    attributes?: Attributes,
+    timestamp?: number
+  ): void;
 
   /**
    * Adds a link to the span.
@@ -405,8 +406,11 @@ export interface Span {
    * @param attributes A set of attributes on the link.
    */
   addLink(
-      traceId: string, spanId: string, type: LinkType,
-      attributes?: Attributes): void;
+    traceId: string,
+    spanId: string,
+    type: LinkType,
+    attributes?: Attributes
+  ): void;
 
   /**
    * Adds a message event to the span.
@@ -441,7 +445,6 @@ export interface RootSpan extends Span {
   /** Starts a new Span instance in the RootSpan instance */
   startChildSpan(name: string, kind: SpanKind): Span;
 }
-
 
 /** Interface for Tracer */
 export interface Tracer extends SpanEventListener {

@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-import {HeaderGetter, HeaderSetter} from '@opencensus/web-core';
+import { HeaderGetter, HeaderSetter } from '@opencensus/web-core';
 
-import {spanContextToTraceParent, TraceContextFormat, traceParentToSpanContext} from '../src/';
+import {
+  spanContextToTraceParent,
+  TraceContextFormat,
+  traceParentToSpanContext,
+} from '../src/';
 
-type HeaderValue = string|string[];
+type HeaderValue = string | string[];
 
 class FakeHeaders implements HeaderSetter, HeaderGetter {
   private readonly headers = new Map<string, HeaderValue>();
 
-  getHeader(header: string): HeaderValue|undefined {
+  getHeader(header: string): HeaderValue | undefined {
     return this.headers.get(header);
   }
 
@@ -37,29 +41,35 @@ describe('traceParentToSpanContext', () => {
     expect(traceParentToSpanContext('totally invalid header!')).toBe(null);
     expect(traceParentToSpanContext('1f-2f-3f-4f')).toBe(null);
     // Trace IDs with all zeros are invalid.
-    expect(traceParentToSpanContext(
-               '00-00000000000000000000000000000000-b7ad6b7169203331-01'))
-        .toBe(null);
+    expect(
+      traceParentToSpanContext(
+        '00-00000000000000000000000000000000-b7ad6b7169203331-01'
+      )
+    ).toBe(null);
   });
 
   it('extracts traceId, spanId and options for valid header', () => {
-    expect(traceParentToSpanContext(
-               '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'))
-        .toEqual({
-          traceId: '0af7651916cd43dd8448eb211c80319c',
-          spanId: 'b7ad6b7169203331',
-          options: 0x1,
-        });
+    expect(
+      traceParentToSpanContext(
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+      )
+    ).toEqual({
+      traceId: '0af7651916cd43dd8448eb211c80319c',
+      spanId: 'b7ad6b7169203331',
+      options: 0x1,
+    });
   });
 });
 
 describe('spanContextToTraceParent', () => {
   it('formats traceId, spanId and options into header', () => {
-    expect(spanContextToTraceParent({
-      traceId: '0af7651916cd43dd8448eb211c80319c',
-      spanId: 'b7ad6b7169203331',
-      options: 0x1,
-    })).toBe('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
+    expect(
+      spanContextToTraceParent({
+        traceId: '0af7651916cd43dd8448eb211c80319c',
+        spanId: 'b7ad6b7169203331',
+        options: 0x1,
+      })
+    ).toBe('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
   });
 });
 
@@ -74,8 +84,9 @@ describe('TraceContextFormat', () => {
   describe('extract', () => {
     it('extracts traceId, spanId and options from traceparent header', () => {
       headers.setHeader(
-          'traceparent',
-          '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
+        'traceparent',
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+      );
       expect(traceContextFormat.extract(headers)).toEqual({
         traceId: '0af7651916cd43dd8448eb211c80319c',
         spanId: 'b7ad6b7169203331',
@@ -94,8 +105,9 @@ describe('TraceContextFormat', () => {
 
     it('extracts tracestate from header', () => {
       headers.setHeader(
-          'traceparent',
-          '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
+        'traceparent',
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+      );
       headers.setHeader('tracestate', 'a=b');
       expect(traceContextFormat.extract(headers)).toEqual({
         traceId: '0af7651916cd43dd8448eb211c80319c',
@@ -107,8 +119,9 @@ describe('TraceContextFormat', () => {
 
     it('combines multiple tracestate headers', () => {
       headers.setHeader(
-          'traceparent',
-          '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00');
+        'traceparent',
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00'
+      );
       headers.setHeader('tracestate', ['a=b', 'c=d']);
       expect(traceContextFormat.extract(headers)).toEqual({
         traceId: '0af7651916cd43dd8448eb211c80319c',
@@ -126,8 +139,9 @@ describe('TraceContextFormat', () => {
         spanId: 'b7ad6b7169203331',
         options: 0x1,
       });
-      expect(headers.getHeader('traceparent'))
-          .toBe('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
+      expect(headers.getHeader('traceparent')).toBe(
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+      );
     });
 
     it('sets tracestate header if tracestate specified', () => {
@@ -137,8 +151,9 @@ describe('TraceContextFormat', () => {
         options: 0x1,
         traceState: 'a=b',
       });
-      expect(headers.getHeader('traceparent'))
-          .toBe('00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01');
+      expect(headers.getHeader('traceparent')).toBe(
+        '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01'
+      );
       expect(headers.getHeader('tracestate')).toBe('a=b');
     });
   });

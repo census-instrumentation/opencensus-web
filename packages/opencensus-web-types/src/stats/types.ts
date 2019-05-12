@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {StatsEventListener} from '../exporters/types';
-import {Metric} from '../metrics/export/types';
-import {TagMap} from '../tags/tag-map';
-import {TagKey, TagValue} from '../tags/types';
+import { StatsEventListener } from '../exporters/types';
+import { Metric } from '../metrics/export/types';
+import { TagMap } from '../tags/tag-map';
+import { TagKey, TagValue } from '../tags/types';
 
 /** Main interface for stats. */
 export interface Stats {
@@ -32,9 +32,13 @@ export interface Stats {
    * aggregation type
    */
   createView(
-      name: string, measure: Measure, aggregation: AggregationType,
-      tagKeys: TagKey[], description: string,
-      bucketBoundaries?: number[]): View;
+    name: string,
+    measure: Measure,
+    aggregation: AggregationType,
+    tagKeys: TagKey[],
+    description: string,
+    bucketBoundaries?: number[]
+  ): View;
 
   /**
    * Registers a view to listen to new measurements in its measure.
@@ -48,8 +52,11 @@ export interface Stats {
    * @param unit The measure unit
    * @param description The measure description
    */
-  createMeasureDouble(name: string, unit: MeasureUnit, description?: string):
-      Measure;
+  createMeasureDouble(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure;
 
   /**
    * Creates a measure of type Int64. Values must be integers up to
@@ -58,8 +65,11 @@ export interface Stats {
    * @param unit The measure unit
    * @param description The measure description
    */
-  createMeasureInt64(name: string, unit: MeasureUnit, description?: string):
-      Measure;
+  createMeasureInt64(
+    name: string,
+    unit: MeasureUnit,
+    description?: string
+  ): Measure;
 
   /**
    * Updates all views with the new measurements.
@@ -116,18 +126,18 @@ export interface Measure {
  * by http://unitsofmeasure.org/ucum.html.
  */
 export enum MeasureUnit {
-  UNIT = '1',    // for general counts
-  BYTE = 'by',   // bytes
-  KBYTE = 'kb',  // Kbytes
-  SEC = 's',     // seconds
-  MS = 'ms',     // millisecond
-  NS = 'ns'      // nanosecond
+  UNIT = '1', // for general counts
+  BYTE = 'by', // bytes
+  KBYTE = 'kb', // Kbytes
+  SEC = 's', // seconds
+  MS = 'ms', // millisecond
+  NS = 'ns', // nanosecond
 }
 
 /** Describes the types of a Measure. It can be Int64 or a Double type. */
 export enum MeasureType {
   INT64 = 'INT64',
-  DOUBLE = 'DOUBLE'
+  DOUBLE = 'DOUBLE',
 }
 
 /** Describes a data point to be collected for a Measure. */
@@ -195,7 +205,7 @@ export enum AggregationType {
   COUNT = 0,
   SUM = 1,
   LAST_VALUE = 2,
-  DISTRIBUTION = 3
+  DISTRIBUTION = 3,
 }
 
 /** Defines how data is collected and aggregated */
@@ -265,4 +275,8 @@ export interface DistributionData extends AggregationMetadata {
 }
 
 export type Bucket = number;
-export type AggregationData = SumData|CountData|LastValueData|DistributionData;
+export type AggregationData =
+  | SumData
+  | CountData
+  | LastValueData
+  | DistributionData;

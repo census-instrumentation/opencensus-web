@@ -15,22 +15,44 @@
  */
 
 // Export web implementation of core trace classes and types.
-export {RootSpan} from './trace/model/root-span';
-export {Span} from './trace/model/span';
-export {Tracer} from './trace/model/tracer';
-export {Tracing} from './trace/model/tracing';
+export { RootSpan } from './trace/model/root-span';
+export { Span } from './trace/model/span';
+export { Tracer } from './trace/model/tracer';
+export { Tracing } from './trace/model/tracing';
 export * from './trace/model/util';
 export * from './trace/model/attribute-keys';
-export {VERSION} from './version';
+export { VERSION } from './version';
 
 // Re-export types this uses from @opencensus/web-types.
-export {Annotation, Attributes, BufferConfig, CanonicalCode, Config, Exporter, ExporterConfig, HeaderGetter, HeaderSetter, Link, LinkType, Logger, MessageEvent, MessageEventType, Propagation, SpanContext, SpanEventListener, SpanKind, Status, TracerConfig, TraceState} from '@opencensus/web-types';
+export {
+  Annotation,
+  Attributes,
+  BufferConfig,
+  CanonicalCode,
+  Config,
+  Exporter,
+  ExporterConfig,
+  HeaderGetter,
+  HeaderSetter,
+  Link,
+  LinkType,
+  Logger,
+  MessageEvent,
+  MessageEventType,
+  Propagation,
+  SpanContext,
+  SpanEventListener,
+  SpanKind,
+  Status,
+  TracerConfig,
+  TraceState,
+} from '@opencensus/web-types';
 
 export * from './common/time-util';
 export * from './common/url-util';
 export * from './common/id-util';
 
 // Export global tracing instance.
-import {Tracing} from './trace/model/tracing';
+import { Tracing } from './trace/model/tracing';
 const tracing = new Tracing();
-export {tracing};
+export { tracing };

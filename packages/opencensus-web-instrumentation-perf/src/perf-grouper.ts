@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import {PerformanceLongTaskTiming, PerformanceNavigationTimingExtended, PerformancePaintTiming, PerformanceResourceTimingExtended, WindowWithLongTasks} from './perf-types';
+import {
+  PerformanceLongTaskTiming,
+  PerformanceNavigationTimingExtended,
+  PerformancePaintTiming,
+  PerformanceResourceTimingExtended,
+  WindowWithLongTasks,
+} from './perf-types';
 
 /** Cast `window` to be access the `ocLt` field for long task timings.  */
 const windowWithLongTasks = window as WindowWithLongTasks;
@@ -42,16 +48,16 @@ export function getPerfEntries(): GroupedPerfEntries {
   const longTaskTimings = windowWithLongTasks.ocLt;
 
   const entries: GroupedPerfEntries = {
-    resourceTimings: perf.getEntriesByType('resource') as
-        PerformanceResourceTimingExtended[],
+    resourceTimings: perf.getEntriesByType(
+      'resource'
+    ) as PerformanceResourceTimingExtended[],
     paintTimings: perf.getEntriesByType('paint') as PerformancePaintTiming[],
     longTaskTimings: longTaskTimings ? longTaskTimings.slice() : [],
   };
 
   const navEntries = perf.getEntriesByType('navigation');
   if (navEntries.length) {
-    entries.navigationTiming =
-        navEntries[0] as PerformanceNavigationTimingExtended;
+    entries.navigationTiming = navEntries[0] as PerformanceNavigationTimingExtended;
   }
 
   return entries;

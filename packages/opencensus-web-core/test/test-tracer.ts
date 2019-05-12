@@ -15,8 +15,8 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import {RootSpan} from '../src/trace/model/root-span';
-import {Tracer} from '../src/trace/model/tracer';
+import { RootSpan } from '../src/trace/model/root-span';
+import { Tracer } from '../src/trace/model/tracer';
 
 describe('Tracer', () => {
   let tracer: Tracer;
@@ -24,20 +24,27 @@ describe('Tracer', () => {
 
   beforeEach(() => {
     tracer = new Tracer();
-    listener = jasmine.createSpyObj<webTypes.SpanEventListener>(
-        'listener', ['onStartSpan', 'onEndSpan']);
+    listener = jasmine.createSpyObj<webTypes.SpanEventListener>('listener', [
+      'onStartSpan',
+      'onEndSpan',
+    ]);
     tracer.eventListeners = [listener];
   });
 
   describe('start', () => {
     it('sets logger and propagation based on config', () => {
-      const mockLogger =
-          jasmine.createSpyObj<webTypes.Logger>('logger', ['info']);
+      const mockLogger = jasmine.createSpyObj<webTypes.Logger>('logger', [
+        'info',
+      ]);
       const mockPropagation = jasmine.createSpyObj<webTypes.Propagation>(
-          'propagation', ['generate']);
+        'propagation',
+        ['generate']
+      );
 
-      const result =
-          tracer.start({logger: mockLogger, propagation: mockPropagation});
+      const result = tracer.start({
+        logger: mockLogger,
+        propagation: mockPropagation,
+      });
 
       expect(result).toBe(tracer);
       expect(tracer.logger).toBe(mockLogger);
@@ -50,7 +57,7 @@ describe('Tracer', () => {
       const onStartFn = jasmine.createSpy('onStartFn');
       const oldRoot = tracer.currentRootSpan;
 
-      tracer.startRootSpan({name: 'root1'}, onStartFn);
+      tracer.startRootSpan({ name: 'root1' }, onStartFn);
 
       expect(onStartFn).toHaveBeenCalled();
       const onStartRoot = onStartFn.calls.argsFor(0)[0];
@@ -80,7 +87,9 @@ describe('Tracer', () => {
   describe('registerSpanEventListener', () => {
     it('adds to listeners', () => {
       const newListener = jasmine.createSpyObj<webTypes.SpanEventListener>(
-          'newListener', ['onStartSpan', 'onEndSpan']);
+        'newListener',
+        ['onStartSpan', 'onEndSpan']
+      );
       tracer.registerSpanEventListener(newListener);
       expect(tracer.eventListeners).toEqual([listener, newListener]);
     });
@@ -105,8 +114,10 @@ describe('Tracer', () => {
     it('starts a child span of the current root span', () => {
       spyOn(tracer.currentRootSpan, 'startChildSpan');
       tracer.startChildSpan('child1', webTypes.SpanKind.CLIENT);
-      expect(tracer.currentRootSpan.startChildSpan)
-          .toHaveBeenCalledWith('child1', webTypes.SpanKind.CLIENT);
+      expect(tracer.currentRootSpan.startChildSpan).toHaveBeenCalledWith(
+        'child1',
+        webTypes.SpanKind.CLIENT
+      );
     });
   });
 

@@ -16,8 +16,8 @@
 
 import * as webTypes from '@opencensus/web-types';
 
-import {Tracer} from '../src/trace/model/tracer';
-import {NOOP_EXPORTER, Tracing} from '../src/trace/model/tracing';
+import { Tracer } from '../src/trace/model/tracer';
+import { NOOP_EXPORTER, Tracing } from '../src/trace/model/tracing';
 
 describe('Tracing', () => {
   let tracing: Tracing;
@@ -32,8 +32,9 @@ describe('Tracing', () => {
     spyOn(tracer, 'unregisterSpanEventListener');
     spyOn(tracer, 'start');
     oldExporter = tracing.exporter;
-    newExporter =
-        jasmine.createSpyObj<webTypes.Exporter>('mockExporter', ['publish']);
+    newExporter = jasmine.createSpyObj<webTypes.Exporter>('mockExporter', [
+      'publish',
+    ]);
   });
 
   describe('default exporter', () => {
@@ -44,16 +45,18 @@ describe('Tracing', () => {
 
   describe('start', () => {
     it('sets tracer config and registers exporter', () => {
-      const config = {exporter: newExporter};
+      const config = { exporter: newExporter };
 
       tracing.start(config);
 
       expect(tracing.exporter).toBe(newExporter);
       expect(tracer.start).toHaveBeenCalledWith(config);
-      expect(tracer.unregisterSpanEventListener)
-          .toHaveBeenCalledWith(oldExporter);
-      expect(tracer.registerSpanEventListener)
-          .toHaveBeenCalledWith(newExporter);
+      expect(tracer.unregisterSpanEventListener).toHaveBeenCalledWith(
+        oldExporter
+      );
+      expect(tracer.registerSpanEventListener).toHaveBeenCalledWith(
+        newExporter
+      );
     });
   });
 
@@ -62,10 +65,12 @@ describe('Tracing', () => {
       tracing.registerExporter(newExporter);
 
       expect(tracing.exporter).toBe(newExporter);
-      expect(tracer.unregisterSpanEventListener)
-          .toHaveBeenCalledWith(oldExporter);
-      expect(tracer.registerSpanEventListener)
-          .toHaveBeenCalledWith(newExporter);
+      expect(tracer.unregisterSpanEventListener).toHaveBeenCalledWith(
+        oldExporter
+      );
+      expect(tracer.registerSpanEventListener).toHaveBeenCalledWith(
+        newExporter
+      );
     });
   });
 
@@ -73,12 +78,13 @@ describe('Tracing', () => {
     it('unregisters the current exporter and registers the no-op one', () => {
       tracing.unregisterExporter(oldExporter);
 
-      expect(tracer.unregisterSpanEventListener)
-          .toHaveBeenCalledWith(oldExporter);
+      expect(tracer.unregisterSpanEventListener).toHaveBeenCalledWith(
+        oldExporter
+      );
       newExporter = tracing.exporter;
-      expect(tracer.registerSpanEventListener)
-
-          .toHaveBeenCalledWith(newExporter);
+      expect(tracer.registerSpanEventListener).toHaveBeenCalledWith(
+        newExporter
+      );
       expect(newExporter).toBe(NOOP_EXPORTER);
     });
   });

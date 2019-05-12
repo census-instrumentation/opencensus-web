@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import {PerformanceLongTaskTiming, WindowWithLongTasks} from '@opencensus/web-instrumentation-perf';
+import {
+  PerformanceLongTaskTiming,
+  WindowWithLongTasks,
+} from '@opencensus/web-instrumentation-perf';
 
 /** Type for `window` object with variables OpenCensus Web interacts with. */
 export declare interface WindowWithOcwGlobals extends WindowWithLongTasks {

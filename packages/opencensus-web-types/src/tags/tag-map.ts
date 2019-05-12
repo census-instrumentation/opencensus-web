@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {TagKey, TagValue} from './types';
-import {isValidTagKey, isValidTagValue} from './validation';
+import { TagKey, TagValue } from './types';
+import { isValidTagKey, isValidTagValue } from './validation';
 
 /** TagMap is maps of TagKey -> TagValue */
 export class TagMap {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {Exporter, RootSpan, Tracer} from '@opencensus/web-core';
-import {ExporterBuffer} from '../src/exporter-buffer';
+import { Exporter, RootSpan, Tracer } from '@opencensus/web-core';
+import { ExporterBuffer } from '../src/exporter-buffer';
 
 const TRACER = new Tracer();
 const SPAN1 = new RootSpan(TRACER);
@@ -31,8 +31,10 @@ describe('ExporterBuffer', () => {
   beforeEach(() => {
     jasmine.clock().install();
     exporter = jasmine.createSpyObj<Exporter>('exporter', ['publish']);
-    buffer = new ExporterBuffer(
-        exporter, {bufferSize: BUFFER_SIZE, bufferTimeout: BUFFER_TIMEOUT});
+    buffer = new ExporterBuffer(exporter, {
+      bufferSize: BUFFER_SIZE,
+      bufferTimeout: BUFFER_TIMEOUT,
+    });
   });
 
   afterEach(() => {

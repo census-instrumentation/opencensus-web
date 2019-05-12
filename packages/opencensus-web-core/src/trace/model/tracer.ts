@@ -15,10 +15,10 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import {NoHeadersPropagation} from '../propagation/no_headers_propagation';
-import {AlwaysSampler} from '../sampler/sampler';
-import {RootSpan} from './root-span';
-import {Span} from './span';
+import { NoHeadersPropagation } from '../propagation/no_headers_propagation';
+import { AlwaysSampler } from '../sampler/sampler';
+import { RootSpan } from './root-span';
+import { Span } from './span';
 
 const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
 
@@ -80,8 +80,10 @@ export class Tracer implements webTypes.Tracer {
    * @param fn Callback function
    * @returns The callback return
    */
-  startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: RootSpan) => T):
-      T {
+  startRootSpan<T>(
+    options: webTypes.TraceOptions,
+    fn: (root: RootSpan) => T
+  ): T {
     this.currentRootSpan = new RootSpan(this, options);
     this.currentRootSpan.start();
     return fn(this.currentRootSpan);
@@ -106,7 +108,7 @@ export class Tracer implements webTypes.Tracer {
   }
 
   unregisterSpanEventListener(listener: webTypes.SpanEventListener) {
-    this.eventListeners = this.eventListeners.filter((l) => l !== listener);
+    this.eventListeners = this.eventListeners.filter(l => l !== listener);
   }
 
   clearCurrentTrace() {

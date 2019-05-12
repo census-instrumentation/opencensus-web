@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import {Annotation} from '@opencensus/web-core';
-import {PerformanceNavigationTimingExtended, PerformanceResourceTimingExtended} from './perf-types';
+import { Annotation } from '@opencensus/web-core';
+import {
+  PerformanceNavigationTimingExtended,
+  PerformanceResourceTimingExtended,
+} from './perf-types';
 
 /**
  * Returns annotations based on fields of a performance entry.
@@ -27,17 +30,22 @@ import {PerformanceNavigationTimingExtended, PerformanceResourceTimingExtended} 
  *     name.
  */
 export function annotationsForPerfTimeFields(
-    perfEntry: PerformanceResourceTimingExtended|
-    PerformanceNavigationTimingExtended,
-    annotationsFields: string[]): Annotation[] {
+  perfEntry:
+    | PerformanceResourceTimingExtended
+    | PerformanceNavigationTimingExtended,
+  annotationsFields: string[]
+): Annotation[] {
   const annotations: Annotation[] = [];
   for (const annotationField of annotationsFields) {
     const maybeTime = perfEntry[annotationField] as number | undefined;
     // Either a value of 0 or `undefined` represents missing data for browser
     // performance timing fields.
     if (maybeTime) {
-      annotations.push(
-          {timestamp: maybeTime, description: annotationField, attributes: {}});
+      annotations.push({
+        timestamp: maybeTime,
+        description: annotationField,
+        attributes: {},
+      });
     }
   }
   return annotations;
