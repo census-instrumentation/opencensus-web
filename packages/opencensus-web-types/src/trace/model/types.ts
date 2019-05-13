@@ -15,10 +15,10 @@
  */
 
 import * as loggerTypes from '../../common/types';
-import { NodeJsEventEmitter } from '../../node/types';
 import * as configTypes from '../config/types';
 import { Propagation } from '../propagation/types';
 import * as samplerTypes from '../sampler/types';
+import { NodeJsEventEmitter } from '../../node/types';
 
 /** Default type for functions */
 // tslint:disable:no-any
@@ -191,7 +191,13 @@ export interface MessageEvent {
   timestamp: number;
   /** Indicates whether the message was sent or received. */
   type: MessageEventType;
-  /** An identifier for the MessageEvent's message. */
+  /**
+   * An identifier for the MessageEvent's message. This should be a hexadecimal
+   * value that fits within 64-bits. Message event ids should start with 1 for
+   * both sent and received messages and increment by 1 for each message
+   * sent/received. See:
+   * https://github.com/census-instrumentation/opencensus-specs/blob/master/trace/gRPC.md#message-events
+   */
   id: string;
   /** The number of uncompressed bytes sent or received. */
   uncompressedSize?: number;
@@ -225,6 +231,8 @@ export interface TraceOptions {
   spanContext?: SpanContext;
   /** Span kind */
   kind?: SpanKind;
+  /** Determines the sampling rate. Ranges from 0.0 to 1.0 */
+  samplingRate?: number;
 }
 
 /** Defines the span options */
@@ -233,8 +241,8 @@ export interface SpanOptions {
   name: string;
   /** Span kind */
   kind?: SpanKind;
-  /** The new span's parent */
-  childOf?: Span;
+  /** Span parent ID */
+  parentSpanId?: string;
 }
 
 export type TraceState = string;
@@ -427,8 +435,17 @@ export interface Span {
    * @param type The type of message event.
    * @param id An identifier for the message event.
    * @param timestamp A timestamp for this event.
+   * @param uncompressedSize The number of uncompressed bytes sent or received.
+   * @param compressedSize The number of compressed bytes sent or received. If
+   *     zero or undefined, assumed to be the same size as uncompressed.
    */
-  addMessageEvent(type: MessageEventType, id: string, timestamp?: number): void;
+  addMessageEvent(
+    type: MessageEventType,
+    id: string,
+    timestamp?: number,
+    uncompressedSize?: number,
+    compressedSize?: number
+  ): void;
 
   /**
    * Sets a status to the span.
@@ -456,7 +473,7 @@ export interface RootSpan extends Span {
   readonly numberOfChildren: number;
 
   /** Starts a new Span instance in the RootSpan instance */
-  startChildSpan(name: string, kind: SpanKind): Span;
+  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
   startChildSpan(nameOrOptions?: string | SpanOptions, kind?: SpanKind): Span;
 }
@@ -520,12 +537,11 @@ export interface Tracer extends SpanEventListener {
   /**
    * Start a new Span instance to the currentRootSpan
    * @param name Span name
-   * @param type Span type
-   * @param parentSpanId Parent SpanId
+   * @param kind Span kind
    * @param options Span Options
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, type?: SpanKind, parentSpanId?: string): Span;
+  startChildSpan(name?: string, kind?: SpanKind): Span;
   startChildSpan(options?: SpanOptions): Span;
 
   /**
