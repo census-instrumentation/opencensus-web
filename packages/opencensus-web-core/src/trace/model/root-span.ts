@@ -23,6 +23,9 @@ export class RootSpan extends Span implements webTypes.RootSpan {
   /** A list of child spans. */
   spans: Span[] = [];
 
+  /** A number of children. */
+  private numberOfChildrenLocal: number;
+
   constructor(
     /** Trace associated with this root span. */
     private readonly tracer: webTypes.Tracer,
@@ -44,6 +47,13 @@ export class RootSpan extends Span implements webTypes.RootSpan {
     } else {
       this.traceId = randomTraceId();
     }
+
+    this.numberOfChildrenLocal = 0;
+  }
+
+  /** Gets the number of child span created for this span. */
+  get numberOfChildren(): number {
+    return this.numberOfChildrenLocal;
   }
 
   /**
@@ -56,6 +66,7 @@ export class RootSpan extends Span implements webTypes.RootSpan {
     nameOrOptions?: string | webTypes.SpanOptions,
     kind?: webTypes.SpanKind
   ): Span {
+    this.numberOfChildrenLocal++;
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;

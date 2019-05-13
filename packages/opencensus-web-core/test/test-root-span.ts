@@ -120,4 +120,19 @@ describe('RootSpan', () => {
       expect(tracer.onEndSpan).toHaveBeenCalledWith(root);
     });
   });
+
+  describe('get numberOfChildren()', () => {
+    it('should get numberOfChildren from rootspan instance', () => {
+      root = new RootSpan(tracer);
+      root.start();
+      expect(root.numberOfChildren).toBe(0);
+      root.startChildSpan('spanName', SpanKind.UNSPECIFIED);
+      expect(root.numberOfChildren).toBe(1);
+
+      for (let i = 0; i < 10; i++) {
+        root.startChildSpan('spanName' + i, SpanKind.UNSPECIFIED);
+      }
+      expect(root.numberOfChildren).toBe(11);
+    });
+  });
 });
