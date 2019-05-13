@@ -227,6 +227,16 @@ export interface TraceOptions {
   kind?: SpanKind;
 }
 
+/** Defines the span options */
+export interface SpanOptions {
+  /** Span name */
+  name: string;
+  /** Span kind */
+  kind?: SpanKind;
+  /** The new span's parent */
+  childOf?: Span;
+}
+
 export type TraceState = string;
 
 /** Defines the span context */
@@ -444,6 +454,8 @@ export interface RootSpan extends Span {
 
   /** Starts a new Span instance in the RootSpan instance */
   startChildSpan(name: string, kind: SpanKind): Span;
+  startChildSpan(options?: SpanOptions): Span;
+  startChildSpan(nameOrOptions?: string | SpanOptions, kind?: SpanKind): Span;
 }
 
 /** Interface for Tracer */
@@ -507,9 +519,11 @@ export interface Tracer extends SpanEventListener {
    * @param name Span name
    * @param type Span type
    * @param parentSpanId Parent SpanId
+   * @param options Span Options
    * @returns The new Span instance started
    */
   startChildSpan(name?: string, type?: SpanKind, parentSpanId?: string): Span;
+  startChildSpan(options?: SpanOptions): Span;
 
   /**
    * Binds the trace context to the given function.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SpanKind } from '@opencensus/web-types';
+import { SpanKind, SpanOptions } from '@opencensus/web-types';
 import { RootSpan } from '../src/trace/model/root-span';
 import { Tracer } from '../src/trace/model/tracer';
 
@@ -66,14 +66,15 @@ describe('RootSpan', () => {
       expect(root.spans).toEqual([childSpan]);
     });
 
-    it('allows specifying span options object with name and kind', () => {
+    it('allows specifying SpanOptions object with name and kind', () => {
       root.traceId = '00000000000000000000000000000001';
       root.traceState = 'a=b';
 
-      const childSpan = root.startChildSpan({
+      const spanOptions: SpanOptions = {
         name: 'child1',
         kind: SpanKind.CLIENT,
-      });
+      };
+      const childSpan = root.startChildSpan(spanOptions);
 
       expect(childSpan.traceId).toBe('00000000000000000000000000000001');
       expect(childSpan.traceState).toBe('a=b');

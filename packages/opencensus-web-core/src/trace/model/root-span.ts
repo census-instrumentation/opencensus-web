@@ -48,11 +48,12 @@ export class RootSpan extends Span implements webTypes.RootSpan {
 
   /**
    * Starts a new child span in the root span.
-   * @param nameOrOptions Span name string or object with `name` and `kind`
+   * @param nameOrOptions Span name string or SpanOptions object.
    * @param kind Span kind if not using options object.
+   * @param parentSpanId Span parent ID.
    */
   startChildSpan(
-    nameOrOptions?: string | { name: string; kind: webTypes.SpanKind },
+    nameOrOptions?: string | webTypes.SpanOptions,
     kind?: webTypes.SpanKind
   ): Span {
     const child = new Span();
