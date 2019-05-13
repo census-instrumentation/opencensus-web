@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- Add support for object(```SpanOptions```) as an argument for ```startChildSpan``` function, similar to ```startRootSpan```.
+- Add support for object(`SpanOptions`) as an argument for `startChildSpan` function, similar to `startRootSpan`.
 
 ## 0.0.2 - 2019-04-29
 
