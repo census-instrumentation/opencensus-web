@@ -160,6 +160,8 @@ describe('Span', () => {
           type: MessageEventType.SENT,
           id: 'id22',
           timestamp: 25,
+          uncompressedSize: undefined,
+          compressedSize: undefined,
         },
       ]);
     });
@@ -173,6 +175,8 @@ describe('Span', () => {
           type: MessageEventType.RECEIVED,
           id: 'id23',
           timestamp: 33,
+          uncompressedSize: undefined,
+          compressedSize: undefined,
         },
       ]);
     });
