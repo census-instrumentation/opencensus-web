@@ -353,7 +353,7 @@ export interface Span {
   readonly traceId: string;
 
   /** Trace state associated with span */
-  readonly traceState: TraceState;
+  readonly traceState?: TraceState;
 
   /** Indicates if span was started. */
   readonly started: boolean;
@@ -558,7 +558,7 @@ export interface Tracer extends SpanEventListener {
    * This is necessary in order to create child spans correctly in event
    * handlers.
    * @param emitter An event emitter whose handlers should have
-   * the trace context binded to them.
+   *     the trace context binded to them.
    */
   wrapEmitter(emitter: NodeJsEventEmitter): void;
 }

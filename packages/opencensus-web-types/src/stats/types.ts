@@ -19,6 +19,10 @@ import { Metric } from '../metrics/export/types';
 import { TagMap } from '../tags/tag-map';
 import { TagKey, TagValue } from '../tags/types';
 
+/** Default type for functions */
+// tslint:disable:no-any
+export type Func<T> = (...args: any[]) => T;
+
 /** Main interface for stats. */
 export interface Stats {
   /**
@@ -29,7 +33,7 @@ export interface Stats {
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
-   * aggregation type
+   *     aggregation type
    */
   createView(
     name: string,
@@ -75,10 +79,17 @@ export interface Stats {
    * Updates all views with the new measurements.
    * @param measurements A list of measurements to record
    * @param tags optional The tags to which the value is applied.
-   *  tags could either be explicitly passed to the method, or implicitly
-   *  read from current execution context.
+   *     tags could either be explicitly passed to the method, or implicitly
+   *     read from current execution context.
+   * @param attachments optional The contextual information associated with an
+   *     example value. The contextual information is represented as key - value
+   *     string pairs.
    */
-  record(measurements: Measurement[], tags?: TagMap): void;
+  record(
+    measurements: Measurement[],
+    tags?: TagMap,
+    attachments?: { [key: string]: string }
+  ): void;
 
   /**
    * Remove all registered Views and exporters from the stats.
@@ -103,6 +114,18 @@ export interface Stats {
    * @param exporter An stats exporter
    */
   unregisterExporter(exporter: StatsEventListener): void;
+
+  /**
+   * Enters the scope of code where the given `TagMap` is in the current context
+   * (replacing the previous `TagMap`).
+   * @param tags The TagMap to be set to the current context.
+   * @param fn Callback function.
+   * @returns The callback return.
+   */
+  withTagContext<T>(tags: TagMap, fn: Func<T>): T;
+
+  /** Gets the current tag context. */
+  getCurrentTagContext(): TagMap;
 }
 
 /**
@@ -181,7 +204,7 @@ export interface View {
   /**
    * The end time for this view - represents the last time a value was recorded
    */
-  endTime: number;
+  endTime?: number;
   /** true if the view was registered */
   registered: boolean;
   /**
@@ -191,13 +214,20 @@ export interface View {
    * Measurements with measurement type INT64 will have its value truncated.
    * @param measurement The measurement to record
    * @param tags The tags to which the value is applied
+   * @param attachments optional The contextual information associated with an
+   *     example value. THe contextual information is represented as key - value
+   *     string pairs.
    */
-  recordMeasurement(measurement: Measurement, tags: TagMap): void;
+  recordMeasurement(
+    measurement: Measurement,
+    tags: TagMap,
+    attachments?: { [key: string]: string }
+  ): void;
   /**
    * Returns a snapshot of an AggregationData for that tags/labels values.
    * @param tagValues The desired data's tag values.
    */
-  getSnapshot(tagValues: TagValue[]): AggregationData;
+  getSnapshot(tagValues: Array<TagValue | null>): AggregationData;
   /** Gets the view's tag keys */
   getColumns(): TagKey[];
   /** Gets view`s metric */
@@ -220,7 +250,7 @@ export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
   /** The tagValues that this AggregationData collects and aggregates */
-  readonly tagValues: TagValue[];
+  readonly tagValues: Array<TagValue | null>;
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }
@@ -279,6 +309,25 @@ export interface DistributionData extends AggregationMetadata {
   buckets: Bucket[];
   /** Buckets count */
   bucketCounts?: number[];
+  /** If the distribution does not have a histogram, then omit this field. */
+  exemplars?: StatsExemplar[];
+}
+
+/**
+ * Exemplars are example points that may be used to annotate aggregated
+ * Distribution values. They are metadata that gives information about a
+ * particular value added to a Distribution bucket.
+ */
+export interface StatsExemplar {
+  /**
+   * Value of the exemplar point. It determines which bucket the exemplar
+   * belongs to.
+   */
+  readonly value: number;
+  /** The observation (sampling) time of the above value. */
+  readonly timestamp: number;
+  /** Contextual information about the example value. */
+  readonly attachments: { [key: string]: string };
 }
 
 export type Bucket = number;

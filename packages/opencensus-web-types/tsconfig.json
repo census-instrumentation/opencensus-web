@@ -10,6 +10,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "sourceMap": true,
+    "downlevelIteration": true,
     "baseUrl": ".",
     "moduleResolution": "node",
     "paths": {
