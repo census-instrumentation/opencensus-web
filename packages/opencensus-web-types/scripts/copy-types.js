@@ -105,6 +105,8 @@ async function logAndExec(cmd, options) {
 function getPatchedContents(srcFile, contents) {
   contents = updateCopyright(srcFile, contents);
   contents = fixNodeJsEventEmitterType(srcFile, contents);
+  contents = fixStatsImportInternalLibrary(srcFile, contents);
+  contents = fixSemicolonError(srcFile, contents);
   return contents;
 }
 
@@ -145,4 +147,38 @@ function fixNodeJsEventEmitterType(srcFile, contents) {
       `import {NodeJsEventEmitter} from '${relativeSrcDir}node/types';`);
   contents = lines.join('\n');
   return contents;
+}
+
+/**
+ * Replaces the `cls` import and usage and adds a new type to use instead of that import.
+ * This function might be provisional until @opencensus/core updates with this change.
+ * 
+ */
+function fixStatsImportInternalLibrary(srcFile, contents){
+  if(contents.indexOf('import * as cls from \'../internal/cls\';') === -1){
+    return contents;
+  }
+  
+  console.log(`  Using Fix stats import internal library for: ${srcFile}`);
+  
+  const contentToAdd = ["/** Default type for functions */", "// tslint:disable:no-any", "export type Func<T> = (...args: any[]) => T;", "\n", "/** Main interface for stats. */"].join('\n');
+
+  contents = contents.replace("import * as cls from '../internal/cls';\n", "");
+  contents = contents.replace('/** Main interface for stats. */', contentToAdd);
+  contents = contents.replace('cls.Func', 'Func');
+  return contents;
+}
+
+/**
+ * Adds a Semicolon in a specific location in order to perform `npm run fix` automatically without errors.
+ * This function might be provisional until @opencensus/core updates with this change.
+ */
+function fixSemicolonError(srcFile, contents){
+  if(contents.indexOf('[pluginName: string]: string\n') === -1){
+    return contents;
+  }
+  
+  console.log(`  Using fix semicolon error for: ${srcFile}`);
+  
+  return contents.replace('[pluginName: string]: string\n', '[pluginName: string]: string;\n');
 }

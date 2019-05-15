@@ -19,6 +19,10 @@ import { Metric } from '../metrics/export/types';
 import { TagMap } from '../tags/tag-map';
 import { TagKey, TagValue } from '../tags/types';
 
+/** Default type for functions */
+// tslint:disable:no-any
+export type Func<T> = (...args: any[]) => T;
+
 /** Main interface for stats. */
 export interface Stats {
   /**
@@ -29,7 +33,7 @@ export interface Stats {
    * @param tagKeys The view columns (tag keys)
    * @param description The view description
    * @param bucketBoundaries The view bucket boundaries for a distribution
-   * aggregation type
+   *     aggregation type
    */
   createView(
     name: string,
@@ -103,6 +107,25 @@ export interface Stats {
    * @param exporter An stats exporter
    */
   registerExporter(exporter: StatsEventListener): void;
+
+  /**
+   * Unregisters an exporter. It should be called whenever the exporter is not
+   * needed anymore.
+   * @param exporter An stats exporter
+   */
+  unregisterExporter(exporter: StatsEventListener): void;
+
+  /**
+   * Enters the scope of code where the given `TagMap` is in the current context
+   * (replacing the previous `TagMap`).
+   * @param tags The TagMap to be set to the current context.
+   * @param fn Callback function.
+   * @returns The callback return.
+   */
+  withTagContext<T>(tags: TagMap, fn: Func<T>): T;
+
+  /** Gets the current tag context. */
+  getCurrentTagContext(): TagMap;
 }
 
 /**
@@ -181,7 +204,7 @@ export interface View {
   /**
    * The end time for this view - represents the last time a value was recorded
    */
-  endTime: number;
+  endTime?: number;
   /** true if the view was registered */
   registered: boolean;
   /**
@@ -227,7 +250,7 @@ export interface AggregationMetadata {
   /** The aggregation type of the aggregation data */
   readonly type: AggregationType;
   /** The tagValues that this AggregationData collects and aggregates */
-  readonly tagValues: TagValue[];
+  readonly tagValues: Array<TagValue | null>;
   /** The latest timestamp a new data point was recorded */
   timestamp: number;
 }

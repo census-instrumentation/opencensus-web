@@ -39,6 +39,7 @@ export interface StatsEventListener {
    * @param view The registered view
    */
   onRegisterView(view: View): void;
+
   /**
    * Is called whenever a new measurement is recorded.
    * @deprecated since version 0.0.9 - use {@link start} instead
@@ -57,6 +58,9 @@ export interface StatsEventListener {
    * batched data to backend.
    */
   start(): void;
+
+  /** Stops the exporter. */
+  stop(): void;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;
