@@ -114,7 +114,7 @@ function adaptMessageEvent(
     time: adaptTimestampNumber(messageEvent.timestamp),
     messageEvent: {
       // tslint:disable-next-line:ban Needed to parse hexadecimal.
-      id: String(parseInt(messageEvent.id, 16)),
+      id: messageEvent.id,
       type: messageEvent.type, // Enum values match proto values
       uncompressedSize: messageEvent.uncompressedSize,
       compressedSize: messageEvent.compressedSize,

@@ -137,7 +137,7 @@ describe('Core to API Span adapters', () => {
     webSpan1.endPerfTime = 20.113;
     webSpan1.messageEvents = [
       {
-        id: '1',
+        id: 1,
         timestamp: 19.002,
         type: webCore.MessageEventType.SENT,
         uncompressedSize: 22,
@@ -209,7 +209,7 @@ describe('Core to API Span adapters', () => {
             {
               time: '2019-01-20T16:00:00.019002000Z',
               messageEvent: {
-                id: '1',
+                id: 1,
                 type: API_MESSAGE_EVENT_TYPE_SENT,
                 uncompressedSize: 22,
                 compressedSize: 15,

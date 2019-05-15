@@ -153,12 +153,12 @@ describe('Span', () => {
 
   describe('addMessageEvent', () => {
     it('adds message event with specified timestamp', () => {
-      span.addMessageEvent(MessageEventType.SENT, 'id22', /* timestamp */ 25);
+      span.addMessageEvent(MessageEventType.SENT, 22, /* timestamp */ 25);
 
       expect(span.messageEvents).toEqual([
         {
           type: MessageEventType.SENT,
-          id: 'id22',
+          id: 22,
           timestamp: 25,
           uncompressedSize: undefined,
           compressedSize: undefined,
@@ -168,12 +168,12 @@ describe('Span', () => {
 
     it('defaults timestamp to performance.now', () => {
       spyOn(performance, 'now').and.returnValue(33);
-      span.addMessageEvent(MessageEventType.RECEIVED, 'id23');
+      span.addMessageEvent(MessageEventType.RECEIVED, 23);
 
       expect(span.messageEvents).toEqual([
         {
           type: MessageEventType.RECEIVED,
-          id: 'id23',
+          id: 23,
           timestamp: 33,
           uncompressedSize: undefined,
           compressedSize: undefined,
