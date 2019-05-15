@@ -117,12 +117,15 @@ export class Tracer implements webTypes.Tracer {
 
   /**
    * Start a new Span instance to the currentRootSpan
-   * @param name Span name
+   * @param name Span name or SpanOptions object.
    * @param kind Span kind
    * @returns The new Span instance started
    */
-  startChildSpan(name?: string, kind?: webTypes.SpanKind): Span {
-    return this.currentRootSpan.startChildSpan(name, kind);
+  startChildSpan(
+    nameOrOptions?: string | webTypes.SpanOptions,
+    kind?: webTypes.SpanKind
+  ): Span {
+    return this.currentRootSpan.startChildSpan(nameOrOptions, kind);
   }
 
   /**

@@ -56,6 +56,9 @@ export interface StatsEventListener {
    * batched data to backend.
    */
   start(): void;
+
+  /** Stops the exporter. */
+  stop(): void;
 }
 
 export type ExporterConfig = configTypes.BufferConfig;

@@ -187,9 +187,17 @@ export class Span implements webTypes.Span {
   addMessageEvent(
     type: webTypes.MessageEventType,
     id: string,
-    timestamp: number = performance.now()
+    timestamp: number = performance.now(),
+    uncompressedSize?: number,
+    compressedSize?: number
   ) {
-    this.messageEvents.push({ type, id, timestamp });
+    this.messageEvents.push({
+      type,
+      id,
+      timestamp,
+      uncompressedSize,
+      compressedSize,
+    });
   }
 
   /**
