@@ -161,7 +161,13 @@ function fixStatsImportInternalLibrary(srcFile, contents){
   
   console.log(`  Using Fix stats import internal library for: ${srcFile}`);
   
-  const contentToAdd = ["/** Default type for functions */", "// tslint:disable:no-any", "export type Func<T> = (...args: any[]) => T;", "\n", "/** Main interface for stats. */"].join('\n');
+  const contentToAdd = [
+    "/** Default type for functions */",
+    "// tslint:disable:no-any",
+    "export type Func<T> = (...args: any[]) => T;",
+    "\n",
+    "/** Main interface for stats. */"
+  ].join('\n');
 
   contents = contents.replace("import * as cls from '../internal/cls';\n", "");
   contents = contents.replace('/** Main interface for stats. */', contentToAdd);
