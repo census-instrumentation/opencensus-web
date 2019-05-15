@@ -450,7 +450,7 @@ export interface MessageEvent {
    * sequence ID for a streaming RPC. It is recommended to be unique within a
    * Span.
    */
-  id?: string;
+  id?: string | number;
   /**
    * The number of uncompressed bytes sent or received.
    */
