@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { LinkType, MessageEventType } from '@opencensus/web-types';
+import {
+  LinkType,
+  MessageEventType,
+  SpanKind,
+  SpanOptions,
+} from '@opencensus/web-types';
 import { Span } from '../src/trace/model/span';
 import { mockGetterOrValue, restoreGetterOrValue } from './util';
 
@@ -179,6 +184,54 @@ describe('Span', () => {
           compressedSize: undefined,
         },
       ]);
+    });
+  });
+
+  describe('get numberOfChildren()', () => {
+    it('should get numberOfChildren from span instance', () => {
+      span.start();
+      expect(span.numberOfChildren).toBe(0);
+      span.startChildSpan('spanName', SpanKind.UNSPECIFIED);
+      expect(span.numberOfChildren).toBe(1);
+
+      for (let i = 0; i < 10; i++) {
+        span.startChildSpan('spanName' + i, SpanKind.UNSPECIFIED);
+      }
+      expect(span.numberOfChildren).toBe(11);
+    });
+  });
+
+  describe('startChildSpan', () => {
+    it('appends to spans list based on root id and state', () => {
+      span.traceId = '00000000000000000000000000000001';
+      span.traceState = 'a=b';
+
+      const childSpan = span.startChildSpan('child1', SpanKind.CLIENT);
+
+      expect(childSpan.traceId).toBe('00000000000000000000000000000001');
+      expect(childSpan.traceState).toBe('a=b');
+      expect(childSpan.name).toBe('child1');
+      expect(childSpan.kind).toBe(SpanKind.CLIENT);
+      expect(childSpan.parentSpanId).toBe(span.id);
+      expect(span.spans).toEqual([childSpan]);
+    });
+
+    it('allows specifying SpanOptions object with name and kind', () => {
+      span.traceId = '00000000000000000000000000000001';
+      span.traceState = 'a=b';
+
+      const spanOptions: SpanOptions = {
+        name: 'child1',
+        kind: SpanKind.CLIENT,
+      };
+      const childSpan = span.startChildSpan(spanOptions);
+
+      expect(childSpan.traceId).toBe('00000000000000000000000000000001');
+      expect(childSpan.traceState).toBe('a=b');
+      expect(childSpan.name).toBe('child1');
+      expect(childSpan.kind).toBe(SpanKind.CLIENT);
+      expect(childSpan.parentSpanId).toBe(span.id);
+      expect(span.spans).toEqual([childSpan]);
     });
   });
 });

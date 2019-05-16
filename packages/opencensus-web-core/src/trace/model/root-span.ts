@@ -19,13 +19,7 @@ import { randomTraceId } from '../../common/id-util';
 import { Span } from './span';
 
 /** Simple mock root span for use in use tests. */
-export class RootSpan extends Span implements webTypes.RootSpan {
-  /** A list of child spans. */
-  spans: Span[] = [];
-
-  /** A number of children. */
-  private numberOfChildrenLocal: number;
-
+export class RootSpan extends Span {
   constructor(
     /** Trace associated with this root span. */
     private readonly tracer: webTypes.Tracer,
@@ -47,41 +41,6 @@ export class RootSpan extends Span implements webTypes.RootSpan {
     } else {
       this.traceId = randomTraceId();
     }
-
-    this.numberOfChildrenLocal = 0;
-  }
-
-  /** Gets the number of child span created for this span. */
-  get numberOfChildren(): number {
-    return this.numberOfChildrenLocal;
-  }
-
-  /**
-   * Starts a new child span in the root span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using options object.
-   * @param parentSpanId Span parent ID.
-   */
-  startChildSpan(
-    nameOrOptions?: string | webTypes.SpanOptions,
-    kind?: webTypes.SpanKind
-  ): Span {
-    this.numberOfChildrenLocal++;
-    const child = new Span();
-    child.traceId = this.traceId;
-    child.traceState = this.traceState;
-
-    const spanName =
-      typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
-    const spanKind =
-      typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) child.name = spanName;
-    if (spanKind) child.kind = spanKind;
-
-    child.start();
-    child.parentSpanId = this.id;
-    this.spans.push(child);
-    return child;
   }
 
   start() {

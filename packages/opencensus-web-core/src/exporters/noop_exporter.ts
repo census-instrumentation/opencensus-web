@@ -17,11 +17,11 @@
 import * as webTypes from '@opencensus/web-types';
 
 export class NoopExporter implements webTypes.Exporter {
-  publish(roots: webTypes.RootSpan[]): Promise<number | string | void> {
+  publish(roots: webTypes.Span[]): Promise<number | string | void> {
     return Promise.resolve();
   }
 
-  onStartSpan(root: webTypes.RootSpan) {}
+  onStartSpan(root: webTypes.Span) {}
 
-  onEndSpan(root: webTypes.RootSpan) {}
+  onEndSpan(root: webTypes.Span) {}
 }
