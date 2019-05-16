@@ -27,7 +27,9 @@ export class Span implements webTypes.Span {
   constructor(
     /** The ID of this span. Defaults to a random span ID. */
     public id = randomSpanId()
-  ) {}
+  ) {
+    this.numberOfChildrenLocal = 0;
+  }
 
   /** If the parent span is in another process. */
   remoteParent = false;
@@ -77,6 +79,12 @@ export class Span implements webTypes.Span {
   /** Start time of the span as measured by the browser performance clock. */
   startPerfTime = 0;
 
+  /** A list of child spans. */
+  spans: Span[] = [];
+
+  /** A number of children. */
+  private numberOfChildrenLocal: number;
+
   /**
    * Number of dropped attributes. This is always zero because OpenCensus web
    * does not implement attribute dropping (but may be done by agent on export).
@@ -113,6 +121,11 @@ export class Span implements webTypes.Span {
   /** End time of the span as measured by the browser performance clock. */
   endPerfTime = 0;
 
+  /** Gets the number of child span created for this span. */
+  get numberOfChildren(): number {
+    return this.numberOfChildrenLocal;
+  }
+
   /** End time of the span as a Date. */
   get endTime(): Date {
     return getDateForPerfTime(this.endPerfTime);
@@ -136,6 +149,44 @@ export class Span implements webTypes.Span {
       options: 0x1, // always traced
       traceState: this.traceState,
     };
+  }
+
+  /** Recursively gets the descendant spans. */
+  allDescendants(): webTypes.Span[] {
+    return this.spans.reduce((acc: webTypes.Span[], cur) => {
+      acc.push(cur);
+      const desc = cur.allDescendants();
+      acc = acc.concat(desc);
+      return acc;
+    }, []);
+  }
+
+  /**
+   * Starts a new child span.
+   * @param nameOrOptions Span name string or SpanOptions object.
+   * @param kind Span kind if not using options object.
+   * @param parentSpanId Span parent ID.
+   */
+  startChildSpan(
+    nameOrOptions?: string | webTypes.SpanOptions,
+    kind?: webTypes.SpanKind
+  ): Span {
+    this.numberOfChildrenLocal++;
+    const child = new Span();
+    child.traceId = this.traceId;
+    child.traceState = this.traceState;
+
+    const spanName =
+      typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
+    const spanKind =
+      typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
+    if (spanName) child.name = spanName;
+    if (spanKind) child.kind = spanKind;
+
+    child.start();
+    child.parentSpanId = this.id;
+    this.spans.push(child);
+    return child;
   }
 
   /**

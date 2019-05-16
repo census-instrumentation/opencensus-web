@@ -25,7 +25,7 @@ const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
 /** Tracer manages the current root span and trace header propagation. */
 export class Tracer implements webTypes.Tracer {
   /** Get and set the currentRootSpan of the tracer. */
-  currentRootSpan: RootSpan = new RootSpan(this);
+  currentRootSpan: Span = new RootSpan(this);
 
   /**
    * A sampler used to make trace sample decisions. In the case of
@@ -80,24 +80,21 @@ export class Tracer implements webTypes.Tracer {
    * @param fn Callback function
    * @returns The callback return
    */
-  startRootSpan<T>(
-    options: webTypes.TraceOptions,
-    fn: (root: RootSpan) => T
-  ): T {
+  startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: Span) => T): T {
     this.currentRootSpan = new RootSpan(this, options);
     this.currentRootSpan.start();
     return fn(this.currentRootSpan);
   }
 
   /** Notifies listeners of the span start. */
-  onStartSpan(root: webTypes.RootSpan) {
+  onStartSpan(root: webTypes.Span) {
     for (const listener of this.eventListeners) {
       listener.onStartSpan(root);
     }
   }
 
   /** Notifies listeners of the span end. */
-  onEndSpan(root: webTypes.RootSpan) {
+  onEndSpan(root: webTypes.Span) {
     for (const listener of this.eventListeners) {
       listener.onEndSpan(root);
     }

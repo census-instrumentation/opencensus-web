@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SpanKind, SpanOptions } from '@opencensus/web-types';
+import { SpanKind } from '@opencensus/web-types';
 import { RootSpan } from '../src/trace/model/root-span';
 import { Tracer } from '../src/trace/model/tracer';
 
@@ -48,40 +48,6 @@ describe('RootSpan', () => {
 
     it('defaults to random trace ID if no context given', () => {
       expect(root.traceId).toMatch('^[a-z0-9]{32}$');
-    });
-  });
-
-  describe('startChildSpan', () => {
-    it('appends to spans list based on root id and state', () => {
-      root.traceId = '00000000000000000000000000000001';
-      root.traceState = 'a=b';
-
-      const childSpan = root.startChildSpan('child1', SpanKind.CLIENT);
-
-      expect(childSpan.traceId).toBe('00000000000000000000000000000001');
-      expect(childSpan.traceState).toBe('a=b');
-      expect(childSpan.name).toBe('child1');
-      expect(childSpan.kind).toBe(SpanKind.CLIENT);
-      expect(childSpan.parentSpanId).toBe(root.id);
-      expect(root.spans).toEqual([childSpan]);
-    });
-
-    it('allows specifying SpanOptions object with name and kind', () => {
-      root.traceId = '00000000000000000000000000000001';
-      root.traceState = 'a=b';
-
-      const spanOptions: SpanOptions = {
-        name: 'child1',
-        kind: SpanKind.CLIENT,
-      };
-      const childSpan = root.startChildSpan(spanOptions);
-
-      expect(childSpan.traceId).toBe('00000000000000000000000000000001');
-      expect(childSpan.traceState).toBe('a=b');
-      expect(childSpan.name).toBe('child1');
-      expect(childSpan.kind).toBe(SpanKind.CLIENT);
-      expect(childSpan.parentSpanId).toBe(root.id);
-      expect(root.spans).toEqual([childSpan]);
     });
   });
 
@@ -121,18 +87,36 @@ describe('RootSpan', () => {
     });
   });
 
-  describe('get numberOfChildren()', () => {
-    it('should get numberOfChildren from rootspan instance', () => {
-      root = new RootSpan(tracer);
+  describe('nested spans', () => {
+    it('should get nested spans from rootspan instance', () => {
       root.start();
       expect(root.numberOfChildren).toBe(0);
-      root.startChildSpan('spanName', SpanKind.UNSPECIFIED);
+      const child1 = root.startChildSpan('child1', SpanKind.UNSPECIFIED);
       expect(root.numberOfChildren).toBe(1);
+      expect(child1.numberOfChildren).toBe(0);
+      const child2 = root.startChildSpan('child2', SpanKind.UNSPECIFIED);
+      expect(root.numberOfChildren).toBe(2);
+      const grandchild1 = child1.startChildSpan({
+        name: 'grandchild1',
+        kind: SpanKind.UNSPECIFIED,
+      });
+      expect(root.numberOfChildren).toBe(2);
+      expect(child1.numberOfChildren).toBe(1);
+      expect(child2.numberOfChildren).toBe(0);
+      expect(grandchild1.numberOfChildren).toBe(0);
 
-      for (let i = 0; i < 10; i++) {
-        root.startChildSpan('spanName' + i, SpanKind.UNSPECIFIED);
-      }
-      expect(root.numberOfChildren).toBe(11);
+      expect(child1).toBe(root.spans[0]);
+      expect(child2).toBe(root.spans[1]);
+      expect(grandchild1.parentSpanId).toBe(child1.id);
+
+      expect(child1.spans.length).toBe(1);
+      expect(grandchild1).toBe(child1.spans[0]);
+
+      expect(child2.spans.length).toBe(0);
+      expect(child2.spans.length).toBe(0);
+      expect(grandchild1.spans.length).toBe(0);
+
+      expect(root.allDescendants().length).toBe(3);
     });
   });
 });
