@@ -3,8 +3,8 @@
 
 *For overview and usage info see the main [OpenCensus Web readme][oc-web-readme-url].*
 
-This package generates OpencCensus Web model spans based base on user interactions 
-coming after initial page loads. This implements the library 
+This package generates OpenCensus Web model spans based on user interactions 
+coming after initial page loads. This uses the library 
 [Zone.js](https://github.com/angular/zone.js/) to generate those spans.
 
 The library is in alpha stage and the API is subject to change.
