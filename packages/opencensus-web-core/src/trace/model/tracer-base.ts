@@ -53,7 +53,7 @@ export class TracerBase implements webTypes.TracerBase {
   readonly activeTraceParams = {};
 
   /** A configuration for starting the tracer */
-  private config!: webTypes.TracerConfig;
+  private config: webTypes.TracerConfig = {};
 
   /**
    * Starts the tracer. This makes the tracer active and sets `logger` and
@@ -83,9 +83,9 @@ export class TracerBase implements webTypes.TracerBase {
     // Add default attributes
     const defaultAttributes = this.config && this.config.defaultAttributes;
     if (defaultAttributes) {
-      Object.keys(defaultAttributes).forEach(key => {
+      for (const key of Object.keys(defaultAttributes)) {
         rootSpan.addAttribute(key, defaultAttributes[key]);
-      });
+      }
     }
     rootSpan.start();
     return fn(rootSpan);
@@ -127,9 +127,9 @@ export class TracerBase implements webTypes.TracerBase {
     // Add default attributes
     const defaultAttributes = this.config && this.config.defaultAttributes;
     if (defaultAttributes) {
-      Object.keys(defaultAttributes).forEach(key => {
-        span.addAttribute(key, defaultAttributes[key]);
-      });
+      for (const key of Object.keys(defaultAttributes)) {
+        rootSpan.addAttribute(key, defaultAttributes[key]);
+      }
     }
     return span;
   }
