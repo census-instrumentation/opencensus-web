@@ -15,7 +15,6 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import { RootSpan } from '../src/trace/model/root-span';
 import { Tracer } from '../src/trace/model/tracer';
 
 describe('Tracer', () => {
@@ -29,27 +28,6 @@ describe('Tracer', () => {
       'onEndSpan',
     ]);
     tracer.eventListeners = [listener];
-  });
-
-  describe('start', () => {
-    it('sets logger and propagation based on config', () => {
-      const mockLogger = jasmine.createSpyObj<webTypes.Logger>('logger', [
-        'info',
-      ]);
-      const mockPropagation = jasmine.createSpyObj<webTypes.Propagation>(
-        'propagation',
-        ['generate']
-      );
-
-      const result = tracer.start({
-        logger: mockLogger,
-        propagation: mockPropagation,
-      });
-
-      expect(result).toBe(tracer);
-      expect(tracer.logger).toBe(mockLogger);
-      expect(tracer.propagation).toBe(mockPropagation);
-    });
   });
 
   describe('startRootSpan', () => {
@@ -68,40 +46,6 @@ describe('Tracer', () => {
     });
   });
 
-  describe('onStartSpan', () => {
-    it('notifies span listeners', () => {
-      const newRoot = new RootSpan(tracer);
-      tracer.onStartSpan(newRoot);
-      expect(listener.onStartSpan).toHaveBeenCalledWith(newRoot);
-    });
-  });
-
-  describe('onEndSpan', () => {
-    it('notifies span listeners', () => {
-      const newRoot = new RootSpan(tracer);
-      tracer.onEndSpan(newRoot);
-      expect(listener.onEndSpan).toHaveBeenCalledWith(newRoot);
-    });
-  });
-
-  describe('registerSpanEventListener', () => {
-    it('adds to listeners', () => {
-      const newListener = jasmine.createSpyObj<webTypes.SpanEventListener>(
-        'newListener',
-        ['onStartSpan', 'onEndSpan']
-      );
-      tracer.registerSpanEventListener(newListener);
-      expect(tracer.eventListeners).toEqual([listener, newListener]);
-    });
-  });
-
-  describe('unregisterSpanEventListener', () => {
-    it('removes from listeners', () => {
-      tracer.unregisterSpanEventListener(listener);
-      expect(tracer.eventListeners).toEqual([]);
-    });
-  });
-
   describe('clearCurrentTrace', () => {
     it('resets currentRootSpan to new root', () => {
       const oldRoot = tracer.currentRootSpan;
@@ -113,11 +57,12 @@ describe('Tracer', () => {
   describe('startChildSpan', () => {
     it('starts a child span of the current root span', () => {
       spyOn(tracer.currentRootSpan, 'startChildSpan');
-      tracer.startChildSpan('child1', webTypes.SpanKind.CLIENT);
-      expect(tracer.currentRootSpan.startChildSpan).toHaveBeenCalledWith(
-        'child1',
-        webTypes.SpanKind.CLIENT
-      );
+      tracer.startChildSpan({ name: 'child1', kind: webTypes.SpanKind.CLIENT });
+      expect(tracer.currentRootSpan.startChildSpan).toHaveBeenCalledWith({
+        childOf: tracer.currentRootSpan,
+        name: 'child1',
+        kind: webTypes.SpanKind.CLIENT,
+      });
     });
   });
 

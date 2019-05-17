@@ -15,61 +15,14 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import { NoHeadersPropagation } from '../propagation/no_headers_propagation';
-import { AlwaysSampler } from '../sampler/sampler';
 import { RootSpan } from './root-span';
 import { Span } from './span';
-
-const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
+import { TracerBase } from './tracer-base';
 
 /** Tracer manages the current root span and trace header propagation. */
-export class Tracer implements webTypes.Tracer {
+export class Tracer extends TracerBase implements webTypes.Tracer {
   /** Get and set the currentRootSpan of the tracer. */
   currentRootSpan: Span = new RootSpan(this);
-
-  /**
-   * A sampler used to make trace sample decisions. In the case of
-   * opencensus-web, ultimate sampling decisions will likely be made by the
-   * server or agent/collector. So this defaults to sampling every trace.
-   */
-  sampler = new AlwaysSampler();
-
-  /** An object to log information to. Logs to the JS console by default. */
-  logger: webTypes.Logger = console;
-
-  /** Trace context header propagation behavior. */
-  propagation = NO_HEADERS_PROPAGATION;
-
-  /** Event listeners for spans managed by the tracer. */
-  eventListeners: webTypes.SpanEventListener[] = [];
-
-  /**
-   * Active status from tracer instance - this is always true for
-   * opencensus-web for code simplicity purposes.
-   */
-  active = true;
-
-  /**
-   * Trace parameter configuration. Not used by OpenCensus Web, but
-   * kept for interface compatibility with @opencensus/web-types.
-   */
-  readonly activeTraceParams = {};
-
-  /**
-   * Starts the tracer. This makes the tracer active and sets `logger` and
-   * `propagation` based on the given config. The `samplingRate` property of
-   * `config` is currently ignored.
-   */
-  start(config: webTypes.TracerConfig): Tracer {
-    this.logger = config.logger || console;
-    this.propagation = config.propagation || NO_HEADERS_PROPAGATION;
-    return this;
-  }
-
-  /** Stops the tracer. This is a no-op with opencensus-web. */
-  stop(): Tracer {
-    return this;
-  }
 
   /**
    * Start a new RootSpan to currentRootSpan. Currently opencensus-web only
@@ -81,33 +34,13 @@ export class Tracer implements webTypes.Tracer {
    * @returns The callback return
    */
   startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: Span) => T): T {
-    this.currentRootSpan = new RootSpan(this, options);
-    this.currentRootSpan.start();
-    return fn(this.currentRootSpan);
+    return super.startRootSpan(options, root => {
+      this.currentRootSpan = root;
+      return fn(root);
+    });
   }
 
-  /** Notifies listeners of the span start. */
-  onStartSpan(root: webTypes.Span) {
-    for (const listener of this.eventListeners) {
-      listener.onStartSpan(root);
-    }
-  }
-
-  /** Notifies listeners of the span end. */
-  onEndSpan(root: webTypes.Span) {
-    for (const listener of this.eventListeners) {
-      listener.onEndSpan(root);
-    }
-  }
-
-  registerSpanEventListener(listener: webTypes.SpanEventListener) {
-    this.eventListeners.push(listener);
-  }
-
-  unregisterSpanEventListener(listener: webTypes.SpanEventListener) {
-    this.eventListeners = this.eventListeners.filter(l => l !== listener);
-  }
-
+  /** Clears the current root span. */
   clearCurrentTrace() {
     this.currentRootSpan = new RootSpan(this);
   }
@@ -118,11 +51,10 @@ export class Tracer implements webTypes.Tracer {
    * @param kind Span kind
    * @returns The new Span instance started
    */
-  startChildSpan(
-    nameOrOptions?: string | webTypes.SpanOptions,
-    kind?: webTypes.SpanKind
-  ): Span {
-    return this.currentRootSpan.startChildSpan(nameOrOptions, kind);
+  startChildSpan(options?: webTypes.SpanOptions): Span {
+    return super.startChildSpan(
+      Object.assign({ childOf: this.currentRootSpan }, options)
+    );
   }
 
   /**
