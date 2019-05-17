@@ -7,7 +7,7 @@
   "scripts": {
     "build": "npm run compile",
     "clean": "rimraf build/*",
-    "copytypes": "node scripts/copy-types.js 'ee0228389b7f1e09ce3918ef448a7e68529527f4' && npm run fix",
+    "copytypes": "node scripts/copy-types.js '89f20bbc97a588fae75a281e6f06b4db002ea631' && npm run fix",
     "check": "gts check",
     "compile": "tsc -p .",
     "fix": "gts fix",

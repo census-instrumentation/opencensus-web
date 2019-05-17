@@ -98,7 +98,7 @@ export interface Stats {
 
   /**
    * Gets a collection of produced Metric`s to be exported.
-   * @returns {Metric[]} List of metrics
+   * @returns The List of metrics.
    */
   getMetrics(): Metric[];
 
