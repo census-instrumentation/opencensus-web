@@ -21,7 +21,7 @@ import { TagKey, TagValue } from '../tags/types';
 
 /** Default type for functions */
 // tslint:disable:no-any
-export type Func<T> = (...args: any[]) => T;
+type Func<T> = (...args: any[]) => T;
 
 /** Main interface for stats. */
 export interface Stats {
