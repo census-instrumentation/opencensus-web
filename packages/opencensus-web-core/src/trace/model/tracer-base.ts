@@ -22,7 +22,7 @@ import { Span } from './span';
 
 const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
 
-/** Tracer manages the current root span and trace header propagation. */
+/** TracerBase represents a tracer */
 export class TracerBase implements webTypes.TracerBase {
   /**
    * A sampler used to make trace sample decisions. In the case of
@@ -69,10 +69,7 @@ export class TracerBase implements webTypes.TracerBase {
   }
 
   /**
-   * Start a new RootSpan to currentRootSpan. Currently opencensus-web only
-   * supports a single root span at a time, so this just sets `currentRootSpan`
-   * to a new root span based on the given options and invokes the passed
-   * function. Currently no sampling decisions are propagated or made here.
+   * Start a new RootSpan to currentRootSpan. Currently no sampling decisions are propagated or made here.
    * @param options Options for tracer instance
    * @param fn Callback function
    * @returns The callback return
