@@ -22,7 +22,7 @@ import { Span } from './span';
 export class RootSpan extends Span {
   constructor(
     /** Trace associated with this root span. */
-    private readonly tracer: webTypes.Tracer,
+    private readonly tracer: webTypes.TracerBase,
     /** A trace options object to build the root span. */
     context?: webTypes.TraceOptions
   ) {

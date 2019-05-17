@@ -25,3 +25,4 @@ import './test-trace-model-util';
 import './test-tracer';
 import './test-tracing';
 import './test-url-util';
+import './test-tracer-base';

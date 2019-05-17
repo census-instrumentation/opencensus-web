@@ -15,7 +15,7 @@
  */
 
 import { Stats } from '../../stats/types';
-import { Tracer } from '../model/types';
+import { TracerBase } from '../model/types';
 
 /** Interface Plugin to apply patch. */
 export interface Plugin {
@@ -31,7 +31,7 @@ export interface Plugin {
    */
   enable<T>(
     moduleExports: T,
-    tracer: Tracer,
+    tracer: TracerBase,
     version: string,
     options: PluginConfig,
     basedir?: string,
