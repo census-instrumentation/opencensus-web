@@ -192,10 +192,13 @@ export class Span implements webTypes.Span {
   /**
    * Adds an attribute to the span.
    * @param key Describes the value added.
-   * @param value What value to set for the attribute.
+   * @param value What value to set for the attribute. If the value is a typeof object
+   *        it has to be JSON.stringify-able, cannot contain circular dependencies.
    */
-  addAttribute(key: string, value: string | number | boolean) {
-    this.attributes[key] = value;
+  addAttribute(key: string, value: string | number | boolean | object) {
+    const serializedValue =
+      typeof value === 'object' ? JSON.stringify(value) : value;
+    this.attributes[key] = serializedValue;
   }
 
   /**

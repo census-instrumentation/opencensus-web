@@ -103,8 +103,13 @@ describe('Span', () => {
 
   it('sets attribute when addAttribute called', () => {
     span.addAttribute('attr1', 23);
-
     expect(span.attributes).toEqual({ attr1: 23 });
+
+    span.addAttribute('object', { foo: 'bar' });
+    expect(span.attributes['object']).toEqual('{"foo":"bar"}');
+
+    span.addAttribute('array', [1, 2, 3]);
+    expect(span.attributes['array']).toEqual('[1,2,3]');
   });
 
   it('adds link when addLink called', () => {

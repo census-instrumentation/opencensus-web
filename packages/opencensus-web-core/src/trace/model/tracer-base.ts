@@ -52,6 +52,9 @@ export class TracerBase implements webTypes.TracerBase {
    */
   readonly activeTraceParams = {};
 
+  /** A configuration for starting the tracer */
+  private config: webTypes.TracerConfig = {};
+
   /**
    * Starts the tracer. This makes the tracer active and sets `logger` and
    * `propagation` based on the given config. The `samplingRate` property of
@@ -60,6 +63,7 @@ export class TracerBase implements webTypes.TracerBase {
   start(config: webTypes.TracerConfig): this {
     this.logger = config.logger || console;
     this.propagation = config.propagation || NO_HEADERS_PROPAGATION;
+    this.config = config;
     return this;
   }
 
@@ -76,6 +80,13 @@ export class TracerBase implements webTypes.TracerBase {
    */
   startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: Span) => T): T {
     const rootSpan = new RootSpan(this, options);
+    // Add default attributes
+    const defaultAttributes = this.config && this.config.defaultAttributes;
+    if (defaultAttributes) {
+      for (const key of Object.keys(defaultAttributes)) {
+        rootSpan.addAttribute(key, defaultAttributes[key]);
+      }
+    }
     rootSpan.start();
     return fn(rootSpan);
   }
@@ -108,10 +119,18 @@ export class TracerBase implements webTypes.TracerBase {
    * @returns The new Span instance started
    */
   startChildSpan(options?: webTypes.SpanOptions): Span {
-    let span = new Span();
+    let rootSpan = new Span();
     if (options && options.childOf) {
-      span = options.childOf as Span;
+      rootSpan = options.childOf as Span;
     }
-    return span.startChildSpan(options);
+    const span = rootSpan.startChildSpan(options);
+    // Add default attributes
+    const defaultAttributes = this.config && this.config.defaultAttributes;
+    if (defaultAttributes) {
+      for (const key of Object.keys(defaultAttributes)) {
+        rootSpan.addAttribute(key, defaultAttributes[key]);
+      }
+    }
+    return span;
   }
 }
