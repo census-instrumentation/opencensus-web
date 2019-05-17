@@ -91,10 +91,16 @@ describe('RootSpan', () => {
     it('should get nested spans from rootspan instance', () => {
       root.start();
       expect(root.numberOfChildren).toBe(0);
-      const child1 = root.startChildSpan('child1', SpanKind.UNSPECIFIED);
+      const child1 = root.startChildSpan({
+        name: 'child1',
+        kind: SpanKind.UNSPECIFIED,
+      });
       expect(root.numberOfChildren).toBe(1);
       expect(child1.numberOfChildren).toBe(0);
-      const child2 = root.startChildSpan('child2', SpanKind.UNSPECIFIED);
+      const child2 = root.startChildSpan({
+        name: 'child2',
+        kind: SpanKind.UNSPECIFIED,
+      });
       expect(root.numberOfChildren).toBe(2);
       const grandchild1 = child1.startChildSpan({
         name: 'grandchild1',

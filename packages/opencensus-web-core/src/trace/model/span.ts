@@ -163,25 +163,16 @@ export class Span implements webTypes.Span {
 
   /**
    * Starts a new child span.
-   * @param nameOrOptions Span name string or SpanOptions object.
-   * @param kind Span kind if not using options object.
-   * @param parentSpanId Span parent ID.
+   * @param [options] A SpanOptions object to start a child span.
    */
-  startChildSpan(
-    nameOrOptions?: string | webTypes.SpanOptions,
-    kind?: webTypes.SpanKind
-  ): Span {
+  startChildSpan(options?: webTypes.SpanOptions): Span {
     this.numberOfChildrenLocal++;
     const child = new Span();
     child.traceId = this.traceId;
     child.traceState = this.traceState;
 
-    const spanName =
-      typeof nameOrOptions === 'object' ? nameOrOptions.name : nameOrOptions;
-    const spanKind =
-      typeof nameOrOptions === 'object' ? nameOrOptions.kind : kind;
-    if (spanName) child.name = spanName;
-    if (spanKind) child.kind = spanKind;
+    if (options && options.name) child.name = options.name;
+    if (options && options.kind) child.kind = options.kind;
 
     child.start();
     child.parentSpanId = this.id;

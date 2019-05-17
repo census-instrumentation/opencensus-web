@@ -196,11 +196,14 @@ describe('Span', () => {
     it('should get numberOfChildren from span instance', () => {
       span.start();
       expect(span.numberOfChildren).toBe(0);
-      span.startChildSpan('spanName', SpanKind.UNSPECIFIED);
+      span.startChildSpan({ name: 'spanName', kind: SpanKind.UNSPECIFIED });
       expect(span.numberOfChildren).toBe(1);
 
       for (let i = 0; i < 10; i++) {
-        span.startChildSpan('spanName' + i, SpanKind.UNSPECIFIED);
+        span.startChildSpan({
+          name: 'spanName' + i,
+          kind: SpanKind.UNSPECIFIED,
+        });
       }
       expect(span.numberOfChildren).toBe(11);
     });
@@ -211,7 +214,10 @@ describe('Span', () => {
       span.traceId = '00000000000000000000000000000001';
       span.traceState = 'a=b';
 
-      const childSpan = span.startChildSpan('child1', SpanKind.CLIENT);
+      const childSpan = span.startChildSpan({
+        name: 'child1',
+        kind: SpanKind.CLIENT,
+      });
 
       expect(childSpan.traceId).toBe('00000000000000000000000000000001');
       expect(childSpan.traceState).toBe('a=b');
