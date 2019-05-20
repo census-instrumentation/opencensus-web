@@ -1,0 +1,24 @@
+{
+  "name": "http_server",
+  "version": "1.0.0",
+  "description": "Http server for user_interaction example",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "OpenCensus Authors",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=8"
+  },
+  "dependencies": {
+    "@opencensus/exporter-zipkin": "^0.0.12",
+    "@opencensus/nodejs": "^0.0.12",
+    "@opencensus/propagation-tracecontext": "^0.0.12",
+    "axios": "^0.18.0",
+    "http": "*"
+  },
+  "devDependencies": {
+    "semistandard": "^13.0.1"
+  }
+}
