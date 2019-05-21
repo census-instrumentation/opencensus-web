@@ -23,7 +23,7 @@ class App extends React.Component {
     super(props);
     this.state = { pi: {time: 0, value: "unknown"}, prime_numbers: {time: 0, value: []}};
     this.handleClick = this.handleClick.bind(this);
-    this.http = require('http');
+    this.http = require('http');    
   }
 
   handleClick() {
@@ -32,25 +32,45 @@ class App extends React.Component {
     this.http.get({
       host,
       port,
-      path: '/calculate_pi'
+      path: '/sleep'
     }, (response) => {
       let data = [];
       response.on('data', chunk => data.push(chunk));
       response.on('end', () => {
-        this.setState({ pi: JSON.parse(data.toString())});
+        this.http.get({
+          host,
+          port,
+          path: '/prime_numbers'
+        }, (response) => {
+          let data = [];
+          response.on('data', chunk => data.push(chunk));
+          response.on('end', () => {
+            const result = this.runThridTask();
+            this.setState({ pi: result, prime_numbers: JSON.parse(data.toString()) });
+          });
+        });
       });
     });
-    this.http.get({
-      host,
-      port,
-      path: '/prime_numbers'
-    }, (response) => {
-      let data = [];
-      response.on('data', chunk => data.push(chunk));
-      response.on('end', () => {
-        this.setState({ prime_numbers: JSON.parse(data.toString()) });
-      });
-    });
+  }
+
+  runThridTask(){
+    const time = Date.now();
+    const pi = this.calculatePi();
+    return {time: (Date.now() - time), value: pi};
+  }
+
+  calculatePi(){
+    let result = 0.0;
+    let divisor = 1.0;
+    for(let i = 0; i < 2000000000; i++){
+        if (i % 2){
+            result -= 4/divisor;
+        } else {
+            result += 4/divisor;
+        }
+        divisor += 2;
+    }
+    return result;
   }
 
   render() {

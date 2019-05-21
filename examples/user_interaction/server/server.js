@@ -41,18 +41,8 @@ function startServer (port) {
   });
 }
 
-function calculatePi(){
-    let result = 0.0;
-    let divisor = 1.0;
-    for(let i = 0; i < 2000000000; i++){
-        if (i % 2){
-            result -= 4/divisor;
-        } else {
-            result += 4/divisor;
-        }
-        divisor += 2;
-    }
-    return result;
+function sleep(){
+  for(let i  = 0; i < 1000000000; i++){}
 }
 
 function checkPrime(number){
@@ -76,12 +66,12 @@ function calculatePrimeNumbers(){
 /** A function which handles requests and send response. */
 function handleRequest (request, response) {
   const span = tracer.startChildSpan({ name: 'octutorials.handleRequest' });
-  console.log("Start")
+//   console.log("Start")
   try {
     let body = [];
     request.on('error', err => console.log(err));
     request.on('data', chunk => body.push(chunk));
-    
+
     response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     response.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
@@ -89,10 +79,10 @@ function handleRequest (request, response) {
 
     let result = "";
     let code = 200;
-    if(url.parse(request.url).pathname === '/calculate_pi'){
+    if(url.parse(request.url).pathname === '/sleep'){
         const time = Date.now();
-        const pi = calculatePi().toString();
-        result = {time: Date.now() - time, value: pi};
+        sleep();
+        result = {time: Date.now() - time, value: ""};
     } else if(url.parse(request.url).pathname === '/prime_numbers'){
         const time = Date.now();
         const prime_numbers = JSON.stringify(calculatePrimeNumbers());
