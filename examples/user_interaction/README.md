@@ -3,8 +3,8 @@
 This example server renders a simple hello page and writes both the server-side
 and client side spans for the initial page load to the [OpenCensus agent](https://github.com/census-instrumentation/opencensus-service).
 
-Also, add a button in order to test user interactions, this button triggers to network requests to the provided node server when it is clicked.
-These requests, Sleep the server for a while and calculate prime numbers until 100000. After this, the frontend calculates PI.
+Also, add a button in order to test user interactions, this button triggers network requests to the provided node server when it is clicked.
+These requests sleep the server for a while and calculate prime numbers until 100000. After this, the frontend calculates PI.
 The idea of these calls is to trace the click on the button and see calculations in server and client side.
 
 ## Running locally
