@@ -21,9 +21,9 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { pi: {time: 0, value: "unknown"}, prime_numbers: {time: 0, value: []}};
+    this.state = { pi: { time: 0, value: "unknown" }, prime_numbers: { time: 0, value: [] } };
     this.handleClick = this.handleClick.bind(this);
-    this.http = require('http');    
+    this.http = require('http');
   }
 
   handleClick() {
@@ -53,22 +53,22 @@ class App extends React.Component {
     });
   }
 
-  runThridTask(){
+  runThridTask() {
     const time = Date.now();
     const pi = this.calculatePi();
-    return {time: (Date.now() - time), value: pi};
+    return { time: (Date.now() - time), value: pi };
   }
 
-  calculatePi(){
+  calculatePi() {
     let result = 0.0;
     let divisor = 1.0;
-    for(let i = 0; i < 2000000000; i++){
-        if (i % 2){
-            result -= 4/divisor;
-        } else {
-            result += 4/divisor;
-        }
-        divisor += 2;
+    for (let i = 0; i < 2000000000; i++) {
+      if (i % 2) {
+        result -= 4 / divisor;
+      } else {
+        result += 4 / divisor;
+      }
+      divisor += 2;
     }
     return result;
   }
@@ -79,15 +79,15 @@ class App extends React.Component {
         <p>This example makes some calculations like calculate Pi using the series from
         and calculate the amount of prime numbers in between 1 and 100000. These
         calculations are done using slow methods in order to measure the traces.</p>
-        
+
         <button onClick={this.handleClick}>Trace user interaction</button>
 
-        <p>The value of Pi is: <code>{this.state.pi.value}</code> and it took 
+        <p>The value of Pi is: <code>{this.state.pi.value}</code> and it took
         <code> {this.state.pi.time} ms </code> to compute this.</p>
 
         <p>The amount of prime numbers is: <code> {this.state.prime_numbers.value.length} </code>
-        and it took <code> {this.state.prime_numbers.time} ms </code> to compute this.</p>
-        
+          and it took <code> {this.state.prime_numbers.time} ms </code> to compute this.</p>
+
       </div>
     );
   }
