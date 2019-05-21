@@ -15,7 +15,7 @@
  */
 
 import { Stats } from '../../stats/types';
-import { TracerBase } from '../model/types';
+import { Span, TracerBase } from '../model/types';
 
 /** Interface Plugin to apply patch. */
 export interface Plugin {
@@ -41,9 +41,19 @@ export interface Plugin {
   disable(): void;
 }
 
+/**
+ * Function that can be provided to plugin in order to add custom
+ * attributes to spans
+ */
+export interface CustomAttributeFunction {
+  // tslint:disable-next-line:no-any
+  (span: Span, ...rest: any[]): void;
+}
+
 export interface PluginConfig {
   // tslint:disable-next-line:no-any
   [key: string]: any;
+  applyCustomAttributesOnSpan?: CustomAttributeFunction;
 }
 
 export interface NamedPluginConfig {

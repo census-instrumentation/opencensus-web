@@ -133,4 +133,9 @@ export class TracerBase implements webTypes.TracerBase {
     }
     return span;
   }
+
+  /** Sets the current root span. */
+  setCurrentRootSpan(root: webTypes.Span) {
+    // no-op, this is only required in case of tracer with cls.
+  }
 }
