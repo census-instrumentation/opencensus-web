@@ -1,0 +1,41 @@
+{
+  "name": "user_interaction",
+  "version": "0.1.0",
+  "private": true,
+  "repository": "census-instrumentation/opencensus-web",
+  "keywords": [
+    "opencensus",
+    "browser",
+    "tracing",
+    "profiling",
+    "stats",
+    "metrics"
+  ],
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
+    "@opencensus/web-all": "^0.0.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
