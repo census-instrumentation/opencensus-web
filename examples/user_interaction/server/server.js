@@ -27,9 +27,10 @@ const tracer = setupTracerAndExporters();
 
 const http = require('http');
 const url = require('url');
+const sleep = require('sleep');
 
 /** Starts a HTTP server that receives requests on sample server port. */
-function startServer (port) {
+function startServer(port) {
   // Creates a server
   const server = http.createServer(handleRequest);
   // Starts the server
@@ -41,61 +42,62 @@ function startServer (port) {
   });
 }
 
-function sleep(){
-  for(let i  = 0; i < 1000000000; i++){}
+function isPrime(number) {
+  for (let i = 2; i < number; i++) {
+    if ((number % i) === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
-function checkPrime(number){
-    for(let i = 2; i < number; i++){
-        if((number % i) === 0){
-            return false;
-        }
+function calculatePrimeNumbers() {
+  let result = Array();
+  for (let i = 1; i < 100000; i++) {
+    if (isPrime(i)) {
+      result.push(i);
     }
-    return true;
-}
-function calculatePrimeNumbers(){
-    let result = Array();
-    for(let i = 1; i < 100000; i++){
-        if(checkPrime(i)){
-            result.push(i);
-        }
-    }
-    return result;
+  }
+  return result;
 }
 
 /** A function which handles requests and send response. */
-function handleRequest (request, response) {
+function handleRequest(request, response) {
   const span = tracer.startChildSpan({ name: 'octutorials.handleRequest' });
-//   console.log("Start")
+
   try {
     let body = [];
     request.on('error', err => console.log(err));
     request.on('data', chunk => body.push(chunk));
 
+    /**  
+     * Necessary headers because the Node.js and React dev servers run in different
+     * ports.
+    */
     response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     response.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     response.setHeader('Access-Control-Allow-Credentials', true);
 
-    let result = "";
+    let result = '';
     let code = 200;
-    if(url.parse(request.url).pathname === '/sleep'){
-        const time = Date.now();
-        sleep();
-        result = {time: Date.now() - time, value: ""};
-    } else if(url.parse(request.url).pathname === '/prime_numbers'){
-        const time = Date.now();
-        const prime_numbers = JSON.stringify(calculatePrimeNumbers());
-        result = {time: Date.now() - time, value: prime_numbers};
+    if (url.parse(request.url).pathname === '/sleep') {
+      const time = Date.now();
+      sleep.sleep(2);
+      result = { time: Date.now() - time, value: "" };
+    } else if (url.parse(request.url).pathname === '/prime_numbers') {
+      const time = Date.now();
+      const prime_numbers = JSON.stringify(calculatePrimeNumbers());
+      result = { time: Date.now() - time, value: prime_numbers };
     } else {
-        result = {time: 0, value: "unknown url"};
-        code = 404;
+      result = { time: 0, value: "unknown url" };
+      code = 404;
     }
-    
+
     request.on('end', () => {
-        span.end();
-        response.statusCode = code;
-        response.end(JSON.stringify(result));
+      span.end();
+      response.statusCode = code;
+      response.end(JSON.stringify(result));
     });
   } catch (err) {
     console.log(err);
@@ -103,7 +105,7 @@ function handleRequest (request, response) {
   }
 }
 
-function setupTracerAndExporters () {
+function setupTracerAndExporters() {
   const zipkinOptions = {
     url: 'http://localhost:9411/api/v2/spans',
     serviceName: 'opencensus_tutorial'

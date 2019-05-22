@@ -2,6 +2,15 @@
   "name": "user_interaction",
   "version": "0.1.0",
   "private": true,
+  "repository": "census-instrumentation/opencensus-web",
+  "keywords": [
+    "opencensus",
+    "browser",
+    "tracing",
+    "profiling",
+    "stats",
+    "metrics"
+  ],
   "dependencies": {
     "react": "^16.8.6",
     "react-dom": "^16.8.6",

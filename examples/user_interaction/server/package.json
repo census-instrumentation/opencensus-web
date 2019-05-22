@@ -6,6 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": "census-instrumentation/opencensus-web",
+  "keywords": [
+    "opencensus",
+    "browser",
+    "tracing",
+    "profiling",
+    "stats",
+    "metrics"
+  ],
   "author": "OpenCensus Authors",
   "license": "Apache-2.0",
   "engines": {
@@ -16,7 +25,8 @@
     "@opencensus/nodejs": "^0.0.12",
     "@opencensus/propagation-tracecontext": "^0.0.12",
     "axios": "^0.18.0",
-    "http": "*"
+    "http": "*",
+    "sleep": "^6.1.0"
   },
   "devDependencies": {
     "semistandard": "^13.0.1"
