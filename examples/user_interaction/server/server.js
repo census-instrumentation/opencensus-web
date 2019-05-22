@@ -70,10 +70,7 @@ function handleRequest(request, response) {
     request.on('error', err => console.log(err));
     request.on('data', chunk => body.push(chunk));
 
-    /**  
-     * Necessary headers because the Node.js and React dev servers run in different
-     * ports.
-    */
+    // Necessary headers because the Node.js and React dev servers run in different ports.
     response.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     response.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
