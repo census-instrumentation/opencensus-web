@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from './export-initial-load' 
+import { InteractionTracker } from './interaction-tracker';
+
+export function startInteractionTracker() {
+    new InteractionTracker();
+}

@@ -18,6 +18,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import { exportRootSpanAfterLoadEvent } from '@opencensus/web-all';
+import { startInteractionTracker } from '@opencensus/web-instrumentation-zone';
+
+// Necessary import for @opencensus/web-instrumentation-zone
+import { Zone, ZoneType, Task } from 'zone.js';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
@@ -27,3 +31,5 @@ window.ocSampleRate = 1.0; // Sample at 100% for test only. Default is 1/10000.
 // Send the root span and child spans for the initial page load to the
 // OpenCensus agent if this request was sampled for trace.
 exportRootSpanAfterLoadEvent();
+
+startInteractionTracker();

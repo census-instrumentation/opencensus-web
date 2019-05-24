@@ -14,4 +14,26 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from './export-initial-load' 
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: './src/index.ts',
+  output: {filename: 'bundle.js'},
+  resolve: {extensions: ['.ts', '.js']},
+  devtool: 'inline-source-map',
+  module: {
+    rules: [
+      {test: /\.ts$/, use: 'ts-loader'},
+      {
+        test: /\.ts$/,
+        exclude: [path.resolve(__dirname, 'test')],
+        enforce: 'post',
+        use: {
+          loader: 'istanbul-instrumenter-loader',
+          options: {esModules: true},
+        },
+      },
+    ],
+  },
+};

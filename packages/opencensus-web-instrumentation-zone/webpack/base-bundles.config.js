@@ -14,4 +14,18 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from './export-initial-load' 
+module.exports = {
+  entry: {
+    'export-initial-load': './src/entrypoints/export-initial-load.ts',
+    'initial-load-all': './src/entrypoints/initial-load-all.ts',
+  },
+  resolve: {extensions: ['.ts', '.js']},
+  devtool: 'source-map',
+  module: {rules: [{test: /\.ts$/, use: 'ts-loader'}]},
+  stats: {
+    // Examine all modules
+    maxModules: Infinity,
+    // Display bailout reasons
+    optimizationBailout: true,
+  },
+};
