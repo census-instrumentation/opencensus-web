@@ -17,5 +17,5 @@
 import { InteractionTracker } from './interaction-tracker';
 
 export function startInteractionTracker() {
-    new InteractionTracker();
+  return new InteractionTracker();
 }
