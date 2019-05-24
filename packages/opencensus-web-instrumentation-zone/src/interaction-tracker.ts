@@ -45,9 +45,9 @@ export class InteractionTracker {
         };
 
         const scheduleTask = Zone.prototype.scheduleTask;
-        Zone.prototype.scheduleTask = function(task: AsyncTask) {
+        Zone.prototype.scheduleTask = function<T extends Task>(task: T): T {
           try {
-            return scheduleTask.call(this as {}, task);
+            return scheduleTask.call(this as {}, task) as T;
           } finally {
           }
         };
