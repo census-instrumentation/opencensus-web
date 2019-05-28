@@ -12,10 +12,11 @@
     "metrics"
   ],
   "dependencies": {
+    "@opencensus/web-all": "^0.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
-    "@opencensus/web-all": "^0.0.2"
+    "zone.js": "^0.9.1"
   },
   "scripts": {
     "start": "react-scripts start",
