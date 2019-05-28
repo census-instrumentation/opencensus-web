@@ -33,10 +33,8 @@ export class InteractionTracker {
     const runTask = Zone.prototype.runTask;
     Zone.prototype.runTask = function(
       task: AsyncTask,
-      // tslint:disable-next-line:no-any
-      applyThis: any,
-      // tslint:disable-next-line:no-any
-      applyArgs: any
+      applyThis: unknown,
+      applyArgs: unknown
     ) {
       if (task.eventName && task.eventName.toString().indexOf('click') !== -1) {
         console.log('Running task');
