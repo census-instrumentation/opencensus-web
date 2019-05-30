@@ -24,7 +24,7 @@
     "@opencensus/exporter-zipkin": "^0.0.12",
     "@opencensus/nodejs": "^0.0.12",
     "@opencensus/propagation-tracecontext": "^0.0.12",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "http": "*",
     "sleep": "^6.1.0"
   },
