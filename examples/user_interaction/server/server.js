@@ -79,13 +79,17 @@ function handleRequest(request, response) {
     let result = '';
     let code = 200;
     if (url.parse(request.url).pathname === '/sleep') {
+      console.log("Sleeping...")
       const time = Date.now();
-      sleep.sleep(2);
+      sleep.sleep(5);
       result = { time: Date.now() - time, value: "" };
+      console.log("Finished.")
     } else if (url.parse(request.url).pathname === '/prime_numbers') {
+      console.log("Calculate prime numbers...")
       const time = Date.now();
       const prime_numbers = JSON.stringify(calculatePrimeNumbers());
       result = { time: Date.now() - time, value: prime_numbers };
+      console.log("Finished.")
     } else {
       result = { time: 0, value: "unknown url" };
       code = 404;

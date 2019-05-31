@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { randomSpanId, randomTraceId } from '@opencensus/web-core';
+
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
 
@@ -29,39 +31,102 @@ export type AsyncTask = Task & {
 };
 
 export class InteractionTracker {
+  private readonly tracingZoneNames: Set<string> = new Set<string>();
   constructor() {
+    const interactionTracker: InteractionTracker = this;
+
     const runTask = Zone.prototype.runTask;
     Zone.prototype.runTask = function(
       task: AsyncTask,
       applyThis: unknown,
       applyArgs: unknown
     ) {
-      if (task.eventName && task.eventName.toString().indexOf('click') !== -1) {
-        console.log('Running task');
+      const time = Date.now();
+
+      console.warn('Running task');
+      console.log(task.zone);
+
+      let taskZone = this;
+      if (isTrackedElement(task)) {
         console.log('Click detected');
+
+        const zoneName = randomSpanId();
+        interactionTracker.tracingZoneNames.add(zoneName);
+
+        const tracingZone = Zone.root.fork({
+          name: zoneName,
+          properties: {
+            isTracingZone: true,
+            tracingId: randomTraceId(),
+          },
+        });
+
+        // Change the zone task.
+        // tslint:disable:no-any
+        (task as any)._zone = tracingZone;
+        taskZone = tracingZone;
+        console.log('New zone:');
+        console.log(taskZone);
+      } else {
+        // If we already are in a tracing zone, just run the task in our tracing zone.
+        if (
+          task.zone &&
+          interactionTracker.tracingZoneNames.has(task.zone.name)
+        ) {
+          taskZone = task.zone;
+        }
       }
       try {
-        return runTask.call(this as {}, task, applyThis, applyArgs);
+        return runTask.call(taskZone as {}, task, applyThis, applyArgs);
       } finally {
+        console.log('Run task finished.');
+        console.log('Time to complete: ' + (Date.now() - time));
       }
     };
 
     const scheduleTask = Zone.prototype.scheduleTask;
     Zone.prototype.scheduleTask = function<T extends Task>(task: T): T {
-      console.log('Scheduling task');
+      console.warn('Scheduling task');
+      console.log(task);
+
+      let taskZone: Zone = this;
+      if (
+        task.zone &&
+        interactionTracker.tracingZoneNames.has(task.zone.name)
+      ) {
+        taskZone = task.zone;
+      }
       try {
-        return scheduleTask.call(this as {}, task) as T;
+        return scheduleTask.call(taskZone as {}, task) as T;
       } finally {
       }
     };
 
     const cancelTask = Zone.prototype.cancelTask;
     Zone.prototype.cancelTask = function(task: AsyncTask) {
-      console.log('cancel task');
+      console.warn('Cancel task');
+      console.log(task);
+
+      let taskZone: Zone = this;
+      if (
+        task.zone &&
+        interactionTracker.tracingZoneNames.has(task.zone.name)
+      ) {
+        taskZone = task.zone;
+      }
+
       try {
-        return cancelTask.call(this as {}, task);
+        return cancelTask.call(taskZone as {}, task);
       } finally {
       }
     };
   }
+}
+
+function isTrackedElement(task: AsyncTask): boolean {
+  const eventType = task.eventName;
+
+  if (!eventType) return false;
+
+  return eventType === 'click';
 }

@@ -23,47 +23,49 @@ class App extends React.Component {
     this.state = { pi: { time: 0, value: "unknown" }, prime_numbers: { time: 0, value: [] } };
     this.handleClick = this.handleClick.bind(this);
     this.runSecondTask = this.runSecondTask.bind(this);
-    this.http = require('http');
+    this.host = 'http://localhost:8088';
   }
 
   handleClick() {
-    const host = 'localhost';
-    const port = 8088;
-    this.http.get({
-      host,
-      port,
-      path: '/sleep'
-    }, (response) => {
-      let data = [];
-      response.on('data', chunk => data.push(chunk));
-      response.on('end', this.runSecondTask);
-    });
+    console.log("Entering handle click.");
+
+    this.runFirstTask();
+  }
+
+  runFirstTask() {
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        this.runSecondTask();
+      }
+    };
+    xhr.open('GET', this.host + "/sleep");
+    xhr.send();
   }
 
   runSecondTask() {
-    const host = 'localhost';
-    const port = 8088;
-    this.http.get({
-      host,
-      port,
-      path: '/prime_numbers'
-    }, (response) => {
-      let data = [];
-      response.on('data', chunk => data.push(chunk));
-      response.on('end', () => {
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        const data = JSON.parse(xhr.responseText)
         const result = this.runThridTask();
-        this.setState({ pi: result, prime_numbers: JSON.parse(data.toString()) });
-      });
-    });
+        this.setState({ pi: result, prime_numbers: data });
+      }
+    };
+
+    xhr.open('GET', this.host + "/prime_numbers");
+    xhr.send();
   }
 
   runThridTask() {
     const time = Date.now();
+    console.log("Calculating PI");
     const pi = this.calculatePi();
+    console.log("Finished calculating PI");
     return { time: (Date.now() - time), value: pi };
   }
 
-  // Calculates Pi using Gregory-Leibniz series, just to make the process longer.
+  // Calculates PI using Gregory-Leibniz series, just to make the process longer.
   calculatePi() {
     let result = 0.0;
     let divisor = 1.0;
