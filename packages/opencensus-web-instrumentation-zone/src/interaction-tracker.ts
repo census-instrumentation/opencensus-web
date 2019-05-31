@@ -31,7 +31,7 @@ export type AsyncTask = Task & {
 };
 
 export class InteractionTracker {
-  private readonly tracingZoneNames: Set<string> = new Set<string>();
+  private readonly tracingZones: { [index: string]: Zone } = {};
   constructor() {
     const interactionTracker: InteractionTracker = this;
 
@@ -51,8 +51,6 @@ export class InteractionTracker {
         console.log('Click detected');
 
         const zoneName = randomSpanId();
-        interactionTracker.tracingZoneNames.add(zoneName);
-
         const tracingZone = Zone.root.fork({
           name: zoneName,
           properties: {
@@ -60,6 +58,8 @@ export class InteractionTracker {
             tracingId: randomTraceId(),
           },
         });
+
+        interactionTracker.tracingZones[zoneName] = tracingZone;
 
         // Change the zone task.
         // tslint:disable:no-any
@@ -69,10 +69,7 @@ export class InteractionTracker {
         console.log(taskZone);
       } else {
         // If we already are in a tracing zone, just run the task in our tracing zone.
-        if (
-          task.zone &&
-          interactionTracker.tracingZoneNames.has(task.zone.name)
-        ) {
+        if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
           taskZone = task.zone;
         }
       }
@@ -90,10 +87,7 @@ export class InteractionTracker {
       console.log(task);
 
       let taskZone: Zone = this;
-      if (
-        task.zone &&
-        interactionTracker.tracingZoneNames.has(task.zone.name)
-      ) {
+      if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
         taskZone = task.zone;
       }
       try {
@@ -108,10 +102,7 @@ export class InteractionTracker {
       console.log(task);
 
       let taskZone: Zone = this;
-      if (
-        task.zone &&
-        interactionTracker.tracingZoneNames.has(task.zone.name)
-      ) {
+      if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
         taskZone = task.zone;
       }
 
