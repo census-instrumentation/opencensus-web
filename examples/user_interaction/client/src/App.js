@@ -22,33 +22,33 @@ class App extends React.Component {
     super(props);
     this.state = { pi: { time: 0, value: "unknown" }, prime_numbers: { time: 0, value: [] } };
     this.handleClick = this.handleClick.bind(this);
-    this.runSecondTask = this.runSecondTask.bind(this);
+    this.runSecondTask = this.callPrimeNumbersApi.bind(this);
     this.host = 'http://localhost:8088';
   }
 
   handleClick() {
     console.log("Entering handle click.");
 
-    this.runFirstTask();
+    this.callSleepApi();
   }
 
-  runFirstTask() {
+  callSleepApi() {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
-        this.runSecondTask();
+        this.callPrimeNumbersApi();
       }
     };
     xhr.open('GET', this.host + "/sleep");
     xhr.send();
   }
 
-  runSecondTask() {
+  callPrimeNumbersApi() {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         const data = JSON.parse(xhr.responseText)
-        const result = this.runThridTask();
+        const result = this.callCalculatePi();
         this.setState({ pi: result, prime_numbers: data });
       }
     };
@@ -57,7 +57,7 @@ class App extends React.Component {
     xhr.send();
   }
 
-  runThridTask() {
+  callCalculatePi() {
     const time = Date.now();
     console.log("Calculating PI");
     const pi = this.calculatePi();

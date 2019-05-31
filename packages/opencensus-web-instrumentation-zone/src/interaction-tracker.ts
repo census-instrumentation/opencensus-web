@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { randomSpanId, randomTraceId } from '@opencensus/web-core';
+import { randomTraceId } from '@opencensus/web-core';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
@@ -28,12 +28,12 @@ export type AsyncTask = Task & {
   data: AsyncTaskData;
   eventName: string;
   target: HTMLElement;
+  // Allows access to the private `_zone` property of a Zone.js Task.
+  _zone: Zone;
 };
 
 export class InteractionTracker {
-  private readonly tracingZones: { [index: string]: Zone } = {};
   constructor() {
-    const interactionTracker: InteractionTracker = this;
 
     const runTask = Zone.prototype.runTask;
     Zone.prototype.runTask = function(
@@ -50,26 +50,23 @@ export class InteractionTracker {
       if (isTrackedElement(task)) {
         console.log('Click detected');
 
-        const zoneName = randomSpanId();
+        const traceId = randomTraceId();
         const tracingZone = Zone.root.fork({
-          name: zoneName,
+          name: traceId,
           properties: {
             isTracingZone: true,
-            tracingId: randomTraceId(),
+            traceId,
           },
         });
 
-        interactionTracker.tracingZones[zoneName] = tracingZone;
-
         // Change the zone task.
-        // tslint:disable:no-any
-        (task as any)._zone = tracingZone;
+        task._zone = tracingZone;
         taskZone = tracingZone;
         console.log('New zone:');
         console.log(taskZone);
       } else {
         // If we already are in a tracing zone, just run the task in our tracing zone.
-        if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
+        if (task.zone && task.zone.get('isTracingZone')) {
           taskZone = task.zone;
         }
       }
@@ -87,7 +84,7 @@ export class InteractionTracker {
       console.log(task);
 
       let taskZone: Zone = this;
-      if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
+      if (task.zone && task.zone && task.zone.get('isTracingZone')) {
         taskZone = task.zone;
       }
       try {
@@ -102,7 +99,7 @@ export class InteractionTracker {
       console.log(task);
 
       let taskZone: Zone = this;
-      if (task.zone && interactionTracker.tracingZones[task.zone.name]) {
+      if (task.zone && task.zone.get('isTracingZone')) {
         taskZone = task.zone;
       }
 
@@ -115,9 +112,5 @@ export class InteractionTracker {
 }
 
 function isTrackedElement(task: AsyncTask): boolean {
-  const eventType = task.eventName;
-
-  if (!eventType) return false;
-
-  return eventType === 'click';
+  return !!(task.eventName && task.eventName === 'click');
 }
