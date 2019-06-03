@@ -34,10 +34,13 @@ export type AsyncTask = Task & {
 
 export class InteractionTracker {
   // Allows to track several events triggered by the same user interaction in the right Zone.
-  private shouldCreateNewZone = true;
-  private currentZone: Zone = Zone.root;
+  private currentEventTracingZone?: Zone = undefined;
+
+  // Delay of 50 ms to reset currentEventTracingZone.
+  private readonly RESET_TRACING_ZONE_DELAY: number = 50;
 
   constructor() {
+    // Keep track of interaction tracker for monkey-patched methods.
     const interactionTracker: InteractionTracker = this;
 
     const runTask = Zone.prototype.runTask;
@@ -56,18 +59,18 @@ export class InteractionTracker {
       if (isTrackedElement(task)) {
         console.log('Click detected');
 
-        if (interactionTracker.shouldCreateNewZone) {
-          interactionTracker.shouldCreateNewZone = false;
-
-          // Timeout of 50 ms to reset flags to allow the creation of a new zone for a
-          // new user interaction.
-          setTimeout(() => {
-            interactionTracker.shouldCreateNewZone = true;
-            interactionTracker.currentZone = Zone.root;
-          }, 50);
+        if (interactionTracker.currentEventTracingZone === undefined) {
+          // Timeout to reset currentEventTracingZone to allow the creation of a new
+          // zone for a new user interaction.
+          Zone.root.run(() =>
+            setTimeout(
+              () => (interactionTracker.currentEventTracingZone = undefined),
+              interactionTracker.RESET_TRACING_ZONE_DELAY
+            )
+          );
 
           const traceId = randomTraceId();
-          interactionTracker.currentZone = Zone.root.fork({
+          interactionTracker.currentEventTracingZone = Zone.root.fork({
             name: traceId,
             properties: {
               isTracingZone: true,
@@ -75,12 +78,12 @@ export class InteractionTracker {
             },
           });
           console.log('New zone:');
-          console.log(interactionTracker.currentZone);
+          console.log(interactionTracker.currentEventTracingZone);
         }
 
         // Change the zone task.
-        task._zone = interactionTracker.currentZone;
-        taskZone = interactionTracker.currentZone;
+        task._zone = interactionTracker.currentEventTracingZone;
+        taskZone = interactionTracker.currentEventTracingZone;
       } else {
         // If we already are in a tracing zone, just run the task in our tracing zone.
         if (task.zone && task.zone.get('isTracingZone')) {
