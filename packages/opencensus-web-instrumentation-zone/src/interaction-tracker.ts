@@ -32,43 +32,59 @@ export type AsyncTask = Task & {
   _zone: Zone;
 };
 
-export class InteractionTracker {
-  constructor() {
+// Delay of 50 ms to reset currentEventTracingZone.
+const RESET_TRACING_ZONE_DELAY = 50;
 
+export class InteractionTracker {
+  // Allows to track several events triggered by the same user interaction in the right Zone.
+  private currentEventTracingZone?: Zone;
+
+  constructor() {
     const runTask = Zone.prototype.runTask;
-    Zone.prototype.runTask = function(
+    Zone.prototype.runTask = (
       task: AsyncTask,
       applyThis: unknown,
       applyArgs: unknown
-    ) {
+    ) => {
       const time = Date.now();
 
       console.warn('Running task');
+      console.log(task);
       console.log(task.zone);
 
-      let taskZone = this;
+      let taskZone = Zone.current;
       if (isTrackedElement(task)) {
         console.log('Click detected');
 
-        const traceId = randomTraceId();
-        const tracingZone = Zone.root.fork({
-          name: traceId,
-          properties: {
-            isTracingZone: true,
-            traceId,
-          },
-        });
+        if (this.currentEventTracingZone === undefined) {          
+          const traceId = randomTraceId();
+          this.currentEventTracingZone = Zone.root.fork({
+            name: traceId,
+            properties: {
+              isTracingZone: true,
+              traceId,
+            },
+          });
+
+          // Timeout to reset currentEventTracingZone to allow the creation of a new
+          // zone for a new user interaction.
+          Zone.root.run(() =>
+            setTimeout(
+              () => (this.currentEventTracingZone = undefined),
+              RESET_TRACING_ZONE_DELAY
+            )
+          );
+
+          console.log('New zone:');
+          console.log(this.currentEventTracingZone);
+        }
 
         // Change the zone task.
-        task._zone = tracingZone;
-        taskZone = tracingZone;
-        console.log('New zone:');
-        console.log(taskZone);
-      } else {
+        task._zone = this.currentEventTracingZone;
+        taskZone = this.currentEventTracingZone;
+      } else if (task.zone && task.zone.get('isTracingZone')) {
         // If we already are in a tracing zone, just run the task in our tracing zone.
-        if (task.zone && task.zone.get('isTracingZone')) {
-          taskZone = task.zone;
-        }
+        taskZone = task.zone;
       }
       try {
         return runTask.call(taskZone as {}, task, applyThis, applyArgs);
