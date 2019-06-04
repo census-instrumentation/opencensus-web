@@ -37,7 +37,7 @@ const RESET_TRACING_ZONE_DELAY = 50;
 
 export class InteractionTracker {
   // Allows to track several events triggered by the same user interaction in the right Zone.
-  private currentEventTracingZone?: Zone = undefined;
+  private currentEventTracingZone?: Zone;
 
   constructor() {
     const runTask = Zone.prototype.runTask;
@@ -52,12 +52,11 @@ export class InteractionTracker {
       console.log(task);
       console.log(task.zone);
 
-      let taskZone: Zone = Zone.current;
+      let taskZone = Zone.current;
       if (isTrackedElement(task)) {
         console.log('Click detected');
 
         if (this.currentEventTracingZone === undefined) {          
-
           const traceId = randomTraceId();
           this.currentEventTracingZone = Zone.root.fork({
             name: traceId,
