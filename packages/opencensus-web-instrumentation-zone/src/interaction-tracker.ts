@@ -52,7 +52,7 @@ export class InteractionTracker {
       console.log(task);
       console.log(task.zone);
 
-      const interceptingElement = isTrackedElement(task);
+      const interceptingElement = getTrackedElement(task);
       let taskZone = Zone.current;
       if (interceptingElement) {
         console.log('Click detected');
@@ -152,7 +152,9 @@ export class InteractionTracker {
     stopWatch.incrementTaskCount();
 
     if (interactionId in this.interactionCompletionTimeouts) {
-      // This may get called a lot. Run in the root zone.
+      // Clear the task that is supposed to complete the interaction as there are new
+      // tasks incrementing the task cout. Sometimes the task count might be 0
+      // but the interaction has more scheduled tasks.
       Zone.root.run(() => {
         clearTimeout(this.interactionCompletionTimeouts[interactionId]);
         delete this.interactionCompletionTimeouts[interactionId];
@@ -190,7 +192,8 @@ export class InteractionTracker {
 
     if (this.interactionCompletionTimeouts[interactionId] !== undefined) return;
 
-    // This may get called a lot. Run in the root zone.
+    // Add a task to the queue that will actually complete the interaction in case
+    // there are no more scheduled tasks ahead it.
     Zone.root.run(() => {
       this.interactionCompletionTimeouts[interactionId] = setTimeout(() => {
         this.completeInteraction(interactionId);
@@ -207,8 +210,10 @@ export class InteractionTracker {
   }
 }
 
-function isTrackedElement(task: AsyncTask): boolean {
-  return !!(task.eventName && task.eventName === 'click');
+function getTrackedElement(task: AsyncTask): HTMLElement | null {
+  if (!(task.eventName && task.eventName === 'click')) return null;
+
+  return task.target as HTMLElement;
 }
 
 /**
@@ -224,9 +229,8 @@ function isTrackedTask(task: Task): boolean {
 function shouldCountTask(task: Task): boolean {
   if (!task.data) return false;
 
-  // Don't count periodic tasks like setInterval as they will be repeatedly
-  // called.
-  if (task.data.isPeriodic) {
+  // Don't count periodic tasks with a delay greater than 1 s.
+  if (task.data.isPeriodic && (task.data.delay && task.data.delay >= 1000)) {
     return false;
   }
 

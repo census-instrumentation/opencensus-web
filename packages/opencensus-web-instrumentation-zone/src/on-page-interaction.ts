@@ -19,7 +19,7 @@ import { OnPageInteractionData } from './zone-types';
 /** A helper class for tracking on page interactions. */
 export class OnPageInteractionStopwatch {
   private taskCount = 0;
-  private readonly startTimeMs = Date.now();
+  private readonly startTimeMs = performance.now();
   private endTimeMs?: number;
 
   constructor(private readonly data: OnPageInteractionData) {}
@@ -42,7 +42,7 @@ export class OnPageInteractionStopwatch {
 
   /** Stops the stopwatch and record the xhr response. */
   stopAndRecord(): void {
-    this.endTimeMs = Date.now();
+    this.endTimeMs = performance.now();
     const latencyMs = this.endTimeMs - this.startTimeMs;
     console.log('End of tracking. The interaction is stable.');
     console.log('Time to stable: ' + latencyMs + ' ms.');
