@@ -29,7 +29,17 @@ class App extends React.Component {
   handleClick() {
     console.log("Entering handle click.");
 
-    this.callSleepApi();
+    // Use promises to test behavior on MicroTasks.
+    const promise = new Promise(resolve => {
+      setTimeout(function () {
+        resolve();
+      }, 1000);
+    });
+
+    promise.then(() => {
+      console.log("Resolving promise");
+      this.callSleepApi();
+    });
   }
 
   callSleepApi() {
