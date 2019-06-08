@@ -261,7 +261,9 @@ export class Span implements webTypes.Span {
 
   /** Ends the span by setting `endTime` to now. */
   end() {
-    this.endPerfTime = performance.now();
+    if (this.endPerfTime === 0) {
+      this.endPerfTime = performance.now();
+    }
   }
 
   /** Forces the span to end. Same as `end` for opencensus-web. */

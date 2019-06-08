@@ -95,6 +95,12 @@ describe('Span', () => {
     expect(span.endPerfTime).toBe(33);
   });
 
+  it('does not set endPerfTime when end is called, if endPerfTime is already set', () => {
+    span.endPerfTime = 22;
+    span.end();
+    expect(span.endPerfTime).toBe(22);
+  });
+
   it('sets endPerfTime when truncate is called', () => {
     spyOn(performance, 'now').and.returnValue(77);
     span.truncate();
