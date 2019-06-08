@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OpenCensus Web is a toolkit for collecting application performance and behavior data from client side web browser apps.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -62,7 +62,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@opencensus/web-types": "^0.0.2"
+    "@opencensus/web-types": "^0.0.3"
   },
   "sideEffects": false
 }
