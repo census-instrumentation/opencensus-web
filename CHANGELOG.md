@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.3 - 2019-06-08
+
+- Support custom end time for span (#95), thanks @skjindal93
+- Upgraded types to match `@opencensus/core` package version `0.0.13`.
+- Package upgrades
 - Add support for object(`SpanOptions`) as an argument for `startChildSpan` function, similar to `startRootSpan`.
 - Please note that there is an API breaking change in methods `addMessageEvent()`. The field `id` is now number instead of string.
 
