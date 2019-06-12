@@ -97,7 +97,7 @@ class App extends React.Component {
         and calculate the amount of prime numbers in between 1 and 100000. These
         calculations are done using slow methods in order to measure the traces.</p>
 
-        <button onClick={this.handleClick}>Trace user interaction</button>
+        <button id='trace_interaction' data-ocweb-id='Trace user interaction' onClick={this.handleClick}>Trace user interaction</button>
 
         <p>The value of Pi is: <code>{this.state.pi.value}</code> and it took
         <code> {this.state.pi.time} ms </code> to compute this.</p>

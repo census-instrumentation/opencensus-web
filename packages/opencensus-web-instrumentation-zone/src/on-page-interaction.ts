@@ -15,12 +15,14 @@
  */
 
 import { OnPageInteractionData } from './zone-types';
+import {
+  ATTRIBUTE_HTTP_URL,
+  ATTRIBUTE_HTTP_USER_AGENT,
+} from '@opencensus/web-core';
 
 /** A helper class for tracking on page interactions. */
 export class OnPageInteractionStopwatch {
   private taskCount = 0;
-  private readonly startTimeMs = performance.now();
-  private endTimeMs?: number;
 
   constructor(private readonly data: OnPageInteractionData) {}
 
@@ -42,11 +44,14 @@ export class OnPageInteractionStopwatch {
 
   /** Stops the stopwatch and record the xhr response. */
   stopAndRecord(): void {
-    this.endTimeMs = performance.now();
-    const latencyMs = this.endTimeMs - this.startTimeMs;
+    const rootSpan = this.data.rootSpan;
+    rootSpan.addAttribute('EventType', this.data.eventType);
+    rootSpan.addAttribute('TargetElement', this.data.target.tagName);
+    rootSpan.addAttribute(ATTRIBUTE_HTTP_URL, location.href);
+    rootSpan.addAttribute(ATTRIBUTE_HTTP_USER_AGENT, navigator.userAgent);
+    rootSpan.end();
     console.log('End of tracking. The interaction is stable.');
-    console.log('Time to stable: ' + latencyMs + ' ms.');
-    console.log(this.data);
+    console.log('Time to stable: ' + this.data.rootSpan.duration + ' ms.');
   }
 }
 

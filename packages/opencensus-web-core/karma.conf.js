@@ -26,7 +26,7 @@ module.exports = (config) => {
     browsers: ['ChromeHeadless'],
     frameworks: ['jasmine'],
     reporters: ['spec', 'coverage-istanbul'],
-    files: ['test/index.ts'],
+    files: ['test/index.ts', 'node_modules/zone.js/dist/zone.js'],
     preprocessors: {'test/index.ts': ['webpack']},
     // Use webpack so that tree-shaking will remove all Node.js dependencies of
     // the `@opencensus/web-types` library, since they are not actually used in this

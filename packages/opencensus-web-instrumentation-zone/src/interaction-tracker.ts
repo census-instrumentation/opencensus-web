@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { randomTraceId } from '@opencensus/web-core';
+import {
+  randomTraceId,
+  tracing,
+  SpanKind,
+  RootSpan,
+} from '@opencensus/web-core';
 import { AsyncTask } from './zone-types';
 import {
   OnPageInteractionStopwatch,
@@ -58,18 +63,28 @@ export class InteractionTracker {
         console.log('Click detected');
         if (this.currentEventTracingZone === undefined) {
           const traceId = randomTraceId();
-          this.currentEventTracingZone = Zone.root.fork({
-            name: traceId,
-            properties: {
-              isTracingZone: true,
+          const spanOptions = {
+            name: resolveInteractionName(interceptingElement, task.eventName),
+            spanContext: {
               traceId,
+              // This becomes the parentSpanId field of the root span, and the actual
+              // span ID for the root span gets assigned to a random number.
+              spanId: '',
             },
+            kind: SpanKind.UNSPECIFIED,
+          };
+          // Start a new RootSpan for a new user interaction.
+          tracing.tracer.startRootSpan(spanOptions, root => {
+            // As startRootSpan creates the zone and Zone.current corresponds to the
+            // new zone, we have to set the currentEventTracingZone with the Zone.current
+            // to capture the new zone.
+            this.currentEventTracingZone = Zone.current;
           });
 
           this.interactions[traceId] = startOnPageInteraction({
-            id: traceId,
             eventType: task.eventName,
             target: task.target,
+            rootSpan: getRootSpan(this.currentEventTracingZone),
           });
           // Timeout to reset currentEventTracingZone to allow the creation of a new
           // zone for a new user interaction.
@@ -85,10 +100,12 @@ export class InteractionTracker {
         }
 
         // Change the zone task.
-        task._zone = this.currentEventTracingZone;
-        taskZone = this.currentEventTracingZone;
-        this.incrementTaskCount(task.zone.get('traceId'));
-      } else if (task.zone && task.zone.get('isTracingZone')) {
+        if (this.currentEventTracingZone) {
+          task._zone = this.currentEventTracingZone;
+          taskZone = this.currentEventTracingZone;
+        }
+        this.incrementTaskCount(getTraceId(task.zone));
+      } else if (isTrackedTask(task)) {
         // If we already are in a tracing zone, just run the task in our tracing zone.
         taskZone = task.zone;
       }
@@ -100,7 +117,7 @@ export class InteractionTracker {
           interceptingElement ||
           (shouldCountTask(task) && isTrackedTask(task))
         ) {
-          this.decrementTaskCount(task.zone.get('traceId'));
+          this.decrementTaskCount(getTraceId(task.zone));
         }
       }
     };
@@ -118,7 +135,7 @@ export class InteractionTracker {
         return scheduleTask.call(taskZone as {}, task) as T;
       } finally {
         if (shouldCountTask(task) && isTrackedTask(task)) {
-          this.incrementTaskCount(task.zone.get('traceId'));
+          this.incrementTaskCount(getTraceId(task.zone));
         }
         console.warn('Finished Scheduling task');
       }
@@ -138,7 +155,7 @@ export class InteractionTracker {
         return cancelTask.call(taskZone as {}, task);
       } finally {
         if (isTrackedTask(task) && shouldCountTask(task)) {
-          this.decrementTaskCount(task.zone.get('traceId'));
+          this.decrementTaskCount(getTraceId(task.zone));
         }
         console.warn('Finished cancel task');
       }
@@ -210,6 +227,22 @@ export class InteractionTracker {
   }
 }
 
+/**
+ * Get the trace ID from the zone properties.
+ * @param zone
+ */
+function getTraceId(zone: Zone): string {
+  return zone && zone.get('data') ? zone.get('data').traceId : '';
+}
+
+/**
+ * Get the root span from the zone properties.
+ * @param zone
+ */
+function getRootSpan(zone: Zone | undefined): RootSpan {
+  return zone && zone.get('data') ? zone.get('data').rootSpan : undefined;
+}
+
 function getTrackedElement(task: AsyncTask): HTMLElement | null {
   if (!(task.eventName && task.eventName === 'click')) return null;
 
@@ -220,7 +253,43 @@ function getTrackedElement(task: AsyncTask): HTMLElement | null {
  * Whether or not a task is being tracked as part of an interaction.
  */
 function isTrackedTask(task: Task): boolean {
-  return !!(task.zone && task.zone.get('isTracingZone'));
+  return !!(
+    task.zone &&
+    task.zone.get('data') &&
+    task.zone.get('data').isTracingZone
+  );
+}
+/**
+ * Look for 'data-ocweb-id' attibute in the HTMLElement in order to
+ * give a name to the user interaction and Root span. If this attibute is
+ * not present, use the element ID, tag name, event that triggered the interaction.
+ * Thus, the resulting interaction name will be: "tag_name> id:'ID' event"
+ * (e.g. "<BUTTON> id:'save_changes' click").
+ * @param element
+ */
+function resolveInteractionName(
+  element: HTMLElement,
+  eventName: string
+): string {
+  if (!element.getAttribute) return '';
+  if (element.hasAttribute('disabled')) {
+    return '';
+  }
+  let interactionName = element.getAttribute('data-ocweb-id');
+  if (!interactionName) {
+    const elementId = element.getAttribute('id')
+      ? element.getAttribute('id')
+      : '';
+    const tagName = element.tagName;
+    if (!tagName) return '';
+    interactionName =
+      '<' +
+      tagName +
+      '>' +
+      (elementId ? " id:'" + elementId + "' " : '') +
+      eventName;
+  }
+  return interactionName;
 }
 
 /**
