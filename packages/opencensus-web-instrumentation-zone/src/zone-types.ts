@@ -44,23 +44,6 @@ export declare interface WindowWithOcwGlobals extends Window {
    */
   ocAgent?: string;
   /**
-   * For the initial page load, web browsers do not send any custom headers,
-   * which means that the server will not receive trace context headers.
-   * However, we still want the server side request for the initial page load to
-   * be recorded as a child span of the client side web timing span. So we can
-   * have servers programmatically set a `traceparent` header to give their
-   * request span a parent span ID. That simulated trace context header can then
-   * be sent back to the client as a global variable to use for setting its
-   * trace ID and request load client span ID, as well as for making a sampling
-   * decision.
-   * This header value is in the format of
-   *     [version]-[trace ID in hex]-[span ID in hex]-[trace flags]
-   * For example:
-   *    00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
-   * See https://www.w3.org/TR/trace-context/ for details.
-   */
-  traceparent?: string;
-  /**
    * If the `traceparent` global variable described above is not present on the
    * `window`, then a trace sampling decision will be made randomly with the
    * specified sample rate. If not specified, a default sampling rate is used.
