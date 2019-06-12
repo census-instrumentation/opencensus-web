@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-instrumentation-zone",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OpenCensus Web instrumentation zone is used to generate user interaction spans for interactions after the initial page loads.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -65,8 +65,8 @@
     "zone.js": "~0.9.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.2",
-    "@opencensus/web-exporter-ocagent": "^0.0.2"
+    "@opencensus/web-core": "^0.0.3",
+    "@opencensus/web-exporter-ocagent": "^0.0.3"
   },
   "peerDependencies": {
     "zone.js": "~0.9.1"
