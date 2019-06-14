@@ -54,5 +54,5 @@ export * from './common/id-util';
 
 // Export global tracing instance.
 import { Tracing } from './trace/model/tracing';
-const tracing = new Tracing();
+const tracing = Tracing.instance;
 export { tracing };

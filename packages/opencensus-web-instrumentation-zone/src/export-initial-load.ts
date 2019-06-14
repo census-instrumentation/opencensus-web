@@ -14,8 +14,31 @@
  * limitations under the License.
  */
 
+import { tracing } from '@opencensus/web-core';
+import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
+import { WindowWithOcwGlobals } from './zone-types';
+
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
+
+/** Trace endpoint in the OC agent. */
+const TRACE_ENDPOINT = '/v1/trace';
+
 import { InteractionTracker } from './interaction-tracker';
 
+function setupExporter() {
+  if (!windowWithOcwGlobals.ocAgent) {
+    console.log('Not configured to export page load spans.');
+    return;
+  }
+
+  tracing.registerExporter(
+    new OCAgentExporter({
+      agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
+    })
+  );
+}
+
 export function startInteractionTracker() {
+  setupExporter();
   return new InteractionTracker();
 }

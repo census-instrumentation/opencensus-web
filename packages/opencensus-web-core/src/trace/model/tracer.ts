@@ -18,25 +18,65 @@ import * as webTypes from '@opencensus/web-types';
 import { RootSpan } from './root-span';
 import { Span } from './span';
 import { TracerBase } from './tracer-base';
+import { randomTraceId } from '../../common/id-util';
 
 /** Tracer manages the current root span and trace header propagation. */
 export class Tracer extends TracerBase implements webTypes.Tracer {
-  /** Get and set the currentRootSpan of the tracer. */
-  currentRootSpan: Span = new RootSpan(this);
+  /**
+   * Gets the current root span associated to Zone.current.
+   * If the current zone does not have a root span (e.g. root zone),
+   * create a new root.
+   */
+  get currentRootSpan(): Span {
+    if (Zone.current.get('data')) {
+      return Zone.current.get('data').rootSpan;
+    }
+    return new RootSpan(this);
+  }
 
   /**
-   * Start a new RootSpan to currentRootSpan. Currently opencensus-web only
-   * supports a single root span at a time, so this just sets `currentRootSpan`
-   * to a new root span based on the given options and invokes the passed
-   * function. Currently no sampling decisions are propagated or made here.
+   * Sets the current root span to the current Zone.
+   * If the current zone does not have a 'data' property (e.g. root zone)
+   * do not set the root span.
+   */
+  set currentRootSpan(root: Span) {
+    if (Zone.current.get('data')) {
+      Zone.current.get('data')['rootSpan'] = root;
+    }
+  }
+
+  /**
+   * Creates a new Zone and start a new RootSpan to `currentRootSpan` associating
+   * the new RootSpan to the new Zone. Thus, there might be several root spans
+   * at the same time.
+   * Currently no sampling decisions are propagated or made here.
    * @param options Options for tracer instance
    * @param fn Callback function
    * @returns The callback return
    */
   startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: Span) => T): T {
-    return super.startRootSpan(options, root => {
-      this.currentRootSpan = root;
-      return fn(root);
+    let traceId = randomTraceId();
+    if (options.spanContext && options.spanContext.traceId) {
+      traceId = options.spanContext.traceId;
+    }
+    // Create the new zone.
+    const zoneSpec = {
+      name: traceId,
+      properties: {
+        data: {
+          isTracingZone: true,
+          traceId,
+        },
+      },
+    };
+    const newZone = Zone.root.fork(zoneSpec);
+
+    return newZone.run(() => {
+      super.startRootSpan(options, root => {
+        // Set the currentRootSpan to the new created root span.
+        this.currentRootSpan = root;
+        return fn(root);
+      });
     });
   }
 

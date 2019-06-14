@@ -31,6 +31,14 @@ export class Tracing implements webTypes.Tracing {
   /** Whether tracing is active - always true for opencensus-web. */
   active = true;
 
+  /** Singleton instance */
+  private static singletonInstance: Tracing;
+
+  /** Gets the tracing instance. */
+  static get instance(): Tracing {
+    return this.singletonInstance || (this.singletonInstance = new this());
+  }
+
   /** Sets tracer and exporter config. */
   start(config?: webTypes.Config): webTypes.Tracing {
     this.tracer.start(config || {});

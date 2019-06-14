@@ -20,6 +20,7 @@ import { Tracer } from '../src/trace/model/tracer';
 describe('Tracer', () => {
   let tracer: Tracer;
   let listener: webTypes.SpanEventListener;
+  const options = { name: 'test' };
 
   beforeEach(() => {
     tracer = new Tracer();
@@ -30,19 +31,38 @@ describe('Tracer', () => {
     tracer.eventListeners = [listener];
   });
 
+  /** Should get/set the current RootSpan from tracer instance */
+  describe('get/set currentRootSpan()', () => {
+    it('should get the current RootSpan from tracer instance', () => {
+      tracer.startRootSpan(options, root => {
+        expect(root).toBeTruthy();
+        expect(root).toBe(tracer.currentRootSpan);
+      });
+    });
+  });
+
   describe('startRootSpan', () => {
-    it('sets current root span and calls function with it', () => {
-      const onStartFn = jasmine.createSpy('onStartFn');
+    it('should create a new RootSpan instance', () => {
+      tracer.startRootSpan(options, rootSpan => {
+        expect(rootSpan).toBeTruthy();
+      });
+    });
+    it('sets current root span', () => {
       const oldRoot = tracer.currentRootSpan;
 
-      tracer.startRootSpan({ name: 'root1' }, onStartFn);
-
-      expect(onStartFn).toHaveBeenCalled();
-      const onStartRoot = onStartFn.calls.argsFor(0)[0];
-      expect(onStartRoot.name).toBe('root1');
-      expect(onStartRoot).not.toBe(oldRoot);
-      expect(tracer.currentRootSpan).toBe(onStartRoot);
-      expect(listener.onStartSpan).toHaveBeenCalledWith(onStartRoot);
+      tracer.startRootSpan(options, rootSpan => {
+        expect(rootSpan.name).toBe('test');
+        expect(rootSpan).not.toBe(oldRoot);
+        expect(tracer.currentRootSpan).toBe(rootSpan);
+        expect(listener.onStartSpan).toHaveBeenCalledWith(rootSpan);
+      });
+    });
+    it('should create a new Zone and RootSpan an associated to the zone', () => {
+      tracer.startRootSpan(options, rootSpan => {
+        expect(rootSpan).toBeTruthy();
+        expect(Zone.current).not.toBe(Zone.root);
+        expect(Zone.current.get('data').rootSpan).toBe(rootSpan);
+      });
     });
   });
 
@@ -55,14 +75,19 @@ describe('Tracer', () => {
   });
 
   describe('startChildSpan', () => {
+    let rootSpanLocal: webTypes.Span;
+    let span: webTypes.Span;
     it('starts a child span of the current root span', () => {
-      spyOn(tracer.currentRootSpan, 'startChildSpan');
-      tracer.startChildSpan({ name: 'child1', kind: webTypes.SpanKind.CLIENT });
-      expect(tracer.currentRootSpan.startChildSpan).toHaveBeenCalledWith({
-        childOf: tracer.currentRootSpan,
-        name: 'child1',
-        kind: webTypes.SpanKind.CLIENT,
+      tracer.startRootSpan(options, rootSpan => {
+        rootSpanLocal = rootSpan;
+        span = tracer.startChildSpan({
+          name: 'child1',
+          kind: webTypes.SpanKind.CLIENT,
+        });
       });
+      expect(span).toBeTruthy();
+      expect(rootSpanLocal.numberOfChildren).toBe(1);
+      expect(rootSpanLocal.spans[0]).toBe(span);
     });
   });
 

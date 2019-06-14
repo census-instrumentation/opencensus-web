@@ -65,7 +65,8 @@
     "zone.js": "~0.9.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.3"
+    "@opencensus/web-core": "^0.0.3",
+    "@opencensus/web-exporter-ocagent": "^0.0.3"
   },
   "peerDependencies": {
     "zone.js": "~0.9.1"

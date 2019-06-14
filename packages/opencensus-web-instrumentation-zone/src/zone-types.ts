@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { RootSpan } from '@opencensus/web-core';
+
 export interface AsyncTaskData extends TaskData {
   interactionId: string;
   pageView: string;
@@ -29,7 +31,22 @@ export type AsyncTask = Task & {
 
 /** Data used to create a new OnPageInteractionStopwatch. */
 export interface OnPageInteractionData {
-  id: string;
   eventType: string;
   target: HTMLElement;
+  rootSpan: RootSpan;
+}
+
+/** Type for `window` object with variables OpenCensus Web interacts with. */
+export declare interface WindowWithOcwGlobals extends Window {
+  /**
+   * HTTP root URL of the agent endpoint to write traces to.
+   * Example 'https://my-oc-agent-deployment.com:55678'
+   */
+  ocAgent?: string;
+  /**
+   * If the `traceparent` global variable described above is not present on the
+   * `window`, then a trace sampling decision will be made randomly with the
+   * specified sample rate. If not specified, a default sampling rate is used.
+   */
+  ocSampleRate?: number;
 }
