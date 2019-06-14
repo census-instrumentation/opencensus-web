@@ -61,44 +61,10 @@ export class InteractionTracker {
       let taskZone = Zone.current;
       if (interceptingElement) {
         console.log('Click detected');
+
         if (this.currentEventTracingZone === undefined) {
-          const traceId = randomTraceId();
-          const spanOptions = {
-            name: resolveInteractionName(interceptingElement, task.eventName),
-            spanContext: {
-              traceId,
-              // This becomes the parentSpanId field of the root span, and the actual
-              // span ID for the root span gets assigned to a random number.
-              spanId: '',
-            },
-            kind: SpanKind.UNSPECIFIED,
-          };
-          // Start a new RootSpan for a new user interaction.
-          tracing.tracer.startRootSpan(spanOptions, root => {
-            // As startRootSpan creates the zone and Zone.current corresponds to the
-            // new zone, we have to set the currentEventTracingZone with the Zone.current
-            // to capture the new zone.
-            this.currentEventTracingZone = Zone.current;
-          });
-
-          this.interactions[traceId] = startOnPageInteraction({
-            eventType: task.eventName,
-            target: task.target,
-            rootSpan: getRootSpan(this.currentEventTracingZone),
-          });
-          // Timeout to reset currentEventTracingZone to allow the creation of a new
-          // zone for a new user interaction.
-          Zone.root.run(() =>
-            setTimeout(
-              () => (this.currentEventTracingZone = undefined),
-              RESET_TRACING_ZONE_DELAY
-            )
-          );
-
-          console.log('New zone:');
-          console.log(this.currentEventTracingZone);
+          this.startNewInteraction(interceptingElement, task.eventName);
         }
-
         // Change the zone task.
         if (this.currentEventTracingZone) {
           task._zone = this.currentEventTracingZone;
@@ -160,6 +126,46 @@ export class InteractionTracker {
         console.warn('Finished cancel task');
       }
     };
+  }
+
+  private startNewInteraction(
+    interceptingElement: HTMLElement,
+    eventName: string
+  ) {
+    const traceId = randomTraceId();
+    const spanOptions = {
+      name: resolveInteractionName(interceptingElement, eventName),
+      spanContext: {
+        traceId,
+        // This becomes the parentSpanId field of the root span, and the actual
+        // span ID for the root span gets assigned to a random number.
+        spanId: '',
+      },
+      kind: SpanKind.UNSPECIFIED,
+    };
+    // Start a new RootSpan for a new user interaction.
+    tracing.tracer.startRootSpan(spanOptions, root => {
+      // As startRootSpan creates the zone and Zone.current corresponds to the
+      // new zone, we have to set the currentEventTracingZone with the Zone.current
+      // to capture the new zone.
+      this.currentEventTracingZone = Zone.current;
+    });
+
+    this.interactions[traceId] = startOnPageInteraction({
+      eventType: eventName,
+      target: interceptingElement,
+      rootSpan: getRootSpan(this.currentEventTracingZone),
+    });
+    // Timeout to reset currentEventTracingZone to allow the creation of a new
+    // zone for a new user interaction.
+    Zone.root.run(() =>
+      setTimeout(
+        () => (this.currentEventTracingZone = undefined),
+        RESET_TRACING_ZONE_DELAY
+      )
+    );
+    console.log('New zone:');
+    console.log(this.currentEventTracingZone);
   }
 
   /** Increments the count of outstanding tasks for a given interaction id. */
@@ -277,9 +283,7 @@ function resolveInteractionName(
   }
   let interactionName = element.getAttribute('data-ocweb-id');
   if (!interactionName) {
-    const elementId = element.getAttribute('id')
-      ? element.getAttribute('id')
-      : '';
+    const elementId = element.getAttribute('id') || '';
     const tagName = element.tagName;
     if (!tagName) return '';
     interactionName =
