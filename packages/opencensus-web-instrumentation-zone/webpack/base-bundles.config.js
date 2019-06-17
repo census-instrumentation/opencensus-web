@@ -16,8 +16,8 @@
 
 module.exports = {
   entry: {
-    'export-initial-load': './src/entrypoints/export-initial-load.ts',
-    'initial-load-all': './src/entrypoints/initial-load-all.ts',
+    'export-interaction-tracker': './src/entrypoints/export-interaction-tracker.ts',
+    'interaction-tracker-all': './src/entrypoints/interaction-tracker-all.ts',
   },
   resolve: {extensions: ['.ts', '.js']},
   devtool: 'source-map',
