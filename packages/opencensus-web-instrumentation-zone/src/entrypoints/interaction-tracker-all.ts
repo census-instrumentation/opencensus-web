@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-import './export-initial-load';
+import './export-interaction-tracker';
