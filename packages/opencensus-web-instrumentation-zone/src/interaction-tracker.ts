@@ -55,20 +55,25 @@ export class InteractionTracker {
     ) => {
       console.warn('Running task');
       console.log(task);
-      console.log(task.zone);
 
       const interceptingElement = getTrackedElement(task);
+      const interactionName = resolveInteractionName(
+        interceptingElement,
+        task.eventName
+      );
       let taskZone = Zone.current;
       if (interceptingElement) {
-        console.log('Click detected');
-
-        if (this.currentEventTracingZone === undefined) {
-          this.startNewInteraction(interceptingElement, task.eventName);
-        }
-        // Change the zone task.
-        if (this.currentEventTracingZone) {
+        if (this.currentEventTracingZone === undefined && interactionName) {
+          this.startNewInteraction(
+            interceptingElement,
+            task.eventName,
+            interactionName
+          );
+        } else if (this.currentEventTracingZone) {
           task._zone = this.currentEventTracingZone;
           taskZone = this.currentEventTracingZone;
+        } else {
+          task._zone = Zone.root;
         }
         this.incrementTaskCount(getTraceId(task.zone));
       } else if (isTrackedTask(task)) {
@@ -130,11 +135,12 @@ export class InteractionTracker {
 
   private startNewInteraction(
     interceptingElement: HTMLElement,
-    eventName: string
+    eventName: string,
+    interactionName: string
   ) {
     const traceId = randomTraceId();
     const spanOptions = {
-      name: resolveInteractionName(interceptingElement, eventName),
+      name: interactionName,
       spanContext: {
         traceId,
         // This becomes the parentSpanId field of the root span, and the actual
@@ -271,12 +277,14 @@ function isTrackedTask(task: Task): boolean {
  * not present, use the element ID, tag name, event that triggered the interaction.
  * Thus, the resulting interaction name will be: "tag_name> id:'ID' event"
  * (e.g. "<BUTTON> id:'save_changes' click").
+ * In case the the name is not resolvable, return empty string (e.g. element is the document).
  * @param element
  */
 function resolveInteractionName(
-  element: HTMLElement,
+  element: HTMLElement | null,
   eventName: string
 ): string {
+  if (!element) return '';
   if (!element.getAttribute) return '';
   if (element.hasAttribute('disabled')) {
     return '';
