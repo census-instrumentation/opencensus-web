@@ -47,6 +47,13 @@ export class InteractionTracker {
   } = {};
 
   constructor() {
+    this.patchZoneRunTask();
+    this.patchZoneScheduleTask();
+    this.patchZoneCancelTask();
+    this.patchHistoryApi();
+  }
+
+  private patchZoneRunTask() {
     const runTask = Zone.prototype.runTask;
     Zone.prototype.runTask = (
       task: AsyncTask,
@@ -61,7 +68,7 @@ export class InteractionTracker {
         interceptingElement,
         task.eventName
       );
-      let taskZone = Zone.current;
+      let taskZone = Zone.root;
       if (interceptingElement) {
         if (this.currentEventTracingZone === undefined && interactionName) {
           this.startNewInteraction(
@@ -69,7 +76,8 @@ export class InteractionTracker {
             task.eventName,
             interactionName
           );
-        } else if (this.currentEventTracingZone) {
+        }
+        if (this.currentEventTracingZone) {
           task._zone = this.currentEventTracingZone;
           taskZone = this.currentEventTracingZone;
         } else {
@@ -92,12 +100,11 @@ export class InteractionTracker {
         }
       }
     };
+  }
 
+  private patchZoneScheduleTask() {
     const scheduleTask = Zone.prototype.scheduleTask;
     Zone.prototype.scheduleTask = <T extends Task>(task: T) => {
-      console.warn('Scheduling task');
-      console.log(task);
-
       let taskZone = Zone.current;
       if (isTrackedTask(task)) {
         taskZone = task.zone;
@@ -108,15 +115,13 @@ export class InteractionTracker {
         if (shouldCountTask(task) && isTrackedTask(task)) {
           this.incrementTaskCount(getTraceId(task.zone));
         }
-        console.warn('Finished Scheduling task');
       }
     };
+  }
 
+  private patchZoneCancelTask() {
     const cancelTask = Zone.prototype.cancelTask;
     Zone.prototype.cancelTask = (task: AsyncTask) => {
-      console.warn('Cancel task');
-      console.log(task);
-
       let taskZone = Zone.current;
       if (isTrackedTask(task)) {
         taskZone = task.zone;
@@ -128,7 +133,6 @@ export class InteractionTracker {
         if (isTrackedTask(task) && shouldCountTask(task)) {
           this.decrementTaskCount(getTraceId(task.zone));
         }
-        console.warn('Finished cancel task');
       }
     };
   }
@@ -158,6 +162,7 @@ export class InteractionTracker {
     });
 
     this.interactions[traceId] = startOnPageInteraction({
+      originLocation: location.href,
       eventType: eventName,
       target: interceptingElement,
       rootSpan: getRootSpan(this.currentEventTracingZone),
@@ -236,6 +241,47 @@ export class InteractionTracker {
     if (!stopWatch) return;
     stopWatch.stopAndRecord();
     delete this.interactions[interactionId];
+  }
+
+  // Monkey-patch `History API` to detect route transitions.
+  // This is necessary because there might be some cases when
+  // there are several interactions being tracked at the same time
+  // but if there is an user interaction that triggers a route transition
+  // while those interactions are still in tracking, only that interaction
+  // will have a `Navigation` name. Otherwise, if this is not patched, the
+  // other interactions will change the name to `Navigation` even if they
+  // did not cause the route transition.
+  private patchHistoryApi() {
+    const pushState = history.pushState;
+    history.pushState = (
+      //tslint:disable:no-any
+      data: any,
+      title: string,
+      url?: string | null | undefined
+    ) => {
+      pushState.call(history, data, title, url);
+      this.maybeUpdateInteractionName();
+    };
+
+    const replaceState = history.replaceState;
+    history.replaceState = (
+      //tslint:disable:no-any
+      data: any,
+      title: string,
+      url?: string | null | undefined
+    ) => {
+      replaceState.call(history, data, title, url);
+      this.maybeUpdateInteractionName();
+    };
+  }
+
+  private maybeUpdateInteractionName() {
+    console.log('location changed!');
+    // Route transition is detected, thus the current interaction name might change.
+    const rootSpan = getRootSpan(Zone.current);
+    if (rootSpan && rootSpan.name.startsWith('<')) {
+      rootSpan.name = 'Navigation ' + location.pathname;
+    }
   }
 }
 
