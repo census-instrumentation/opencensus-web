@@ -27,8 +27,6 @@ class App extends React.Component {
   }
 
   handleClick() {
-    console.log("Entering handle click.");
-
     // Use promises to test behavior on MicroTasks.
     const promise = new Promise(resolve => {
       setTimeout(function () {
