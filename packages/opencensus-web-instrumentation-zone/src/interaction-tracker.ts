@@ -70,6 +70,8 @@ export class InteractionTracker {
       );
       if (interceptingElement) {
         if (this.currentEventTracingZone === undefined && interactionName) {
+          // Starts the new zone from the Zone.current, for that, we assume
+          // all click handlers have the same parent zone.
           this.startNewInteraction(
             interceptingElement,
             task.eventName,
@@ -148,13 +150,13 @@ export class InteractionTracker {
       },
       kind: SpanKind.UNSPECIFIED,
     };
-    // Start a new RootSpan for a new user interaction, also, creates the new zone
-    // from the coming task.zone.
+    // Start a new RootSpan for a new user interaction forked from the original task.zone
     taskZone.run(() => {
       tracing.tracer.startRootSpan(spanOptions, root => {
         // As startRootSpan creates the zone and Zone.current corresponds to the
         // new zone, we have to set the currentEventTracingZone with the Zone.current
-        // to capture the new zone.
+        // to capture the new zone, also, start the `OnPageInteraction` to capture the 
+        // new root span.
         this.currentEventTracingZone = Zone.current;
         this.interactions[traceId] = startOnPageInteraction({
           startLocationHref: location.href,

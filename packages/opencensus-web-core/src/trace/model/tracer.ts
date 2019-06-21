@@ -69,10 +69,8 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
         },
       },
     };
-    // Start the new zone from the current, for that, we assume
-    // all click handlers have the same parent zone.
-    const newZone = Zone.current.fork(zoneSpec);
 
+    const newZone = Zone.current.fork(zoneSpec);
     return newZone.run(() => {
       super.startRootSpan(options, root => {
         // Set the currentRootSpan to the new created root span.
