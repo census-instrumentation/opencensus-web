@@ -18,6 +18,7 @@ import { OnPageInteractionData } from './zone-types';
 import {
   ATTRIBUTE_HTTP_URL,
   ATTRIBUTE_HTTP_USER_AGENT,
+  ATTRIBUTE_HTTP_PATH,
 } from '@opencensus/web-core';
 
 /** A helper class for tracking on page interactions. */
@@ -47,7 +48,8 @@ export class OnPageInteractionStopwatch {
     const rootSpan = this.data.rootSpan;
     rootSpan.addAttribute('EventType', this.data.eventType);
     rootSpan.addAttribute('TargetElement', this.data.target.tagName);
-    rootSpan.addAttribute(ATTRIBUTE_HTTP_URL, location.href);
+    rootSpan.addAttribute(ATTRIBUTE_HTTP_URL, this.data.startLocationHref);
+    rootSpan.addAttribute(ATTRIBUTE_HTTP_PATH, this.data.startLocationPath);
     rootSpan.addAttribute(ATTRIBUTE_HTTP_USER_AGENT, navigator.userAgent);
     rootSpan.end();
     console.log('End of tracking. The interaction is stable.');

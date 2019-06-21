@@ -31,6 +31,8 @@ export type AsyncTask = Task & {
 
 /** Data used to create a new OnPageInteractionStopwatch. */
 export interface OnPageInteractionData {
+  startLocationHref: string;
+  startLocationPath: string;
   eventType: string;
   target: HTMLElement;
   rootSpan: RootSpan;

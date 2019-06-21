@@ -47,6 +47,13 @@ export class InteractionTracker {
   } = {};
 
   constructor() {
+    this.patchZoneRunTask();
+    this.patchZoneScheduleTask();
+    this.patchZoneCancelTask();
+    this.patchHistoryApi();
+  }
+
+  private patchZoneRunTask() {
     const runTask = Zone.prototype.runTask;
     Zone.prototype.runTask = (
       task: AsyncTask,
@@ -61,27 +68,24 @@ export class InteractionTracker {
         interceptingElement,
         task.eventName
       );
-      let taskZone = Zone.current;
       if (interceptingElement) {
         if (this.currentEventTracingZone === undefined && interactionName) {
+          // Starts the new zone from the Zone.current, for that, we assume
+          // all click handlers have the same parent zone.
           this.startNewInteraction(
             interceptingElement,
             task.eventName,
+            task.zone,
             interactionName
           );
-        } else if (this.currentEventTracingZone) {
+        }
+        if (this.currentEventTracingZone) {
           task._zone = this.currentEventTracingZone;
-          taskZone = this.currentEventTracingZone;
-        } else {
-          task._zone = Zone.root;
         }
         this.incrementTaskCount(getTraceId(task.zone));
-      } else if (isTrackedTask(task)) {
-        // If we already are in a tracing zone, just run the task in our tracing zone.
-        taskZone = task.zone;
       }
       try {
-        return runTask.call(taskZone as {}, task, applyThis, applyArgs);
+        return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
         console.log('Run task finished.');
         if (
@@ -92,12 +96,11 @@ export class InteractionTracker {
         }
       }
     };
+  }
 
+  private patchZoneScheduleTask() {
     const scheduleTask = Zone.prototype.scheduleTask;
     Zone.prototype.scheduleTask = <T extends Task>(task: T) => {
-      console.warn('Scheduling task');
-      console.log(task);
-
       let taskZone = Zone.current;
       if (isTrackedTask(task)) {
         taskZone = task.zone;
@@ -108,15 +111,13 @@ export class InteractionTracker {
         if (shouldCountTask(task) && isTrackedTask(task)) {
           this.incrementTaskCount(getTraceId(task.zone));
         }
-        console.warn('Finished Scheduling task');
       }
     };
+  }
 
+  private patchZoneCancelTask() {
     const cancelTask = Zone.prototype.cancelTask;
     Zone.prototype.cancelTask = (task: AsyncTask) => {
-      console.warn('Cancel task');
-      console.log(task);
-
       let taskZone = Zone.current;
       if (isTrackedTask(task)) {
         taskZone = task.zone;
@@ -128,7 +129,6 @@ export class InteractionTracker {
         if (isTrackedTask(task) && shouldCountTask(task)) {
           this.decrementTaskCount(getTraceId(task.zone));
         }
-        console.warn('Finished cancel task');
       }
     };
   }
@@ -136,6 +136,7 @@ export class InteractionTracker {
   private startNewInteraction(
     interceptingElement: HTMLElement,
     eventName: string,
+    taskZone: Zone,
     interactionName: string
   ) {
     const traceId = randomTraceId();
@@ -149,19 +150,24 @@ export class InteractionTracker {
       },
       kind: SpanKind.UNSPECIFIED,
     };
-    // Start a new RootSpan for a new user interaction.
-    tracing.tracer.startRootSpan(spanOptions, root => {
-      // As startRootSpan creates the zone and Zone.current corresponds to the
-      // new zone, we have to set the currentEventTracingZone with the Zone.current
-      // to capture the new zone.
-      this.currentEventTracingZone = Zone.current;
+    // Start a new RootSpan for a new user interaction forked from the original task.zone
+    taskZone.run(() => {
+      tracing.tracer.startRootSpan(spanOptions, root => {
+        // As startRootSpan creates the zone and Zone.current corresponds to the
+        // new zone, we have to set the currentEventTracingZone with the Zone.current
+        // to capture the new zone, also, start the `OnPageInteraction` to capture the 
+        // new root span.
+        this.currentEventTracingZone = Zone.current;
+        this.interactions[traceId] = startOnPageInteraction({
+          startLocationHref: location.href,
+          startLocationPath: location.pathname,
+          eventType: eventName,
+          target: interceptingElement,
+          rootSpan: root as RootSpan,
+        });
+      });
     });
 
-    this.interactions[traceId] = startOnPageInteraction({
-      eventType: eventName,
-      target: interceptingElement,
-      rootSpan: getRootSpan(this.currentEventTracingZone),
-    });
     // Timeout to reset currentEventTracingZone to allow the creation of a new
     // zone for a new user interaction.
     Zone.root.run(() =>
@@ -237,6 +243,73 @@ export class InteractionTracker {
     stopWatch.stopAndRecord();
     delete this.interactions[interactionId];
   }
+
+  // Monkey-patch `History API` to detect route transitions.
+  // This is necessary because there might be some cases when
+  // there are several interactions being tracked at the same time
+  // but if there is an user interaction that triggers a route transition
+  // while those interactions are still in tracking, only that interaction
+  // will have a `Navigation` name. Otherwise, if this is not patched, the
+  // other interactions will change the name to `Navigation` even if they
+  // did not cause the route transition.
+  private patchHistoryApi() {
+    const pushState = history.pushState;
+    history.pushState = (
+      data: unknown,
+      title: string,
+      url?: string | null | undefined
+    ) => {
+      patchHistoryApiMethod(pushState, data, title, url);
+    };
+
+    const replaceState = history.replaceState;
+    history.replaceState = (
+      data: unknown,
+      title: string,
+      url?: string | null | undefined
+    ) => {
+      patchHistoryApiMethod(replaceState, data, title, url);
+    };
+
+    const back = history.back;
+    history.back = () => {
+      patchHistoryApiMethod(back);
+    };
+
+    const forward = history.forward;
+    history.forward = () => {
+      patchHistoryApiMethod(forward);
+    };
+
+    const go = history.go;
+    history.go = (delta?: number) => {
+      patchHistoryApiMethod(go, delta);
+    };
+
+    const patchHistoryApiMethod = (func: Function, ...args: unknown[]) => {
+      // Store the location.pathname before it changes calling `func`.
+      const currentPathname = location.pathname;
+      func.call(history, ...args);
+      this.maybeUpdateInteractionName(currentPathname);
+    };
+  }
+
+  private maybeUpdateInteractionName(previousLocationPathname: string) {
+    const rootSpan = tracing.tracer.currentRootSpan;
+    // If for this interaction, the developer did not give any
+    // explicit attibute (`data-ocweb-id`) the current interaction
+    // name will start with a '<' that stands to the tag name. If that is
+    // the case, change the name to `Navigation <pathname>` as this is a more
+    // understadable name for the interaction.
+    // Also, we check if the location pathname did change.
+    if (
+      rootSpan &&
+      rootSpan.name.startsWith('<') &&
+      previousLocationPathname !== location.pathname
+    ) {
+      rootSpan.name = 'Navigation ' + location.pathname;
+    }
+  }
 }
 
 /**
@@ -245,14 +318,6 @@ export class InteractionTracker {
  */
 function getTraceId(zone: Zone): string {
   return zone && zone.get('data') ? zone.get('data').traceId : '';
-}
-
-/**
- * Get the root span from the zone properties.
- * @param zone
- */
-function getRootSpan(zone: Zone | undefined): RootSpan {
-  return zone && zone.get('data') ? zone.get('data').rootSpan : undefined;
 }
 
 function getTrackedElement(task: AsyncTask): HTMLElement | null {

@@ -27,8 +27,6 @@ class App extends React.Component {
   }
 
   handleClick() {
-    console.log("Entering handle click.");
-
     // Use promises to test behavior on MicroTasks.
     const promise = new Promise(resolve => {
       setTimeout(function () {
@@ -60,6 +58,7 @@ class App extends React.Component {
         const data = JSON.parse(xhr.responseText)
         const result = this.callCalculatePi();
         this.setState({ pi: result, prime_numbers: data });
+        this.props.history.push('/second_page');
       }
     };
 

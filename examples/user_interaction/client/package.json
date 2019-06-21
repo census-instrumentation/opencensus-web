@@ -15,6 +15,7 @@
     "@opencensus/web-all": "^0.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "zone.js": "^0.9.1"
   },
