@@ -16,16 +16,13 @@
 
 import * as webTypes from '@opencensus/web-types';
 import { Tracer } from '../src/trace/model/tracer';
-
-export interface WindowWithZone extends Window {
-  Zone?: Zone;
-}
+import { WindowWithZone } from '../src/trace/model/types';
 
 describe('Tracer', () => {
   let tracer: Tracer;
   let listener: webTypes.SpanEventListener;
   const options = { name: 'test' };
-  let realZone: Zone | undefined;
+  let realZone: Function | undefined;
   const windowWithZone = window as WindowWithZone;
 
   beforeEach(() => {

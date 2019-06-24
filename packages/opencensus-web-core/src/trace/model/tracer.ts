@@ -19,6 +19,7 @@ import { RootSpan } from './root-span';
 import { Span } from './span';
 import { TracerBase } from './tracer-base';
 import { randomTraceId } from '../../common/id-util';
+import { WindowWithZone } from './types';
 
 /** Tracer manages the current root span and trace header propagation. */
 export class Tracer extends TracerBase implements webTypes.Tracer {
@@ -31,7 +32,7 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
 
   // Variable to store current root span in case the Zone global variable is not present.
   // For that case we only need to store only one current root span.
-  private rootSpan = new RootSpan(this);
+  private currentRootSpanNoZone = new RootSpan(this);
 
   /**
    * Gets the current root span associated to Zone.current.
@@ -42,7 +43,7 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
     if (this.isZonePresent() && Zone.current.get('data')) {
       return Zone.current.get('data').rootSpan;
     }
-    return this.rootSpan;
+    return this.currentRootSpanNoZone;
   }
 
   /**
@@ -54,7 +55,7 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
     if (this.isZonePresent() && Zone.current.get('data')) {
       Zone.current.get('data')['rootSpan'] = root;
     } else {
-      this.rootSpan = root as RootSpan;
+      this.currentRootSpanNoZone = root as RootSpan;
     }
   }
 
@@ -94,13 +95,12 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
           return fn(root);
         });
       });
-    } else {
-      return super.startRootSpan(options, root => {
-        // Set the currentRootSpan to the new created root span.
-        this.currentRootSpan = root;
-        return fn(root);
-      });
     }
+    return super.startRootSpan(options, root => {
+      // Set the currentRootSpan to the new created root span.
+      this.currentRootSpan = root;
+      return fn(root);
+    });
   }
 
   /** Clears the current root span. */
@@ -133,7 +133,6 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
   wrapEmitter(emitter: webTypes.NodeJsEventEmitter) {}
 
   isZonePresent(): boolean {
-    //tslint:disable:no-any
-    return !!(window as any).Zone;
+    return !!(window as WindowWithZone).Zone;
   }
 }
