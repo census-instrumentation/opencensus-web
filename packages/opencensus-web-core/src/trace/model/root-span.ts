@@ -15,17 +15,16 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import { randomTraceId } from '../../common/id-util';
-import { Span } from './span';
+import {randomTraceId} from '../../common/id-util';
+import {Span} from './span';
 
 /** Simple mock root span for use in use tests. */
 export class RootSpan extends Span {
   constructor(
-    /** Trace associated with this root span. */
-    private readonly tracer: webTypes.TracerBase,
-    /** A trace options object to build the root span. */
-    context?: webTypes.TraceOptions
-  ) {
+      /** Trace associated with this root span. */
+      private readonly tracer: webTypes.TracerBase,
+      /** A trace options object to build the root span. */
+      context?: webTypes.TraceOptions) {
     super();
 
     if (context) {
@@ -38,7 +37,9 @@ export class RootSpan extends Span {
         this.traceId = spanContext.traceId;
         this.traceState = spanContext.traceState || '';
       }
-    } else {
+    }
+
+    if (!this.traceId) {
       this.traceId = randomTraceId();
     }
   }

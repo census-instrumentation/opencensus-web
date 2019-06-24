@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>OpenCensus Web Hello World</title>
+    <!-- Load bootstrap to see a resource load span -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+      crossorigin="anonymous">
+  </head>
+  <body>
+    <h1>OpenCensus Web Hello World!</h1>
+
+    <p>This example demonstrates client side browser spans in the same trace as
+    server side spans for an initial page load.</p>
+
+    <p>Because the browser does not send a trace context header for the initial
+    page load, the server generates the parent trace context and sends it back
+    in the HTML template in a <code>&lt;script&gt;</code> tag by setting the
+    global <code>traceparent</code> variable according to the
+    <a href="https://www.w3.org/TR/trace-context/">W3C Draft Trace Context</a> standard.</p>
+
+    <p>Custom trace ID is <code><span id="custom-trace-id">...</span></code>.</p>
+
+    <script>
+      traceparent = "{{.Traceparent}}";
+      ocAgent = "http://{{.AgentHostAndPort}}";
+    </script>
+    <script src="{{.BundleEndpoint}}/bundle.js" async></script>
+    <footer>
+      The <code>traceparent</code> value received from server was
+      <code>"{{.Traceparent}}"</code>.
+    </footer>
+  </body>
+</html>

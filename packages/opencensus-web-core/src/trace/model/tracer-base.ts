@@ -15,10 +15,10 @@
  */
 
 import * as webTypes from '@opencensus/web-types';
-import { NoHeadersPropagation } from '../propagation/no_headers_propagation';
-import { AlwaysSampler } from '../sampler/sampler';
-import { RootSpan } from './root-span';
-import { Span } from './span';
+import {NoHeadersPropagation} from '../propagation/no_headers_propagation';
+import {AlwaysSampler} from '../sampler/sampler';
+import {RootSpan} from './root-span';
+import {Span} from './span';
 
 const NO_HEADERS_PROPAGATION = new NoHeadersPropagation();
 
@@ -73,7 +73,8 @@ export class TracerBase implements webTypes.TracerBase {
   }
 
   /**
-   * Start a new RootSpan to currentRootSpan. Currently no sampling decisions are propagated or made here.
+   * Start a new RootSpan to currentRootSpan. Currently no sampling decisions
+   * are propagated or made here.
    * @param options Options for tracer instance
    * @param fn Callback function
    * @returns The callback return
