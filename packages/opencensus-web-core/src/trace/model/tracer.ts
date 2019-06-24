@@ -22,62 +22,85 @@ import { randomTraceId } from '../../common/id-util';
 
 /** Tracer manages the current root span and trace header propagation. */
 export class Tracer extends TracerBase implements webTypes.Tracer {
+  private static singletonInstance: Tracer;
+
+  /** Gets the tracer instance. */
+  static get instance(): Tracer {
+    return this.singletonInstance || (this.singletonInstance = new this());
+  }
+
+  // Variable to store current root span in case the Zone global variable is not present.
+  // For that case we only need to store only one current root span.
+  private rootSpan = new RootSpan(this);
+
   /**
    * Gets the current root span associated to Zone.current.
-   * If the current zone does not have a root span (e.g. root zone),
-   * create a new root.
+   * If the current zone does not have a root span (e.g. root zone) or
+   * `Zone` is not present return the value store in the unique root span.
    */
   get currentRootSpan(): Span {
-    if (Zone.current.get('data')) {
+    if (this.isZonePresent() && Zone.current.get('data')) {
       return Zone.current.get('data').rootSpan;
     }
-    return new RootSpan(this);
+    return this.rootSpan;
   }
 
   /**
    * Sets the current root span to the current Zone.
    * If the current zone does not have a 'data' property (e.g. root zone)
-   * do not set the root span.
+   * or `Zone` is not present, just assign the root span to a variable.
    */
   set currentRootSpan(root: Span) {
-    if (Zone.current.get('data')) {
+    if (this.isZonePresent() && Zone.current.get('data')) {
       Zone.current.get('data')['rootSpan'] = root;
+    } else {
+      this.rootSpan = root as RootSpan;
     }
   }
 
   /**
-   * Creates a new Zone and start a new RootSpan to `currentRootSpan` associating
-   * the new RootSpan to the new Zone. Thus, there might be several root spans
-   * at the same time.
+   * Creates a new Zone (in case `Zone` global variable is present) and start
+   * a new RootSpan to `currentRootSpan` associating the new RootSpan to the
+   * new Zone. Thus, there might be several root spans at the same time.
+   * If `Zone` is not present, just create the root span and store it in the current
+   * root span.
    * Currently no sampling decisions are propagated or made here.
    * @param options Options for tracer instance
    * @param fn Callback function
    * @returns The callback return
    */
   startRootSpan<T>(options: webTypes.TraceOptions, fn: (root: Span) => T): T {
-    let traceId = randomTraceId();
-    if (options.spanContext && options.spanContext.traceId) {
-      traceId = options.spanContext.traceId;
-    }
-    // Create the new zone.
-    const zoneSpec = {
-      name: traceId,
-      properties: {
-        data: {
-          isTracingZone: true,
-          traceId,
+    if (this.isZonePresent()) {
+      let traceId = randomTraceId();
+      if (options.spanContext && options.spanContext.traceId) {
+        traceId = options.spanContext.traceId;
+      }
+      // Create the new zone.
+      const zoneSpec = {
+        name: traceId,
+        properties: {
+          data: {
+            isTracingZone: true,
+            traceId,
+          },
         },
-      },
-    };
+      };
 
-    const newZone = Zone.current.fork(zoneSpec);
-    return newZone.run(() => {
-      super.startRootSpan(options, root => {
+      const newZone = Zone.current.fork(zoneSpec);
+      return newZone.run(() => {
+        super.startRootSpan(options, root => {
+          // Set the currentRootSpan to the new created root span.
+          this.currentRootSpan = root;
+          return fn(root);
+        });
+      });
+    } else {
+      return super.startRootSpan(options, root => {
         // Set the currentRootSpan to the new created root span.
         this.currentRootSpan = root;
         return fn(root);
       });
-    });
+    }
   }
 
   /** Clears the current root span. */
@@ -108,4 +131,9 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
 
   /** Binds trace context to NodeJS event emitter. No-op for opencensus-web. */
   wrapEmitter(emitter: webTypes.NodeJsEventEmitter) {}
+
+  isZonePresent(): boolean {
+    //tslint:disable:no-any
+    return !!(window as any).Zone;
+  }
 }

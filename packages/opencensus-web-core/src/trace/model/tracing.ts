@@ -23,7 +23,7 @@ export const NOOP_EXPORTER = new NoopExporter();
 /** Main interface for tracing. */
 export class Tracing implements webTypes.Tracing {
   /** Object responsible for managing a trace. */
-  readonly tracer = new Tracer();
+  readonly tracer = Tracer.instance;
 
   /** Service to send collected traces to. */
   exporter = NOOP_EXPORTER;
