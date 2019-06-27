@@ -26,14 +26,14 @@ module.exports = (config) => {
     browsers: ['ChromeHeadless'],
     frameworks: ['jasmine'],
     reporters: ['spec', 'coverage-istanbul'],
-    files: ['test/index.ts'],
-    preprocessors: {'test/index.ts': ['webpack']},
+    files: ['test/index.ts', 'node_modules/zone.js/dist/zone.js'],
+    preprocessors: { 'test/index.ts': ['webpack'] },
     // Use webpack so that tree-shaking will remove all Node.js dependencies of
     // the `@opencensus/core` library, since they are not actually used in this
     // package's compiled JS code. Only the TypeScript interfaces from
     // `@opecensus/core` are used.
     webpack: webpackConfig,
-    webpackMiddleware: {noInfo: true},
+    webpackMiddleware: { noInfo: true },
     coverageIstanbulReporter: {
       reports: ['json', 'text-summary'],
       dir: path.join(__dirname, 'coverage'),

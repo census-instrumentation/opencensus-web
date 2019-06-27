@@ -16,3 +16,5 @@
 
 // This file is an entry point for the webpack test configuration, so this
 // should import from all test files.
+import './test-on-page-interaction';
+import './test-interaction-tracker';

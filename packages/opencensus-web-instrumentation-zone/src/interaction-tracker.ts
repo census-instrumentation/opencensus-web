@@ -30,11 +30,15 @@ import {
 declare const Zone: ZoneType & { prototype: Zone };
 
 // Delay of 50 ms to reset currentEventTracingZone.
-const RESET_TRACING_ZONE_DELAY = 50;
+export const RESET_TRACING_ZONE_DELAY = 50;
 
 export class InteractionTracker {
   // Allows to track several events triggered by the same user interaction in the right Zone.
-  private currentEventTracingZone?: Zone;
+  currentEventTracingZone?: Zone;
+
+  // Used to reset the currentEventTracingZone when the interaction
+  // finishes before it is reset automatically.
+  private currentResetTracingZoneTimeout?: number;
 
   // Map of interaction Ids to stopwatches.
   private readonly interactions: {
@@ -46,11 +50,17 @@ export class InteractionTracker {
     [index: string]: number;
   } = {};
 
+  private static singletonInstance: InteractionTracker;
+
   constructor() {
     this.patchZoneRunTask();
     this.patchZoneScheduleTask();
     this.patchZoneCancelTask();
     this.patchHistoryApi();
+  }
+
+  static get instance(): InteractionTracker {
+    return this.singletonInstance || (this.singletonInstance = new this());
   }
 
   private patchZoneRunTask() {
@@ -60,9 +70,6 @@ export class InteractionTracker {
       applyThis: unknown,
       applyArgs: unknown
     ) => {
-      console.warn('Running task');
-      console.log(task);
-
       const interceptingElement = getTrackedElement(task);
       const interactionName = resolveInteractionName(
         interceptingElement,
@@ -87,7 +94,6 @@ export class InteractionTracker {
       try {
         return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
-        console.log('Run task finished.');
         if (
           interceptingElement ||
           (shouldCountTask(task) && isTrackedTask(task))
@@ -155,7 +161,7 @@ export class InteractionTracker {
       tracing.tracer.startRootSpan(spanOptions, root => {
         // As startRootSpan creates the zone and Zone.current corresponds to the
         // new zone, we have to set the currentEventTracingZone with the Zone.current
-        // to capture the new zone, also, start the `OnPageInteraction` to capture the 
+        // to capture the new zone, also, start the `OnPageInteraction` to capture the
         // new root span.
         this.currentEventTracingZone = Zone.current;
         this.interactions[traceId] = startOnPageInteraction({
@@ -170,18 +176,23 @@ export class InteractionTracker {
 
     // Timeout to reset currentEventTracingZone to allow the creation of a new
     // zone for a new user interaction.
-    Zone.root.run(() =>
-      setTimeout(
-        () => (this.currentEventTracingZone = undefined),
+    Zone.root.run(() => {
+      // Store the timeout in case the interaction finishes before
+      // this callback runs.
+      this.currentResetTracingZoneTimeout = window.setTimeout(
+        () => this.resetCurrentTracingZone(),
         RESET_TRACING_ZONE_DELAY
-      )
-    );
-    console.log('New zone:');
-    console.log(this.currentEventTracingZone);
+      );
+    });
+  }
+
+  resetCurrentTracingZone() {
+    this.currentEventTracingZone = undefined;
+    this.currentResetTracingZoneTimeout = undefined;
   }
 
   /** Increments the count of outstanding tasks for a given interaction id. */
-  private incrementTaskCount(interactionId: string) {
+  incrementTaskCount(interactionId: string) {
     const stopWatch = this.getStopwatch(interactionId);
     if (!stopWatch) return;
     stopWatch.incrementTaskCount();
@@ -198,7 +209,7 @@ export class InteractionTracker {
   }
 
   /** Decrements the count of outstanding tasks for a given interaction id. */
-  private decrementTaskCount(interactionId: string) {
+  decrementTaskCount(interactionId: string) {
     const stopWatch = this.getStopwatch(interactionId);
     if (!stopWatch) return;
     stopWatch.decrementTaskCount();
@@ -233,6 +244,14 @@ export class InteractionTracker {
       this.interactionCompletionTimeouts[interactionId] = setTimeout(() => {
         this.completeInteraction(interactionId);
         delete this.interactionCompletionTimeouts[interactionId];
+        // In case the interaction finished beforeresetCurrentTracingZone is called,
+        // this in order to allow the creating of a new interaction.
+        if (this.currentResetTracingZoneTimeout) {
+          Zone.root.run(() => {
+            clearTimeout(this.currentResetTracingZoneTimeout);
+            this.resetCurrentTracingZone();
+          });
+        }
       });
     });
   }
@@ -375,10 +394,9 @@ function resolveInteractionName(
 function shouldCountTask(task: Task): boolean {
   if (!task.data) return false;
 
-  // Don't count periodic tasks with a delay greater than 1 s.
-  if (task.data.isPeriodic && (task.data.delay && task.data.delay >= 1000)) {
-    return false;
-  }
+  // Don't count periodic tasks like setInterval as they will be repeatedly
+  // called.
+  if (task.data.isPeriodic) return false;
 
   // We're only interested in macroTasks and microTasks.
   return task.type === 'macroTask' || task.type === 'microTask';

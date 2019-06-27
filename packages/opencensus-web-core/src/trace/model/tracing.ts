@@ -39,6 +39,12 @@ export class Tracing implements webTypes.Tracing {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
 
+  constructor() {
+    // register the noop exporter to have an span event listener,
+    // helpful for testing.
+    this.tracer.registerSpanEventListener(this.exporter);
+  }
+
   /** Sets tracer and exporter config. */
   start(config?: webTypes.Config): webTypes.Tracing {
     this.tracer.start(config || {});

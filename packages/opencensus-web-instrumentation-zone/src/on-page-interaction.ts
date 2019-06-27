@@ -43,8 +43,13 @@ export class OnPageInteractionStopwatch {
     return this.taskCount;
   }
 
-  /** Stops the stopwatch and record the xhr response. */
+  /**
+   * Stops the stopwatch, fills root span attributes and ends the span.
+   * If has remaining tasks do not end the root span.
+   */
   stopAndRecord(): void {
+    if (this.hasRemainingTasks()) return;
+
     const rootSpan = this.data.rootSpan;
     rootSpan.addAttribute('EventType', this.data.eventType);
     rootSpan.addAttribute('TargetElement', this.data.target.tagName);
@@ -52,8 +57,6 @@ export class OnPageInteractionStopwatch {
     rootSpan.addAttribute(ATTRIBUTE_HTTP_PATH, this.data.startLocationPath);
     rootSpan.addAttribute(ATTRIBUTE_HTTP_USER_AGENT, navigator.userAgent);
     rootSpan.end();
-    console.log('End of tracking. The interaction is stable.');
-    console.log('Time to stable: ' + this.data.rootSpan.duration + ' ms.');
   }
 }
 
