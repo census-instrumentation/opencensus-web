@@ -26,7 +26,7 @@ describe('Tracing', () => {
   let newExporter: webTypes.Exporter;
 
   beforeEach(() => {
-    tracing = new Tracing();
+    tracing = Tracing.instance;
     tracer = tracing.tracer;
     spyOn(tracer, 'registerSpanEventListener');
     spyOn(tracer, 'unregisterSpanEventListener');
@@ -39,6 +39,7 @@ describe('Tracing', () => {
 
   describe('default exporter', () => {
     it('is a no-op exporter', () => {
+      tracing.unregisterExporter(tracing.exporter);
       expect(tracing.exporter).toBe(NOOP_EXPORTER);
     });
   });
