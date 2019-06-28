@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import { RootSpan, Tracer } from '@opencensus/web-core';
-import { OnPageInteractionStopwatch } from '../src/on-page-interaction';
+import { OnPageInteractionStopwatch } from '../src/on-page-interaction-stop-watch';
 
-describe('OnPageInteraction', () => {
+describe('OnPageInteractionStopWatch', () => {
   let root: RootSpan;
   let tracer: Tracer;
   let interaction: OnPageInteractionStopwatch;

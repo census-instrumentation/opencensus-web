@@ -24,7 +24,7 @@ import { AsyncTask } from './zone-types';
 import {
   OnPageInteractionStopwatch,
   startOnPageInteraction,
-} from './on-page-interaction';
+} from './on-page-interaction-stop-watch';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
@@ -59,8 +59,8 @@ export class InteractionTracker {
     this.patchHistoryApi();
   }
 
-  static startTracking(): InteractionTracker {
-    return this.singletonInstance || (this.singletonInstance = new this());
+  static startTracking(): void {
+    if (!this.singletonInstance) this.singletonInstance = new this();
   }
 
   private patchZoneRunTask() {

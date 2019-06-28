@@ -34,6 +34,7 @@ describe('InteractionTracker', () => {
   const SET_TIMEOUT_TIME = 60;
   const BUTTON_TAG_NAME = 'BUTTON';
 
+  tracing.registerExporter(tracing.exporter);
   beforeEach(() => {
     onEndSpanSpy = spyOn(tracing.exporter, 'onEndSpan');
   });
