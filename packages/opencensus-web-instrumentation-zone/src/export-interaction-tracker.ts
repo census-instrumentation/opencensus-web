@@ -40,5 +40,5 @@ function setupExporter() {
 
 export function startInteractionTracker() {
   setupExporter();
-  return InteractionTracker.instance;
+  InteractionTracker.startTracking();
 }

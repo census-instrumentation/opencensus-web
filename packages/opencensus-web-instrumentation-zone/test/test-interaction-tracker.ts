@@ -22,21 +22,19 @@ import {
 } from '../src/interaction-tracker';
 
 describe('InteractionTracker', () => {
-  const interactionTracker = InteractionTracker.instance;
-  let incrementTaskCountSpy: jasmine.Spy;
-  let decrementTaskCountSpy: jasmine.Spy;
+  InteractionTracker.startTracking();
   let onEndSpanSpy: jasmine.Spy;
 
+  // Use Buffer time as we expect that these interactions take
+  // a little extra time to complete due to the setTimeout that
+  // is needed for the final completion and runs in a different
+  // tick.
+  const TIME_BUFFER = 10;
+  const XHR_TIME = 60;
+  const SET_TIMEOUT_TIME = 60;
+  const BUTTON_TAG_NAME = 'BUTTON';
+
   beforeEach(() => {
-    interactionTracker.resetCurrentTracingZone();
-    incrementTaskCountSpy = spyOn(
-      interactionTracker,
-      'incrementTaskCount'
-    ).and.callThrough();
-    decrementTaskCountSpy = spyOn(
-      interactionTracker,
-      'decrementTaskCount'
-    ).and.callThrough();
     onEndSpanSpy = spyOn(tracing.exporter, 'onEndSpan');
   });
 
@@ -44,188 +42,150 @@ describe('InteractionTracker', () => {
     fakeInteraction(noop);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      // Counts related to the click event.
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(1);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
       // As there is another setTimeOut that completes the interaction, the
       // span duraction is not precise, then only test if the interaction duration
       // finishes within a range.
-      expect(rootSpan.duration).toBeLessThan(5);
+      expect(rootSpan.duration).toBeLessThan(TIME_BUFFER);
       done();
     });
   });
 
   it('should handle interactions with macroTask', done => {
     const onclick = () => {
-      // Counts the click is detected.
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      // As the task related to the click event hasn't finished
-      // the task count is not decremented yet.
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
-      setTimeout(() => {
-        // The setTimeout (MacroTask) should be counted.
-        expect(incrementTaskCountSpy.calls.count()).toBe(2);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
-      }, 60);
+      setTimeout(noop, SET_TIMEOUT_TIME);
     };
     fakeInteraction(onclick);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      // There should be 2 counted tasks in total.
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(2);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(60);
-      expect(rootSpan.duration).toBeLessThanOrEqual(80);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        SET_TIMEOUT_TIME + TIME_BUFFER
+      );
       done();
     });
   });
 
   it('should handle interactions with microTask', done => {
     const onclick = () => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
       const promise = getPromise();
-      promise.then(() => {
-        expect(incrementTaskCountSpy.calls.count()).toBe(2);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
-      });
+      promise.then(noop);
     };
     fakeInteraction(onclick);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(2);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(5);
+      expect(rootSpan.duration).toBeLessThanOrEqual(TIME_BUFFER);
       done();
     });
   });
 
   it('should handle interactions with canceled tasks', done => {
+    const interactionTime = SET_TIMEOUT_TIME - 10;
     const canceledTask = () => {
-      const timeoutId = setTimeout(noop, 10);
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
+      const timeoutId = setTimeout(noop, SET_TIMEOUT_TIME);
       setTimeout(() => {
-        expect(incrementTaskCountSpy.calls.count()).toBe(3);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
-        // Cancel task before it finishes
         clearTimeout(timeoutId);
-        expect(decrementTaskCountSpy.calls.count()).toBe(2);
-      }, 6);
+      }, interactionTime);
     };
     fakeInteraction(canceledTask);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(3);
-      expect(decrementTaskCountSpy.calls.count()).toBe(3);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(12);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(interactionTime);
+      //The duration has to be less than set to the canceled timeout.
+      expect(rootSpan.duration).toBeLessThan(SET_TIMEOUT_TIME);
       done();
     });
   });
 
   it('should ignore interactions on elements with disable', done => {
     const onclick = () => {
-      // No change in task count as the click is not tracked.
-      expect(incrementTaskCountSpy.calls.count()).toBe(0);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
-
-      setTimeout(() => {
-        // No change in task count as the click is not tracked.
-        expect(incrementTaskCountSpy.calls.count()).toBe(0);
-        expect(decrementTaskCountSpy.calls.count()).toBe(0);
-      });
+      setTimeout(noop, SET_TIMEOUT_TIME);
     };
     const button = createButton('test interaction', true);
     fakeInteraction(onclick, button);
 
     const onclick2 = () => {
-      // Click is detected as this button does is not 'disabled'.
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
-      setTimeout(() => {
-        expect(incrementTaskCountSpy.calls.count()).toBe(2);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
-      });
+      setTimeout(noop, SET_TIMEOUT_TIME);
     };
 
     button.removeAttribute('disabled');
     fakeInteraction(onclick2, button);
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      // There should be only 2 counted tasks related to the second interaction.
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(2);
+      // Make sure `onEndSpan` is called only once;
+      expect(onEndSpanSpy.calls.count()).toBe(1);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(8);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        SET_TIMEOUT_TIME + TIME_BUFFER
+      );
       done();
     });
   });
 
   it('should handle interactions on elements without data-ocweb-id attribute', done => {
     const onclick = () => {
-      setTimeout(noop, 1);
+      setTimeout(noop, SET_TIMEOUT_TIME);
     };
     const button = createButton('');
     fakeInteraction(onclick, button);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
       expect(rootSpan.name).toBe("<BUTTON> id:'test_element' click");
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(5);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        SET_TIMEOUT_TIME + TIME_BUFFER
+      );
       done();
     });
   });
 
   it('should ignore periodic tasks', done => {
     const onclick = () => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
       const interaval = setInterval(() => {
-        // The counted tasks does not change as this is ignored.
-        expect(incrementTaskCountSpy.calls.count()).toBe(1);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
         clearInterval(interaval);
-      }, 1);
+      }, SET_TIMEOUT_TIME);
     };
     fakeInteraction(onclick);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(1);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(10);
+      expect(rootSpan.duration).toBeLessThanOrEqual(TIME_BUFFER);
       done();
     });
   });
 
-  it('should not create a new interaction when second click occurs before 50 ms.', done => {
-    let curretEventTracingZoneSpy = interactionTracker.currentEventTracingZone;
+  it('should not start new interaction if second click handler occurs before 50 ms.', done => {
     const onclickInteraction1 = () => {
-      curretEventTracingZoneSpy = interactionTracker.currentEventTracingZone;
-      expect(curretEventTracingZoneSpy).not.toBeUndefined();
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
       setTimeout(noop, RESET_TRACING_ZONE_DELAY + 10);
     };
     fakeInteraction(onclickInteraction1);
 
     const onclickInteraction2 = () => {
-      // Expect the currentEventTracingZone has not changed after the second click.
-      expect(curretEventTracingZoneSpy).toBe(
-        interactionTracker.currentEventTracingZone
-      );
-      expect(incrementTaskCountSpy.calls.count()).toBe(3);
-      expect(decrementTaskCountSpy.calls.count()).toBe(1);
-      setTimeout(noop);
+      setTimeout(noop, SET_TIMEOUT_TIME);
     };
     // Schedule a second interactionto be run  before `RESET_TRACING_ZONE_DELAY`
     setTimeout(() => {
@@ -233,36 +193,29 @@ describe('InteractionTracker', () => {
     }, RESET_TRACING_ZONE_DELAY - 10);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(4);
-      expect(decrementTaskCountSpy.calls.count()).toBe(4);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(curretEventTracingZoneSpy).not.toBeUndefined();
-      if (curretEventTracingZoneSpy) {
-        expect(curretEventTracingZoneSpy.name).toBe(rootSpan.traceId);
-      }
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(60);
-      expect(rootSpan.duration).toBeLessThanOrEqual(80);
+      // As this click is done at 'RESET_TRACING_ZONE_DELAY - 10' and this click has a
+      // setTimeout, the minimum time taken by this click is the sum of these values.
+      const timeInteraction2 = RESET_TRACING_ZONE_DELAY - 10 + SET_TIMEOUT_TIME;
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(timeInteraction2);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        timeInteraction2 + TIME_BUFFER
+      );
       done();
     });
   });
 
-  it('should create a new interaction and track overlaping interactions.', done => {
-    let curretEventTracingZoneSpy = interactionTracker.currentEventTracingZone;
+  it('should create a new interaction and track overlapping interactions.', done => {
+    const timeInteraction1 = RESET_TRACING_ZONE_DELAY + 10;
     const onclickInteraction1 = () => {
-      curretEventTracingZoneSpy = interactionTracker.currentEventTracingZone;
-      expect(curretEventTracingZoneSpy).not.toBeUndefined();
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
-      setTimeout(noop, RESET_TRACING_ZONE_DELAY + 10);
+      setTimeout(noop, timeInteraction1);
     };
     fakeInteraction(onclickInteraction1);
 
     const onclickInteraction2 = () => {
-      // Expect the currentEventTracingZone has changed after the second click.
-      expect(curretEventTracingZoneSpy).not.toBe(
-        interactionTracker.currentEventTracingZone
-      );
       setTimeout(noop, RESET_TRACING_ZONE_DELAY);
     };
     // Schedule a second interaction starting after `RESET_TRACING_ZONE_DELAY` ms
@@ -271,32 +224,22 @@ describe('InteractionTracker', () => {
     }, RESET_TRACING_ZONE_DELAY + 1);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(4);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
       // Test related to the first interaction
       if (onEndSpanSpy.calls.count() === 1) {
-        expect(decrementTaskCountSpy.calls.count()).toBe(3);
-        if (curretEventTracingZoneSpy) {
-          expect(curretEventTracingZoneSpy.name).toBe(rootSpan.traceId);
-        }
-        expect(rootSpan.duration).toBeGreaterThanOrEqual(
-          RESET_TRACING_ZONE_DELAY + 10
-        );
+        expect(rootSpan.duration).toBeGreaterThanOrEqual(timeInteraction1);
         expect(rootSpan.duration).toBeLessThanOrEqual(
-          RESET_TRACING_ZONE_DELAY + 30
+          timeInteraction1 + TIME_BUFFER
         );
       } else {
-        // Test related to the second interaction
-        expect(decrementTaskCountSpy.calls.count()).toBe(4);
-        if (curretEventTracingZoneSpy) {
-          expect(curretEventTracingZoneSpy.name).not.toBe(rootSpan.traceId);
-        }
         expect(rootSpan.duration).toBeGreaterThanOrEqual(
           RESET_TRACING_ZONE_DELAY
         );
         expect(rootSpan.duration).toBeLessThanOrEqual(
-          RESET_TRACING_ZONE_DELAY + 20
+          RESET_TRACING_ZONE_DELAY + TIME_BUFFER
         );
         done();
       }
@@ -307,66 +250,63 @@ describe('InteractionTracker', () => {
     const onclick = () => {
       setTimeout(() => {
         history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
-      }, 1);
+      }, SET_TIMEOUT_TIME);
     };
     // Create a button without 'data-ocweb-id' attribute.
     const button = createButton('');
     fakeInteraction(onclick, button);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(2);
       expect(rootSpan.name).toBe('Navigation /test_navigation');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeLessThanOrEqual(10);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        SET_TIMEOUT_TIME + TIME_BUFFER
+      );
       done();
     });
   });
 
   it('should handle HTTP requets', done => {
     const onclick = () => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
       doHTTPRequest();
     };
     fakeInteraction(onclick);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(2);
-      expect(decrementTaskCountSpy.calls.count()).toBe(2);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(60);
-      expect(rootSpan.duration).toBeLessThanOrEqual(80);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
     });
   });
 
   it('should handle cascading tasks', done => {
     const onclick = () => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(1);
-      expect(decrementTaskCountSpy.calls.count()).toBe(0);
       const promise = getPromise();
       promise.then(() => {
-        expect(incrementTaskCountSpy.calls.count()).toBe(2);
-        expect(decrementTaskCountSpy.calls.count()).toBe(1);
         setTimeout(() => {
-          expect(incrementTaskCountSpy.calls.count()).toBe(3);
-          expect(decrementTaskCountSpy.calls.count()).toBe(2);
           doHTTPRequest();
-        }, 1);
+        }, SET_TIMEOUT_TIME);
       });
     };
     fakeInteraction(onclick);
 
+    const interactionTime = SET_TIMEOUT_TIME + XHR_TIME;
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(incrementTaskCountSpy.calls.count()).toBe(4);
-      expect(decrementTaskCountSpy.calls.count()).toBe(4);
       expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
-      // The HTTP request takes 60 ms to send it
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(60);
-      expect(rootSpan.duration).toBeLessThanOrEqual(80);
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(interactionTime);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        interactionTime + TIME_BUFFER
+      );
       done();
     });
   });
@@ -400,7 +340,7 @@ describe('InteractionTracker', () => {
   function doHTTPRequest() {
     const xhr = new XMLHttpRequest();
     spyOn(xhr, 'send').and.callFake(() => {
-      setTimeout(noop, 60);
+      setTimeout(noop, XHR_TIME);
     });
     xhr.open('GET', '/sleep');
     xhr.send();

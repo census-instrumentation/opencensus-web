@@ -34,7 +34,7 @@ export const RESET_TRACING_ZONE_DELAY = 50;
 
 export class InteractionTracker {
   // Allows to track several events triggered by the same user interaction in the right Zone.
-  currentEventTracingZone?: Zone;
+  private currentEventTracingZone?: Zone;
 
   // Used to reset the currentEventTracingZone when the interaction
   // finishes before it is reset automatically.
@@ -52,14 +52,14 @@ export class InteractionTracker {
 
   private static singletonInstance: InteractionTracker;
 
-  constructor() {
+  private constructor() {
     this.patchZoneRunTask();
     this.patchZoneScheduleTask();
     this.patchZoneCancelTask();
     this.patchHistoryApi();
   }
 
-  static get instance(): InteractionTracker {
+  static startTracking(): InteractionTracker {
     return this.singletonInstance || (this.singletonInstance = new this());
   }
 
@@ -186,13 +186,13 @@ export class InteractionTracker {
     });
   }
 
-  resetCurrentTracingZone() {
+  private resetCurrentTracingZone() {
     this.currentEventTracingZone = undefined;
     this.currentResetTracingZoneTimeout = undefined;
   }
 
   /** Increments the count of outstanding tasks for a given interaction id. */
-  incrementTaskCount(interactionId: string) {
+  private incrementTaskCount(interactionId: string) {
     const stopWatch = this.getStopwatch(interactionId);
     if (!stopWatch) return;
     stopWatch.incrementTaskCount();
@@ -209,7 +209,7 @@ export class InteractionTracker {
   }
 
   /** Decrements the count of outstanding tasks for a given interaction id. */
-  decrementTaskCount(interactionId: string) {
+  private decrementTaskCount(interactionId: string) {
     const stopWatch = this.getStopwatch(interactionId);
     if (!stopWatch) return;
     stopWatch.decrementTaskCount();
@@ -395,7 +395,13 @@ function shouldCountTask(task: Task): boolean {
   if (!task.data) return false;
 
   // Don't count periodic tasks like setInterval as they will be repeatedly
-  // called.
+  // called. This will cause that the interaction never finishes, then would be
+  // imposible to measure the stability of the interaction.
+  // This case only applies for `setInterval` as we support `setTimeout`.
+  // TODO: ideally OpenCensus Web can manage this kind of tasks, so for example
+  // if a periodic task ends up doing some work in the future it will still
+  // be associated with that same older tracing zone. This is something we have to
+  // think of.
   if (task.data.isPeriodic) return false;
 
   // We're only interested in macroTasks and microTasks.
