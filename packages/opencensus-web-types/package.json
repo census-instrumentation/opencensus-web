@@ -12,9 +12,10 @@
     "compile": "tsc -p .",
     "fix": "gts fix",
     "test": "npm run compile && npm run check",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect; npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "repository": "census-instrumentation/opencensus-web",
   "keywords": [
@@ -46,5 +47,9 @@
     "rimraf": "^2.6.2",
     "typescript": "^3.1.6"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "snyk": true,
+  "dependencies": {
+    "snyk": "^1.189.0"
+  }
 }
