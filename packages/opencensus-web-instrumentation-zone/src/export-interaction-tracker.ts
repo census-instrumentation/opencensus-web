@@ -24,6 +24,7 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 const TRACE_ENDPOINT = '/v1/trace';
 
 import { InteractionTracker } from './interaction-tracker';
+import { doPatching } from './monkey-patching';
 
 function setupExporter() {
   if (!windowWithOcwGlobals.ocAgent) {
@@ -39,6 +40,7 @@ function setupExporter() {
 }
 
 export function startInteractionTracker() {
+  doPatching();
   setupExporter();
   InteractionTracker.startTracking();
 }

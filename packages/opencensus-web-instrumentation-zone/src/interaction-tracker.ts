@@ -19,12 +19,18 @@ import {
   tracing,
   SpanKind,
   RootSpan,
+  ATTRIBUTE_HTTP_STATUS_CODE,
+  ATTRIBUTE_HTTP_METHOD,
+  parseUrl,
 } from '@opencensus/web-core';
-import { AsyncTask } from './zone-types';
+import { AsyncTask, XHRWithUrl } from './zone-types';
 import {
   OnPageInteractionStopwatch,
   startOnPageInteraction,
 } from './on-page-interaction-stop-watch';
+
+import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
+import { traceOriginMatchesOrSameOrigin } from './util';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
@@ -48,6 +54,12 @@ export class InteractionTracker {
   // Map of interaction Ids to timeout ids.
   private readonly interactionCompletionTimeouts: {
     [index: string]: number;
+  } = {};
+
+  // Map intended to keep track of current XHR objects
+  // associated to a span.
+  private readonly xhrTasks: {
+    [index: string]: XMLHttpRequest;
   } = {};
 
   private static singletonInstance: InteractionTracker;
@@ -91,6 +103,7 @@ export class InteractionTracker {
         }
         this.incrementTaskCount(getTraceId(task.zone));
       }
+      this.interceptXHRTasks(task);
       try {
         return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
@@ -184,6 +197,46 @@ export class InteractionTracker {
         RESET_TRACING_ZONE_DELAY
       );
     });
+  }
+
+  private interceptXHRTasks(task: AsyncTask) {
+    if (isTrackedTask(task) && task.target instanceof XMLHttpRequest) {
+      const rootSpan: RootSpan = task.zone.get('data').rootSpan;
+      const xhr = task.target as XHRWithUrl;
+      if (xhr.readyState === XMLHttpRequest.OPENED) {
+        const childSpan = rootSpan.startChildSpan({
+          name: parseUrl(xhr.__zone_symbol__xhrURL).pathname,
+          kind: SpanKind.CLIENT,
+        });
+        // Associate the XHR to the child span ID so it allows to
+        // find the correct span to end it when the request is DONE.
+        this.xhrTasks[childSpan.id] = xhr;
+        if (traceOriginMatchesOrSameOrigin()) {
+          xhr.setRequestHeader(
+            'traceparent',
+            spanContextToTraceParent({
+              traceId: rootSpan.traceId,
+              spanId: childSpan.id,
+            })
+          );
+        }
+      } else if (xhr.readyState === XMLHttpRequest.DONE) {
+        const spanId =
+          Object.keys(this.xhrTasks).find(
+            spanId => this.xhrTasks[spanId] === xhr
+          ) || '';
+        const childSpan = rootSpan.spans.find(span => span.id === spanId);
+        if (childSpan) {
+          childSpan.addAttribute(
+            ATTRIBUTE_HTTP_STATUS_CODE,
+            xhr.status.toString()
+          );
+          childSpan.addAttribute(ATTRIBUTE_HTTP_METHOD, xhr._ocweb_method);
+          childSpan.end();
+          delete this.xhrTasks[spanId];
+        }
+      }
+    }
   }
 
   private resetCurrentTracingZone() {

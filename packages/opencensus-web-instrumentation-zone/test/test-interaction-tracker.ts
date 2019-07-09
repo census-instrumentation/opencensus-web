@@ -15,13 +15,22 @@
  */
 
 import 'zone.js/dist/zone.js';
-import { tracing, Span } from '@opencensus/web-core';
+import {
+  tracing,
+  Span,
+  ATTRIBUTE_HTTP_STATUS_CODE,
+  ATTRIBUTE_HTTP_METHOD,
+} from '@opencensus/web-core';
 import {
   InteractionTracker,
   RESET_TRACING_ZONE_DELAY,
 } from '../src/interaction-tracker';
+import { doPatching } from '../src/monkey-patching';
+import { WindowWithOcwGlobals } from '../src/zone-types';
+import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 
 describe('InteractionTracker', () => {
+  doPatching();
   InteractionTracker.startTracking();
   let onEndSpanSpy: jasmine.Spy;
 
@@ -271,6 +280,10 @@ describe('InteractionTracker', () => {
   });
 
   it('should handle HTTP requets', done => {
+    const setRequestHeaderSpy = spyOn(
+      XMLHttpRequest.prototype,
+      'setRequestHeader'
+    ).and.callThrough();
     const onclick = () => {
       doHTTPRequest();
     };
@@ -283,11 +296,31 @@ describe('InteractionTracker', () => {
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
       expect(rootSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
+
+      expect(rootSpan.spans.length).toBe(1);
+      const childSpan = rootSpan.spans[0];
+      expect(setRequestHeaderSpy).toHaveBeenCalledWith(
+        'traceparent',
+        spanContextToTraceParent({
+          traceId: rootSpan.traceId,
+          spanId: childSpan.id,
+        })
+      );
+      expect(childSpan.name).toBe('/test');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
+      expect(childSpan.ended).toBeTruthy();
+      expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
+      expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
     });
   });
 
   it('should handle cascading tasks', done => {
+    const setRequestHeaderSpy = spyOn(
+      XMLHttpRequest.prototype,
+      'setRequestHeader'
+    ).and.callThrough();
     const onclick = () => {
       const promise = getPromise();
       promise.then(() => {
@@ -308,6 +341,22 @@ describe('InteractionTracker', () => {
       expect(rootSpan.duration).toBeLessThanOrEqual(
         interactionTime + TIME_BUFFER
       );
+
+      expect(rootSpan.spans.length).toBe(1);
+      const childSpan = rootSpan.spans[0];
+      expect(setRequestHeaderSpy).toHaveBeenCalledWith(
+        'traceparent',
+        spanContextToTraceParent({
+          traceId: rootSpan.traceId,
+          spanId: childSpan.id,
+        })
+      );
+      expect(childSpan.name).toBe('/test');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
+      expect(childSpan.ended).toBeTruthy();
+      expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
+      expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
     });
   });
@@ -339,11 +388,22 @@ describe('InteractionTracker', () => {
   }
 
   function doHTTPRequest() {
+    // Set the ocTraceOrigins value so the `traceparent` context header is set.
+    (window as WindowWithOcwGlobals).ocTraceOrigins = location.hostname;
     const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = noop;
     spyOn(xhr, 'send').and.callFake(() => {
-      setTimeout(noop, XHR_TIME);
+      setTimeout(() => {
+        spyOnProperty(xhr, 'status').and.returnValue(200);
+        const event = new Event('readystatechange');
+        xhr.dispatchEvent(event);
+      }, XHR_TIME);
     });
-    xhr.open('GET', '/sleep');
+
+    xhr.open('GET', '/test');
+    // Spy on `readystate` property after open, so that way while intercepting
+    // the XHR will detect OPENED and DONE states.
+    spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
     xhr.send();
   }
 });

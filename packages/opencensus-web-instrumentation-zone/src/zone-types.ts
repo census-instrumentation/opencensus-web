@@ -38,6 +38,13 @@ export interface OnPageInteractionData {
   rootSpan: RootSpan;
 }
 
+/** Allows monkey-patching XMLHttpRequest and to obtain the request URL. */
+export type XHRWithUrl = HTMLElement &
+  XMLHttpRequest & {
+    __zone_symbol__xhrURL: string;
+    _ocweb_method: string;
+  };
+
 /** Type for `window` object with variables OpenCensus Web interacts with. */
 export declare interface WindowWithOcwGlobals extends Window {
   /**
@@ -51,4 +58,7 @@ export declare interface WindowWithOcwGlobals extends Window {
    * specified sample rate. If not specified, a default sampling rate is used.
    */
   ocSampleRate?: number;
+
+  //
+  ocTraceOrigins?: string;
 }
