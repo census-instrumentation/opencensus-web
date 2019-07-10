@@ -279,13 +279,49 @@ describe('InteractionTracker', () => {
     });
   });
 
-  it('should handle HTTP requets', done => {
+  it('should handle HTTP requets and do not set Trace Context Header', done => {
+    // Set a diferent ocTraceHeaderHostRegex to test that the trace context header is not
+    // sent as the url request does not match the regex.
+    (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
     const setRequestHeaderSpy = spyOn(
       XMLHttpRequest.prototype,
       'setRequestHeader'
     ).and.callThrough();
     const onclick = () => {
-      doHTTPRequest();
+      doHTTPRequest('http://localhost:8000/test');
+    };
+    fakeInteraction(onclick);
+
+    onEndSpanSpy.and.callFake((rootSpan: Span) => {
+      expect(rootSpan.name).toBe('test interaction');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.ended).toBeTruthy();
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
+
+      expect(rootSpan.spans.length).toBe(1);
+      const childSpan = rootSpan.spans[0];
+      expect(setRequestHeaderSpy).not.toHaveBeenCalled();
+      expect(childSpan.name).toBe('/test');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
+      expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
+      expect(childSpan.ended).toBeTruthy();
+      expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
+      expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
+      done();
+    });
+  });
+
+  it('should handle HTTP requets and set Trace Context Header', done => {
+    // Set the ocTraceHeaderHostRegex value so the `traceparent` context header is set.
+    (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /.*/;
+    const setRequestHeaderSpy = spyOn(
+      XMLHttpRequest.prototype,
+      'setRequestHeader'
+    ).and.callThrough();
+    const onclick = () => {
+      doHTTPRequest('http://localhost:8000/test');
     };
     fakeInteraction(onclick);
 
@@ -387,9 +423,7 @@ describe('InteractionTracker', () => {
     });
   }
 
-  function doHTTPRequest() {
-    // Set the ocTraceOrigins value so the `traceparent` context header is set.
-    (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /.*/;
+  function doHTTPRequest(urlRequest?: string) {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = noop;
     spyOn(xhr, 'send').and.callFake(() => {
@@ -399,8 +433,8 @@ describe('InteractionTracker', () => {
         xhr.dispatchEvent(event);
       }, XHR_TIME);
     });
-
-    xhr.open('GET', '/test');
+    if (!urlRequest) urlRequest = '/test';
+    xhr.open('GET', urlRequest);
     // Spy on `readystate` property after open, so that way while intercepting
     // the XHR will detect OPENED and DONE states.
     spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);

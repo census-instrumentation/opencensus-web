@@ -45,7 +45,7 @@ const routing = (
 ReactDOM.render(routing, document.getElementById('root'));
 
 window.ocAgent = 'http://localhost:55678';
-// For the purpose of this example, just match all hosts.
+// For the purpose of this example, send trace header to all hosts.
 window.ocTraceHeaderHostRegex = /.*/;
 window.ocSampleRate = 1.0; // Sample at 100% for test only. Default is 1/10000.
 

@@ -70,16 +70,16 @@ function handleRequest(request, response) {
     request.on('error', err => console.log(err));
     request.on('data', chunk => body.push(chunk));
 
-    // Necessary headers because the Node.js and React dev servers run in different ports.
-    response.setHeader('Access-Control-Allow-Origin', '*');
-    response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    response.setHeader('Access-Control-Allow-Headers', 'traceparent');
-    response.setHeader('Access-Control-Allow-Credentials', true);
-
+    // Necessary header because the Node.js and React dev servers run in different ports.
+    response.setHeader('Access-Control-Allow-Origin', '*');    
+    
     let result = '';
     let code = 200;
-    // Logic related to CORS pre-flight requests.
+    // Accept all CORS pre-flight requests
     if(request.method === 'OPTIONS'){
+      // Set headers to allow traceparent and subsequent get request.
+      response.setHeader('Access-Control-Allow-Headers', 'traceparent');
+      response.setHeader('Access-Control-Allow-Methods', 'GET');
       request.on('end', () => {
         span.end();
         response.statusCode = code;

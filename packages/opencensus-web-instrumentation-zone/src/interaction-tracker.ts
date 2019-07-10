@@ -59,7 +59,7 @@ export class InteractionTracker {
 
   // Map intended to keep track of current XHR objects
   // associated to a span.
-  private readonly xhrTasks = new Map<XHRWithUrl, Span>();
+  private readonly xhrSpans = new Map<XHRWithUrl, Span>();
 
   private static singletonInstance: InteractionTracker;
 
@@ -199,27 +199,28 @@ export class InteractionTracker {
   }
 
   private interceptXhrTasks(task: AsyncTask) {
-    if (isTrackedTask(task) && task.target instanceof XMLHttpRequest) {
-      const xhr = task.target as XHRWithUrl;
-      if (xhr.readyState === XMLHttpRequest.OPENED) {
-        const rootSpan: RootSpan = task.zone.get('data').rootSpan;
-        this.setTraceparentContextHeader(xhr, rootSpan);
-      } else if (xhr.readyState === XMLHttpRequest.DONE) {
-        this.endXhrSpan(xhr);
-      }
+    if (!isTrackedTask(task)) return;
+    if (!(task.target instanceof XMLHttpRequest)) return;
+
+    const xhr = task.target as XHRWithUrl;
+    if (xhr.readyState === XMLHttpRequest.OPENED) {
+      const rootSpan: RootSpan = task.zone.get('data').rootSpan;
+      this.setTraceparentContextHeader(xhr, rootSpan);
+    } else if (xhr.readyState === XMLHttpRequest.DONE) {
+      this.endXhrSpan(xhr);
     }
   }
 
   private setTraceparentContextHeader(xhr: XHRWithUrl, rootSpan: RootSpan) {
+    // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
     const xhrUrl = xhr.__zone_symbol__xhrURL;
     const childSpan = rootSpan.startChildSpan({
-      // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
       name: parseUrl(xhrUrl).pathname,
       kind: SpanKind.CLIENT,
     });
     // Associate the child span to the XHR so it allows to
     // find the correct span when the request is DONE.
-    this.xhrTasks.set(xhr, childSpan);
+    this.xhrSpans.set(xhr, childSpan);
     if (traceOriginMatchesOrSameOrigin(xhrUrl)) {
       xhr.setRequestHeader(
         'traceparent',
@@ -232,14 +233,14 @@ export class InteractionTracker {
   }
 
   private endXhrSpan(xhr: XHRWithUrl) {
-    const childSpan = this.xhrTasks.get(xhr);
+    const childSpan = this.xhrSpans.get(xhr);
     if (childSpan) {
       // TODO: Investigate more to send the the status code a `number` rather than `string`
       // Once it is able to send as a number, change it.
       childSpan.addAttribute(ATTRIBUTE_HTTP_STATUS_CODE, xhr.status.toString());
       childSpan.addAttribute(ATTRIBUTE_HTTP_METHOD, xhr._ocweb_method);
       childSpan.end();
-      this.xhrTasks.delete(xhr);
+      this.xhrSpans.delete(xhr);
     }
   }
 
