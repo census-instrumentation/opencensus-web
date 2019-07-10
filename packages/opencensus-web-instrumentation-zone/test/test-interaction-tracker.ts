@@ -288,7 +288,7 @@ describe('InteractionTracker', () => {
       'setRequestHeader'
     ).and.callThrough();
     const onclick = () => {
-      doHTTPRequest('http://localhost:8000/test');
+      doHttpRequest('http://localhost:8000/test');
     };
     fakeInteraction(onclick);
 
@@ -302,6 +302,7 @@ describe('InteractionTracker', () => {
 
       expect(rootSpan.spans.length).toBe(1);
       const childSpan = rootSpan.spans[0];
+      // Check the `traceparent` header is not set as Trace Header Host does not match.
       expect(setRequestHeaderSpy).not.toHaveBeenCalled();
       expect(childSpan.name).toBe('/test');
       expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
@@ -321,7 +322,7 @@ describe('InteractionTracker', () => {
       'setRequestHeader'
     ).and.callThrough();
     const onclick = () => {
-      doHTTPRequest('http://localhost:8000/test');
+      doHttpRequest('http://localhost:8000/test');
     };
     fakeInteraction(onclick);
 
@@ -361,7 +362,7 @@ describe('InteractionTracker', () => {
       const promise = getPromise();
       promise.then(() => {
         setTimeout(() => {
-          doHTTPRequest();
+          doHttpRequest();
         }, SET_TIMEOUT_TIME);
       });
     };
@@ -423,7 +424,7 @@ describe('InteractionTracker', () => {
     });
   }
 
-  function doHTTPRequest(urlRequest?: string) {
+  function doHttpRequest(urlRequest = '/test') {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = noop;
     spyOn(xhr, 'send').and.callFake(() => {
@@ -433,7 +434,7 @@ describe('InteractionTracker', () => {
         xhr.dispatchEvent(event);
       }, XHR_TIME);
     });
-    if (!urlRequest) urlRequest = '/test';
+
     xhr.open('GET', urlRequest);
     // Spy on `readystate` property after open, so that way while intercepting
     // the XHR will detect OPENED and DONE states.
