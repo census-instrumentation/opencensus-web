@@ -78,7 +78,8 @@ function handleRequest(request, response) {
 
     let result = '';
     let code = 200;
-    if(request.method !== 'GET'){
+    // Logic related to CORS pre-flight requests.
+    if(request.method === 'OPTIONS'){
       request.on('end', () => {
         span.end();
         response.statusCode = code;

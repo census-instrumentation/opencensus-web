@@ -389,7 +389,7 @@ describe('InteractionTracker', () => {
 
   function doHTTPRequest() {
     // Set the ocTraceOrigins value so the `traceparent` context header is set.
-    (window as WindowWithOcwGlobals).ocTraceOrigins = location.hostname;
+    (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /.*/;
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = noop;
     spyOn(xhr, 'send').and.callFake(() => {

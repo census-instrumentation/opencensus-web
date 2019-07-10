@@ -22,6 +22,7 @@ import {
   ATTRIBUTE_HTTP_STATUS_CODE,
   ATTRIBUTE_HTTP_METHOD,
   parseUrl,
+  Span,
 } from '@opencensus/web-core';
 import { AsyncTask, XHRWithUrl } from './zone-types';
 import {
@@ -58,9 +59,7 @@ export class InteractionTracker {
 
   // Map intended to keep track of current XHR objects
   // associated to a span.
-  private readonly xhrTasks: {
-    [index: string]: XMLHttpRequest;
-  } = {};
+  private readonly xhrTasks = new Map<XHRWithUrl, Span>();
 
   private static singletonInstance: InteractionTracker;
 
@@ -103,7 +102,7 @@ export class InteractionTracker {
         }
         this.incrementTaskCount(getTraceId(task.zone));
       }
-      this.interceptXHRTasks(task);
+      this.interceptXhrTasks(task);
       try {
         return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
@@ -199,43 +198,48 @@ export class InteractionTracker {
     });
   }
 
-  private interceptXHRTasks(task: AsyncTask) {
+  private interceptXhrTasks(task: AsyncTask) {
     if (isTrackedTask(task) && task.target instanceof XMLHttpRequest) {
-      const rootSpan: RootSpan = task.zone.get('data').rootSpan;
       const xhr = task.target as XHRWithUrl;
       if (xhr.readyState === XMLHttpRequest.OPENED) {
-        const childSpan = rootSpan.startChildSpan({
-          name: parseUrl(xhr.__zone_symbol__xhrURL).pathname,
-          kind: SpanKind.CLIENT,
-        });
-        // Associate the XHR to the child span ID so it allows to
-        // find the correct span to end it when the request is DONE.
-        this.xhrTasks[childSpan.id] = xhr;
-        if (traceOriginMatchesOrSameOrigin()) {
-          xhr.setRequestHeader(
-            'traceparent',
-            spanContextToTraceParent({
-              traceId: rootSpan.traceId,
-              spanId: childSpan.id,
-            })
-          );
-        }
+        const rootSpan: RootSpan = task.zone.get('data').rootSpan;
+        this.setTraceparentContextHeader(xhr, rootSpan);
       } else if (xhr.readyState === XMLHttpRequest.DONE) {
-        const spanId =
-          Object.keys(this.xhrTasks).find(
-            spanId => this.xhrTasks[spanId] === xhr
-          ) || '';
-        const childSpan = rootSpan.spans.find(span => span.id === spanId);
-        if (childSpan) {
-          childSpan.addAttribute(
-            ATTRIBUTE_HTTP_STATUS_CODE,
-            xhr.status.toString()
-          );
-          childSpan.addAttribute(ATTRIBUTE_HTTP_METHOD, xhr._ocweb_method);
-          childSpan.end();
-          delete this.xhrTasks[spanId];
-        }
+        this.endXhrSpan(xhr);
       }
+    }
+  }
+
+  private setTraceparentContextHeader(xhr: XHRWithUrl, rootSpan: RootSpan) {
+    const xhrUrl = xhr.__zone_symbol__xhrURL;
+    const childSpan = rootSpan.startChildSpan({
+      // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
+      name: parseUrl(xhrUrl).pathname,
+      kind: SpanKind.CLIENT,
+    });
+    // Associate the child span to the XHR so it allows to
+    // find the correct span when the request is DONE.
+    this.xhrTasks.set(xhr, childSpan);
+    if (traceOriginMatchesOrSameOrigin(xhrUrl)) {
+      xhr.setRequestHeader(
+        'traceparent',
+        spanContextToTraceParent({
+          traceId: rootSpan.traceId,
+          spanId: childSpan.id,
+        })
+      );
+    }
+  }
+
+  private endXhrSpan(xhr: XHRWithUrl) {
+    const childSpan = this.xhrTasks.get(xhr);
+    if (childSpan) {
+      // TODO: Investigate more to send the the status code a `number` rather than `string`
+      // Once it is able to send as a number, change it.
+      childSpan.addAttribute(ATTRIBUTE_HTTP_STATUS_CODE, xhr.status.toString());
+      childSpan.addAttribute(ATTRIBUTE_HTTP_METHOD, xhr._ocweb_method);
+      childSpan.end();
+      this.xhrTasks.delete(xhr);
     }
   }
 

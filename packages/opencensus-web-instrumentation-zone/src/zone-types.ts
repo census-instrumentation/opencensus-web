@@ -38,7 +38,11 @@ export interface OnPageInteractionData {
   rootSpan: RootSpan;
 }
 
-/** Allows monkey-patching XMLHttpRequest and to obtain the request URL. */
+/**
+ * Allows monkey-patching XMLHttpRequest and to obtain the request URL.
+ * `HTMLElement` is necessary when the xhr is captured from the tasks target
+ *  as the Zone monkey-patch parses xhrs as `HTMLElement & XMLHttpRequest`.
+ */
 export type XHRWithUrl = HTMLElement &
   XMLHttpRequest & {
     __zone_symbol__xhrURL: string;
@@ -59,6 +63,7 @@ export declare interface WindowWithOcwGlobals extends Window {
    */
   ocSampleRate?: number;
 
-  //
-  ocTraceOrigins?: string;
+  // RegExp to control what origins will the `trace context header` be sent.
+  // That way the header is not added to all xhrs.
+  ocTraceHeaderHostRegex?: string | RegExp;
 }

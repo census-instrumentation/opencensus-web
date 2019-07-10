@@ -18,12 +18,12 @@ import { WindowWithOcwGlobals } from './zone-types';
 import { parseUrl } from '@opencensus/web-core';
 
 /** Check that the trace */
-export function traceOriginMatchesOrSameOrigin(): boolean {
-  const traceOrigin = (window as WindowWithOcwGlobals).ocTraceOrigins as string;
-  if (!traceOrigin) return false;
-  const parsedUrl = parseUrl(traceOrigin);
-  const regex = /.*/;
+export function traceOriginMatchesOrSameOrigin(xhrUrl: string): boolean {
+  const traceHeaderHostRegex = (window as WindowWithOcwGlobals)
+    .ocTraceHeaderHostRegex as string;
+  const parsedUrl = parseUrl(xhrUrl);
 
   if (parsedUrl.origin === location.origin) return true;
-  return !!parsedUrl.host.match(regex);
+
+  return !!(traceHeaderHostRegex && parsedUrl.host.match(traceHeaderHostRegex));
 }
