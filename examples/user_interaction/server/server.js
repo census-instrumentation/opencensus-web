@@ -63,25 +63,34 @@ function calculatePrimeNumbers() {
 
 /** A function which handles requests and send response. */
 function handleRequest(request, response) {
-  const span = tracer.startChildSpan({ name: 'octutorials.handleRequest' });
+  const span = tracer.startChildSpan({ name: 'ocweb.handleRequest' });
 
   try {
     let body = [];
     request.on('error', err => console.log(err));
     request.on('data', chunk => body.push(chunk));
 
-    // Necessary headers because the Node.js and React dev servers run in different ports.
-    response.setHeader('Access-Control-Allow-Origin', '*');
-    response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    response.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    response.setHeader('Access-Control-Allow-Credentials', true);
-
+    // Necessary header because the Node.js and React dev servers run in different ports.
+    response.setHeader('Access-Control-Allow-Origin', '*');    
+    
     let result = '';
     let code = 200;
+    // Accept all CORS pre-flight requests
+    if(request.method === 'OPTIONS'){
+      // Set headers to allow traceparent and subsequent get request.
+      response.setHeader('Access-Control-Allow-Headers', 'traceparent');
+      response.setHeader('Access-Control-Allow-Methods', 'GET');
+      request.on('end', () => {
+        span.end();
+        response.statusCode = code;
+        response.end();
+      });
+      return;
+    }
     if (url.parse(request.url).pathname === '/sleep') {
       console.log("Sleeping...")
       const time = Date.now();
-      sleep.sleep(5);
+      sleep.sleep(2);
       result = { time: Date.now() - time, value: "" };
       console.log("Finished.")
     } else if (url.parse(request.url).pathname === '/prime_numbers') {
@@ -109,7 +118,7 @@ function handleRequest(request, response) {
 function setupTracerAndExporters() {
   const zipkinOptions = {
     url: 'http://localhost:9411/api/v2/spans',
-    serviceName: 'opencensus_tutorial'
+    serviceName: 'opencensus_web_server'
   };
 
   // Creates Zipkin exporter

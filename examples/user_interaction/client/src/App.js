@@ -58,7 +58,6 @@ class App extends React.Component {
         const data = JSON.parse(xhr.responseText)
         const result = this.callCalculatePi();
         this.setState({ pi: result, prime_numbers: data });
-        this.props.history.push('/second_page');
       }
     };
 
