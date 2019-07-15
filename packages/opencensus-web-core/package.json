@@ -50,7 +50,7 @@
     "jasmine": "^3.3.1",
     "js-yaml": ">=3.13.1",
     "karma": "^4.0.0",
-    "karma-chrome-launcher": "^2.2.0",
+    "karma-chrome-launcher": "^3.0.0",
     "karma-coverage-istanbul-reporter": "^2.0.4",
     "karma-jasmine": "^2.0.1",
     "karma-spec-reporter": "0.0.32",
