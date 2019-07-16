@@ -17,13 +17,13 @@
 import { XHRWithUrl } from './zone-types';
 
 export function doPatching() {
-  patchXMLHttpRequestOpen();
+  patchXmlHttpRequestOpen();
 }
 
 // Patch the `XMLHttpRequest.open` method to add method used for the request.
 // This patch is needed because Zone.js does not capture the method from XHR
 // the way that it captures URL as __zone_symbol__xhrURL.
-function patchXMLHttpRequestOpen() {
+function patchXmlHttpRequestOpen() {
   const open = XMLHttpRequest.prototype.open;
 
   XMLHttpRequest.prototype.open = function(

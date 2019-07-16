@@ -71,7 +71,9 @@ function handleRequest(request, response) {
     request.on('data', chunk => body.push(chunk));
 
     // Necessary header because the Node.js and React dev servers run in different ports.
-    response.setHeader('Access-Control-Allow-Origin', '*');    
+    response.setHeader('Access-Control-Allow-Origin', '*');
+    // Header to show more info in the span annotations.
+    response.setHeader('Timing-Allow-Origin', '*');
     
     let result = '';
     let code = 200;

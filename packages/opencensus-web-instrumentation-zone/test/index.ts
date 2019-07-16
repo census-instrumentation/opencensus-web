@@ -18,3 +18,4 @@
 // should import from all test files.
 import './test-on-page-interaction-stop-watch';
 import './test-interaction-tracker';
+import './test-perf-resource-timing-selector';

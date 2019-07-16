@@ -67,3 +67,24 @@ export declare interface WindowWithOcwGlobals extends Window {
   // That way the header is not added to all xhrs.
   ocTraceHeaderHostRegex?: string | RegExp;
 }
+
+/**
+ * Allows to keep track of performance entries related to a XHR.
+ * As some XHRs might generate a CORS pre-flight request, the XHR
+ * might have either two performance resource entries or a single
+ * performance resource entry.
+ */
+export type XhrPerformanceResourceTiming =
+  | PerformanceResourceTimingTuple
+  | PerformanceResourceTiming;
+
+/**
+ * Tuple type to associate two `PerformanceResourceTiming` objects as a pair.
+ * Used to select performance resource timing data associated to an XHR. In
+ * general, the first value points out it is a CORS pre-flight request data and
+ * the second value corresponds to the actual HTTP request.
+ */
+type PerformanceResourceTimingTuple = [
+  PerformanceResourceTiming,
+  PerformanceResourceTiming
+];

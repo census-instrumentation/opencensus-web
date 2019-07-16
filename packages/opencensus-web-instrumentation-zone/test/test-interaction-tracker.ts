@@ -28,6 +28,13 @@ import {
 import { doPatching } from '../src/monkey-patching';
 import { WindowWithOcwGlobals } from '../src/zone-types';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
+import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
+import {
+  annotationsForPerfTimeFields,
+  PERFORMANCE_ENTRY_EVENTS,
+  PerformanceResourceTimingExtended,
+} from '@opencensus/web-instrumentation-perf';
+import { getXhrPerfomanceData } from '../src/perf-resource-timing-selector';
 
 describe('InteractionTracker', () => {
   doPatching();
@@ -287,8 +294,9 @@ describe('InteractionTracker', () => {
       XMLHttpRequest.prototype,
       'setRequestHeader'
     ).and.callThrough();
+    const urlRequest = 'http://localhost:8000/test';
     const onclick = () => {
-      doHttpRequest('http://localhost:8000/test');
+      doHttpRequest(urlRequest);
     };
     fakeInteraction(onclick);
 
@@ -308,6 +316,22 @@ describe('InteractionTracker', () => {
       expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
       expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
       expect(childSpan.ended).toBeTruthy();
+      const childSpanperformanceEntries = getXhrPerfomanceData(
+        urlRequest,
+        childSpan
+      );
+      expect(childSpanperformanceEntries).toBeTruthy();
+      if (childSpanperformanceEntries) {
+        expect(childSpan.annotations).toEqual(
+          annotationsForPerfTimeFields(
+            childSpanperformanceEntries as PerformanceResourceTimingExtended,
+            PERFORMANCE_ENTRY_EVENTS
+          )
+        );
+      }
+      // Check the CORS span is not created as this XHR does not send CORS
+      // pre-flight request.
+      expect(childSpan.spans.length).toBe(0);
       expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
       expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
@@ -321,8 +345,9 @@ describe('InteractionTracker', () => {
       XMLHttpRequest.prototype,
       'setRequestHeader'
     ).and.callThrough();
+    const urlRequest = 'http://localhost:8000/test';
     const onclick = () => {
-      doHttpRequest('http://localhost:8000/test');
+      doHttpRequest(urlRequest, true);
     };
     fakeInteraction(onclick);
 
@@ -347,6 +372,25 @@ describe('InteractionTracker', () => {
       expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
       expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
       expect(childSpan.ended).toBeTruthy();
+      const childSpanPerfEntries = getXhrPerfomanceData(urlRequest, childSpan);
+      expect(childSpanPerfEntries).toBeTruthy();
+      if (childSpanPerfEntries instanceof Array) {
+        const corsPerfTiming = childSpanPerfEntries[0] as PerformanceResourceTimingExtended;
+        const actualXhrPerfTiming = childSpanPerfEntries[1] as PerformanceResourceTimingExtended;
+        expect(childSpan.annotations).toEqual(
+          annotationsForPerfTimeFields(
+            actualXhrPerfTiming,
+            PERFORMANCE_ENTRY_EVENTS
+          )
+        );
+        // Check the CORS span is created with the correct annotations.
+        expect(childSpan.spans.length).toBe(1);
+        const corsSpan = childSpan.spans[0];
+        expect(corsSpan.name).toBe('CORS');
+        expect(corsSpan.annotations).toEqual(
+          annotationsForPerfTimeFields(corsPerfTiming, PERFORMANCE_ENTRY_EVENTS)
+        );
+      }
       expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
       expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
@@ -358,11 +402,12 @@ describe('InteractionTracker', () => {
       XMLHttpRequest.prototype,
       'setRequestHeader'
     ).and.callThrough();
+    const urlRequest = '/test';
     const onclick = () => {
       const promise = getPromise();
       promise.then(() => {
         setTimeout(() => {
-          doHttpRequest();
+          doHttpRequest(urlRequest, true);
         }, SET_TIMEOUT_TIME);
       });
     };
@@ -392,6 +437,25 @@ describe('InteractionTracker', () => {
       expect(childSpan.attributes[ATTRIBUTE_HTTP_STATUS_CODE]).toBe('200');
       expect(childSpan.attributes[ATTRIBUTE_HTTP_METHOD]).toBe('GET');
       expect(childSpan.ended).toBeTruthy();
+      const childSpanPerfEntries = getXhrPerfomanceData(urlRequest, childSpan);
+      expect(childSpanPerfEntries).toBeTruthy();
+      if (childSpanPerfEntries instanceof Array) {
+        const corsPerfTiming = childSpanPerfEntries[0] as PerformanceResourceTimingExtended;
+        const actualXhrPerfTiming = childSpanPerfEntries[1] as PerformanceResourceTimingExtended;
+        expect(childSpan.annotations).toEqual(
+          annotationsForPerfTimeFields(
+            actualXhrPerfTiming,
+            PERFORMANCE_ENTRY_EVENTS
+          )
+        );
+        // Check the CORS span is created with the correct annotations.
+        expect(childSpan.spans.length).toBe(1);
+        const corsSpan = childSpan.spans[0];
+        expect(corsSpan.name).toBe('CORS');
+        expect(corsSpan.annotations).toEqual(
+          annotationsForPerfTimeFields(corsPerfTiming, PERFORMANCE_ENTRY_EVENTS)
+        );
+      }
       expect(childSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
       expect(childSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
       done();
@@ -424,7 +488,7 @@ describe('InteractionTracker', () => {
     });
   }
 
-  function doHttpRequest(urlRequest = '/test') {
+  function doHttpRequest(urlRequest = '/test', xhrHasCorsData = false) {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = noop;
     spyOn(xhr, 'send').and.callFake(() => {
@@ -433,6 +497,8 @@ describe('InteractionTracker', () => {
         const event = new Event('readystatechange');
         xhr.dispatchEvent(event);
       }, XHR_TIME);
+      fakePerformanceEntries(urlRequest, xhrHasCorsData);
+      spyOnProperty(xhr, 'responseURL').and.returnValue(urlRequest);
     });
 
     xhr.open('GET', urlRequest);
@@ -440,5 +506,28 @@ describe('InteractionTracker', () => {
     // the XHR will detect OPENED and DONE states.
     spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
     xhr.send();
+  }
+
+  function fakePerformanceEntries(urlRequest: string, xhrHasCorsData: boolean) {
+    const xhrPerfStart = performance.now();
+    const perfResourceEntries: PerformanceResourceTiming[] = [];
+    let actualRequestStartTime = xhrPerfStart;
+    if (xhrHasCorsData) {
+      const corsEntry = createFakePerfResourceEntry(
+        xhrPerfStart,
+        xhrPerfStart + 1,
+        urlRequest
+      );
+      // Start the other request a bit after the CORS finished.
+      actualRequestStartTime = xhrPerfStart + 1;
+      perfResourceEntries.push(corsEntry);
+    }
+    const actualRequestEntry = createFakePerfResourceEntry(
+      actualRequestStartTime + 1,
+      actualRequestStartTime + XHR_TIME - 2,
+      urlRequest
+    );
+    perfResourceEntries.push(actualRequestEntry);
+    spyPerfEntryByType(perfResourceEntries);
   }
 });

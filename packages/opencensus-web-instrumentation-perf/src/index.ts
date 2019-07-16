@@ -22,3 +22,5 @@ export {
   getPerfEntries,
   clearPerfEntries,
 } from './perf-grouper';
+export { annotationsForPerfTimeFields } from './util';
+export { PERFORMANCE_ENTRY_EVENTS, getResourceSpan } from './resource-span';
