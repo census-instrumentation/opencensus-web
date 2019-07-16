@@ -122,20 +122,18 @@ function maybeClearPerfResourceBuffer(): void {
 
 function joinPerfResourceDataToSpan(xhr: XhrWithUrl, span: Span) {
   const xhrPerfResourceTiming = getXhrPerfomanceData(xhr.responseURL, span);
-  if (xhrPerfResourceTiming) {
-    alreadyAssignedPerfEntries.add(xhrPerfResourceTiming.mainRequest);
-    if (xhrPerfResourceTiming.corsPreFlightRequest) {
-      alreadyAssignedPerfEntries.add(
-        xhrPerfResourceTiming.corsPreFlightRequest
-      );
-      const corsPerfTiming = xhrPerfResourceTiming.corsPreFlightRequest as PerformanceResourceTimingExtended;
-      setCorsPerfTimingAsChildSpan(corsPerfTiming, span);
-    }
-    span.annotations = annotationsForPerfTimeFields(
-      xhrPerfResourceTiming.mainRequest as PerformanceResourceTimingExtended,
-      PERFORMANCE_ENTRY_EVENTS
-    );
+  if (!xhrPerfResourceTiming) return;
+
+  alreadyAssignedPerfEntries.add(xhrPerfResourceTiming.mainRequest);
+  if (xhrPerfResourceTiming.corsPreFlightRequest) {
+    alreadyAssignedPerfEntries.add(xhrPerfResourceTiming.corsPreFlightRequest);
+    const corsPerfTiming = xhrPerfResourceTiming.corsPreFlightRequest as PerformanceResourceTimingExtended;
+    setCorsPerfTimingAsChildSpan(corsPerfTiming, span);
   }
+  span.annotations = annotationsForPerfTimeFields(
+    xhrPerfResourceTiming.mainRequest as PerformanceResourceTimingExtended,
+    PERFORMANCE_ENTRY_EVENTS
+  );
 }
 
 function setCorsPerfTimingAsChildSpan(
@@ -152,6 +150,9 @@ function incrementXhrTaskCount(): void {
 }
 
 function decrementXhrTaskCount(): void {
+  // Check the xhr tasks count should be greater than 0 to avoid do negative
+  // counting. However, this case should never happen, this is just to make
+  // clear it is not possible to happen.
   if (xhrTasksCount > 0) xhrTasksCount--;
   maybeClearPerfResourceBuffer();
 }

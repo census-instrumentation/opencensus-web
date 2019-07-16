@@ -37,21 +37,20 @@ export function getXhrPerfomanceData(
   const possibleEntries = getPossiblePerfResourceEntries(
     filteredSortedPerfEntries
   );
-  const bestEntry = getBestPerfResourceTiming(possibleEntries, span);
-  return bestEntry;
+  return getBestPerfResourceTiming(possibleEntries, span);
 }
 
 /**
  * First step for the algorithm. Filter the Performance Resource Timings by the
  * name (it should match the XHR URL), additionally, the start/end timings of
  * every performance entry should fit within the span start/end timings. Also,
- * the entry should be already assigned to a span.
+ * the entry should not be already assigned to a span.
  * These filtered performance resource entries are considered as possible
  * entries associated to the xhr.
  * Those are possible because there might be more than two entries that pass the
  * filter.
  * Additionally, the returned array is sorted by the entries' `startTime` as
- * getEntriesByType() already does it.
+ * getEntriesByType() already does it (https://developer.mozilla.org/en-US/docs/Web/API/Performance/getEntriesByType#Return_Value).
  * @param xhrUrl
  * @param span
  */
@@ -71,9 +70,8 @@ export function getPerfSortedResourceEntries(
  * As the XHR could cause a CORS pre-flight request, we have to look for
  * possible performance entries either containing cors preflight timings or not.
  * A possible entry with cors data is when a resource timing entry does not
- * overlap timings with other resource timing entry. Also, a possible entry
- * without cors resource timing is when that resource timing entry is not
- * 'paired' with any other entry.
+ * overlap timings with other resource timing entry. Also, every entry is
+ * considered as possible XHR performance entry.
  * Thus, for this step traverse the array of resource entries and for every
  * entry check if it is a possible performance resource entry.
  * @param filteredSortedPerfEntries Sorted array of Performance Resource
@@ -83,9 +81,10 @@ export function getPossiblePerfResourceEntries(
   filteredSortedPerfEntries: PerformanceResourceTiming[]
 ): XhrPerformanceResourceTiming[] {
   const possiblePerfEntries = new Array<XhrPerformanceResourceTiming>();
-  // As this part of the algorithm traverses the array twice, although,
-  // this array is not large as the performance resource entries buffer is
-  // cleared when there are no more running XHRs.
+  // As this part of the algorithm uses nested for loops to examine pairs of
+  // entries, although, this array is not large as the performance resource
+  // entries buffer is cleared when there are no more running XHRs. Also, this
+  // data is already filtered by URL and start/end time to be within the span.
   for (let i = 0; i < filteredSortedPerfEntries.length; i++) {
     const entryI = filteredSortedPerfEntries[i];
     // Consider the current entry as a possible entry without cors preflight
@@ -97,7 +96,7 @@ export function getPossiblePerfResourceEntries(
     // way we to avoid comparing twice the entries and taking the wrong order.
     for (let j = i + 1; j < filteredSortedPerfEntries.length; j++) {
       const entryJ = filteredSortedPerfEntries[j];
-      if (!isPossibleCorsPair(entryI, entryJ)) {
+      if (isPossibleCorsPair(entryI, entryJ)) {
         // As the entries are not overlapping, that means those timings
         // are possible perfomance timings related to the XHR.
         possiblePerfEntries.push({
@@ -110,17 +109,22 @@ export function getPossiblePerfResourceEntries(
   return possiblePerfEntries;
 }
 
-// Pick the best performance resource timing for the XHR: Using the possible
-// performance resource timing entries from previous step, the best entry will
-// be the one with the minimum gap to the span start/end timings.
-// The performance resource timing entry with the minimum gap to the span
-// start/end timings points out that entry is the best fit for the span.
+/**
+ * Pick the best performance resource timing for the XHR: Using the possible
+ * performance resource timing entries from previous step, the best entry will
+ * be the one with the minimum gap to the span start/end timings.
+ * The performance resource timing entry with the minimum gap to the span
+ * start/end timings points out that entry is the best fit for the span.
+ *
+ * @param perfEntries
+ * @param span
+ */
 function getBestPerfResourceTiming(
   perfEntries: XhrPerformanceResourceTiming[],
   span: Span
 ): XhrPerformanceResourceTiming | undefined {
   let minimumGapToSpan = Number.MAX_VALUE;
-  let bestPerfEntry: XhrPerformanceResourceTiming | undefined = undefined;
+  let bestPerfEntry: XhrPerformanceResourceTiming | undefined;
   for (const perfEntry of perfEntries) {
     // If the current entry has cors preflight data use its `startTime` to
     // calculate the gap to the span.
@@ -142,6 +146,11 @@ function getBestPerfResourceTiming(
   return bestPerfEntry;
 }
 
+/**
+ * A Performance entry is part of a XHR if entry has not been assigned
+ * previously to another XHR and the URL is the same as the XHR and the
+ * entry's start/end times are within the span's start/end times.
+ */
 function isPerfEntryPartOfXhr(
   entry: PerformanceResourceTiming,
   xhrUrl: string,
@@ -155,12 +164,20 @@ function isPerfEntryPartOfXhr(
   );
 }
 
+/**
+ * A possible CORS pair is defined when the entries does not overlap in their
+ * start/end times.
+ */
 function isPossibleCorsPair(
   entry1: PerformanceResourceTiming,
   entry2: PerformanceResourceTiming
 ): boolean {
+  // To determine if the entries overlap, the minimum responseEnd should be
+  // less than the maximum startTime (e.g. entry1 with startTime = 1 and
+  // responseEnd = 3 and entry2 with startTime = 2 and responseEnd = 4, the
+  // minimum is 3 and the maximum is 2, this tells that the intervals overlap).
   return (
-    Math.min(entry1.responseEnd, entry2.responseEnd) >=
+    Math.min(entry1.responseEnd, entry2.responseEnd) <
     Math.max(entry1.startTime, entry2.startTime)
   );
 }
