@@ -21,10 +21,11 @@ import {
   getXhrPerfomanceData,
 } from '../src/perf-resource-timing-selector';
 import { spyPerfEntryByType, createFakePerfResourceEntry } from './util';
+import { XhrPerformanceResourceTiming } from '../src/zone-types';
 
 describe('Perf Resource Timing Selector', () => {
   describe('getPerfResourceEntries', () => {
-    it('Should filter properly the resource entries', () => {
+    it('Should filter by the url and ignore entries not fitting in span', () => {
       // Should ignore this as it has a different name
       const entry1 = createFakePerfResourceEntry(
         13.100000011036173,
@@ -60,46 +61,50 @@ describe('Perf Resource Timing Selector', () => {
   });
 
   describe('getPossiblePerfResourceEntries', () => {
-    it('Should pair no overlapping entries', () => {
+    it('Should add cors preflight value to non overlapping entries and not add cors value to overlapping entries', () => {
       const entry1 = createFakePerfResourceEntry(
         2.100000011036173,
         5.500000011036173
       );
       const entry2 = createFakePerfResourceEntry(
-        5.500000011036173,
+        5.600000011036173,
         10.200000011036173
       );
       const entry3 = createFakePerfResourceEntry(
         8.200000011036173,
         15.500000011036173
       );
-      const entry4 = createFakePerfResourceEntry(
-        13.500000011036173,
-        20.000000000000003
-      );
-      const perfResourceEntries = [entry1, entry2, entry3, entry4];
+      const perfResourceEntries = [entry1, entry2, entry3];
       const filteredPerfEntries = getPossiblePerfResourceEntries(
         perfResourceEntries
       );
 
-      expect(filteredPerfEntries.length).toBe(3);
-      // Entry1 and entry2 overlap as entry1 startTime is equal to entry2
-      // endTime.
-      expect(filteredPerfEntries).not.toContain([entry1, entry2]);
-      expect(filteredPerfEntries).toContain([entry1, entry3]);
-      expect(filteredPerfEntries).toContain([entry1, entry4]);
-      expect(filteredPerfEntries).not.toContain([entry2, entry3]);
-      expect(filteredPerfEntries).toContain([entry2, entry4]);
-      expect(filteredPerfEntries).not.toContain([entry3, entry4]);
+      const nonOverlappingEntry1 = {
+        corsPreFlightRequest: entry1,
+        mainRequest: entry2,
+      } as XhrPerformanceResourceTiming;
+      const nonOverlappingEntry2 = {
+        corsPreFlightRequest: entry1,
+        mainRequest: entry3,
+      } as XhrPerformanceResourceTiming;
+      const overlappingEntry3 = {
+        corsPreFlightRequest: entry2,
+        mainRequest: entry3,
+      } as XhrPerformanceResourceTiming;
+
+      expect(filteredPerfEntries.length).toBe(2);
+      expect(filteredPerfEntries).toContain(nonOverlappingEntry1);
+      expect(filteredPerfEntries).toContain(nonOverlappingEntry2);
+      expect(filteredPerfEntries).not.toContain(overlappingEntry3);
     });
 
-    it('Should take single resource timing entries', () => {
+    it('Should not add cors preflight value as all the entries overlap each other', () => {
       const entry1 = createFakePerfResourceEntry(
         2.100000011036173,
         5.500000011036173
       );
       const entry2 = createFakePerfResourceEntry(
-        5.500000011036173,
+        3.500000011036173,
         10.200000011036173
       );
       const entry3 = createFakePerfResourceEntry(
@@ -110,100 +115,57 @@ describe('Perf Resource Timing Selector', () => {
       const filteredPerfEntries = getPossiblePerfResourceEntries(
         perfResourceEntries
       );
-      expect(filteredPerfEntries.length).toBe(3);
-      expect(filteredPerfEntries).toContain(entry1);
-      expect(filteredPerfEntries).toContain(entry2);
-      expect(filteredPerfEntries).toContain(entry3);
-    });
 
-    it('Should take single and tuples of resource timing entries', () => {
-      const entry1 = createFakePerfResourceEntry(
-        2.100000011036173,
-        5.500000011036173
-      );
-      const entry2 = createFakePerfResourceEntry(
-        6.500000011036173,
-        10.200000011036173
-      );
-      const entry3 = createFakePerfResourceEntry(
-        8.500000011036173,
-        20.000000000000003
-      );
-      const entry4 = createFakePerfResourceEntry(
-        1.500000011036173,
-        25.000000000000003
-      );
-      const perfResourceEntries = [entry1, entry2, entry3, entry4];
-      const filteredPerfEntries = getPossiblePerfResourceEntries(
-        perfResourceEntries
-      );
+      const overlappingEntry1 = {
+        mainRequest: entry1,
+      } as XhrPerformanceResourceTiming;
+      const overlappingEntry2 = {
+        mainRequest: entry2,
+      } as XhrPerformanceResourceTiming;
+      const overlappingEntry3 = {
+        mainRequest: entry3,
+      } as XhrPerformanceResourceTiming;
       expect(filteredPerfEntries.length).toBe(3);
-      expect(filteredPerfEntries).toContain([entry1, entry2]);
-      expect(filteredPerfEntries).toContain([entry1, entry3]);
-      expect(filteredPerfEntries).not.toContain([entry1, entry4]);
-      expect(filteredPerfEntries).not.toContain([entry2, entry3]);
-      expect(filteredPerfEntries).not.toContain([entry2, entry4]);
-      // Should not contain the single resource entries as they already were
-      // paired.
-      expect(filteredPerfEntries).not.toContain(entry1);
-      expect(filteredPerfEntries).not.toContain(entry2);
-      expect(filteredPerfEntries).not.toContain(entry3);
-      // As entry4 has not been paired, should contain this a single entry.
-      expect(filteredPerfEntries).toContain(entry4);
+      expect(filteredPerfEntries).toContain(overlappingEntry1);
+      expect(filteredPerfEntries).toContain(overlappingEntry2);
+      expect(filteredPerfEntries).toContain(overlappingEntry3);
     });
   });
 
   describe('getXhrPerfomanceData', () => {
-    it('Should take the tuple with the minimum gap to the span as the best resource timing entry', () => {
-      const entry1 = createFakePerfResourceEntry(
-        13.100000011036173,
-        15.100000011036173
-      );
-      const entry2 = createFakePerfResourceEntry(
-        13.200000011036173,
-        15.200000011036173
-      );
-      const entry3 = createFakePerfResourceEntry(
-        16.100000011036173,
-        18.100000011036173
-      );
-      const entry4 = createFakePerfResourceEntry(
-        16.200000011036173,
-        18.200000011036173
-      );
+    it('Should return entry with cors preflight value as the best performance timing entry', () => {
+      const entry1 = createFakePerfResourceEntry(13.1, 15.1);
+      const entry2 = createFakePerfResourceEntry(14.2, 16.2);
+      const entry3 = createFakePerfResourceEntry(17.1, 19.1);
+      const entry4 = createFakePerfResourceEntry(18.2, 20.2);
       // Ignore this as its out of the span end time.
-      const entry5 = createFakePerfResourceEntry(
-        35.100000011036173,
-        40.100000011036173
-      );
+      const entry5 = createFakePerfResourceEntry(15.1, 40.1);
       const perfResourceEntries = [entry1, entry2, entry3, entry4, entry5];
       spyPerfEntryByType(perfResourceEntries);
-      const span = createSpan(13.1, 18.3);
+      const span = createSpan(13.1, 20.3);
 
+      const expectedXhrPerformanceData = {
+        corsPreFlightRequest: entry1,
+        mainRequest: entry4,
+      } as XhrPerformanceResourceTiming;
       const filteredPerfEntries = getXhrPerfomanceData('/test', span);
-      expect(filteredPerfEntries).toEqual([entry1, entry4]);
+      expect(filteredPerfEntries).toEqual(expectedXhrPerformanceData);
     });
 
-    it('Should take the single resource entry with the minimum gap to the span as the best entry', () => {
-      const entry1 = createFakePerfResourceEntry(
-        5.100000011036173,
-        20.100000011036173
-      );
-      const entry2 = createFakePerfResourceEntry(
-        10.100000011036173,
-        13.100000011036173
-      );
-      const entry3 = createFakePerfResourceEntry(
-        14.200000011036173,
-        20.000000011036173
-      );
+    it('Should return entry without cors preflight value as the best entry', () => {
+      const entry1 = createFakePerfResourceEntry(5.1, 20.1);
+      const entry2 = createFakePerfResourceEntry(10.1, 13.1);
+      const entry3 = createFakePerfResourceEntry(14.2, 20.0);
 
       const perfResourceEntries = [entry1, entry2, entry3];
       spyPerfEntryByType(perfResourceEntries);
 
       const span = createSpan(5.1, 20.2);
       const filteredPerfEntries = getXhrPerfomanceData('/test', span);
-      expect(filteredPerfEntries).toEqual(entry1);
+      const expectedXhrPerformanceData = {
+        mainRequest: entry1,
+      } as XhrPerformanceResourceTiming;
+      expect(filteredPerfEntries).toEqual(expectedXhrPerformanceData);
     });
   });
 });

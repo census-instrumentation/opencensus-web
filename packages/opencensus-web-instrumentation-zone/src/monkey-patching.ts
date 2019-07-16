@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { XHRWithUrl } from './zone-types';
+import { XhrWithUrl } from './zone-types';
 
 export function doPatching() {
   patchXmlHttpRequestOpen();
@@ -38,6 +38,6 @@ function patchXmlHttpRequestOpen() {
     } else {
       open.call(this, method, url, true, null, null);
     }
-    (this as XHRWithUrl)._ocweb_method = method;
+    (this as XhrWithUrl)._ocweb_method = method;
   };
 }

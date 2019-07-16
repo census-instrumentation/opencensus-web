@@ -19,37 +19,12 @@ import { XhrPerformanceResourceTiming } from './zone-types';
 
 /**
  * Get Browser's performance resource timing data associated to a XHR.
- * For this case, some XHR might have two or one performance resource
- * timings as one of them is CORS pre-flight request and the second is related
- * to the actual HTTP request.
- * The algorithm to select performance resource timings related to that xhr is
- * is composed in general by three steps:
- *
- * 1. Filter the Performance Resource Timings by the name (it should match the
- * XHR URL), additionally, the start/end timings of every performance entry
- * should fit within the span start/end timings. These filtered performance
- * resource entries are considered as possible entries associated to the xhr.
- * Those are possible as there might be more than two entries that pass the
- * filter.
- *
- * 2. As the XHR could cause a CORS pre-flight, we have to look for either
- * possible pairs of performance resource timings or a single performance
- * resource entry (a possible pair is when a resource timing entry does not
- * overlap timings with other resource timing entry. Also, a possible single
- * resource timing is when that resource timing entry is not paired with any
- * other entry). Thus, for this step traverse the array of possible resource
- * entries and for every entry try to pair it with the other possible entries.
- *
- * 3. Pick the best performance resource timing for the XHR: Using the possible
- * performance resource timing entries from previous step, the best entry will
- * be the one with the minimum gap to the span start/end timings. That is the
- * substraction between the entry `respondeEnd` value and the span
- * `endPerfTime` plus the substraction between the entry `startTime` and span
- * `startPerfTime`. In case it is a tuple, the `startTime` corresponds to the
- * first entry and the `responseEnd` is from second entry.
- * The performance resource timing entry with the minimum gap to the span
- * start/end timings points out that entry is the best fit for the span.
- *
+ * Some XHRs might have two or one performance resource timings as one of them
+ * is the CORS pre-flight request and the second is related to the actual HTTP
+ * request.
+ * In overall, the algorithm to get this data takes the best fit for the span,
+ * this means the closest performance resource timing to the span start/end
+ * performance times is the returned value.
  * @param xhrUrl
  * @param span
  */
@@ -63,9 +38,17 @@ export function getXhrPerfomanceData(
   return bestEntry;
 }
 
-// Get Performance Resource Timings and filter them by matching the XHR url
-// with perfomance entry name. Additionally, the entry's start/end
-// timings must fit with in the span's start/end timings.
+/**
+ * First step for the algorithm. Filter the Performance Resource Timings by the
+ * name (it should match the XHR URL), additionally, the start/end timings of
+ * every performance entry should fit within the span start/end timings.
+ * These filtered performance resource entries are considered as possible
+ * entries associated to the xhr.
+ * Those are possible because there might be more than two entries that pass the
+ * filter.
+ * @param xhrUrl
+ * @param span
+ */
 export function getPerfResourceEntries(
   xhrUrl: string,
   span: Span
@@ -77,64 +60,86 @@ export function getPerfResourceEntries(
     ) as PerformanceResourceTiming[];
 }
 
+/**
+ * Second step for the 'Performance resource timings selector algorithm'.
+ * As the XHR could cause a CORS pre-flight request, we have to look for
+ * possible performance entries either containing cors preflight timings or not.
+ * A possible entry with cors data is when a resource timing entry does not
+ * overlap timings with other resource timing entry. Also, a possible entry
+ * without cors resource timing is when that resource timing entry is not
+ * 'paired' with any other entry.
+ * Thus, for this step traverse the array of resource entries and for every
+ * entry check if it is a possible performance resource entry.
+ * @param perfEntries
+ */
 export function getPossiblePerfResourceEntries(
   perfEntries: PerformanceResourceTiming[]
 ): XhrPerformanceResourceTiming[] {
   const possiblePerfEntries = new Array<XhrPerformanceResourceTiming>();
   const pairedEntries = new Set<PerformanceResourceTiming>();
-  let perfEntry1: PerformanceResourceTiming;
-  let perfEntry2: PerformanceResourceTiming;
+  let entryI: PerformanceResourceTiming;
+  let entryJ: PerformanceResourceTiming;
   // As this part of the algorithm traverses the array twice, although,
-  // this array is not big as the performance resource entries is cleared
-  // when there are no more running XHRs.
+  // this array is not large as the performance resource entries buffer is
+  // cleared when there are no more running XHRs.
   for (let i = 0; i < perfEntries.length; i++) {
-    perfEntry1 = perfEntries[i];
+    entryI = perfEntries[i];
     // Compare every performance entry with its consecutive perfomance entries.
     // That way to avoid comparing twice the entries.
     for (let j = i + 1; j < perfEntries.length; j++) {
-      perfEntry2 = perfEntries[j];
-      if (!overlappingPerfResourceTimings(perfEntry1, perfEntry2)) {
+      entryJ = perfEntries[j];
+      if (!overlappingPerfResourceTimings(entryI, entryJ)) {
         // As the entries are not overlapping, that means those timings
         // are possible perfomance timings related to the XHR.
-        possiblePerfEntries.push([perfEntry1, perfEntry2]);
-        pairedEntries.add(perfEntry1);
-        pairedEntries.add(perfEntry2);
+        possiblePerfEntries.push({
+          corsPreFlightRequest: entryI,
+          mainRequest: entryJ,
+        });
+        pairedEntries.add(entryI);
+        pairedEntries.add(entryJ);
       }
     }
-    // If the entry1 couldn't be paired with any other resource timing,
-    // add it as a single resource timing. This is possible because this
-    // single entry might be better that the other possible entries.
-    if (!pairedEntries.has(perfEntry1)) {
-      possiblePerfEntries.push(perfEntry1 as PerformanceResourceTiming);
+    // If the entry couldn't be paired with any other resource timing,
+    // add it as a possible resource timing without cors preflight data.
+    // This is possible because this entry might be better than the other
+    // possible entries.
+    if (!pairedEntries.has(entryI)) {
+      possiblePerfEntries.push({ mainRequest: entryI });
     }
   }
   return possiblePerfEntries;
 }
 
-// The best Performance Resource Timing Entry is considered the one with the
-// minimum gap the span end/start timings. That way we think that it fits
-// better to the XHR as it is the closest data to the actual XHR.
+// Pick the best performance resource timing for the XHR: Using the possible
+// performance resource timing entries from previous step, the best entry will
+// be the one with the minimum gap to the span start/end timings.
+// The performance resource timing entry with the minimum gap to the span
+// start/end timings points out that entry is the best fit for the span.
 function getBestPerfResourceTiming(
   perfEntries: XhrPerformanceResourceTiming[],
   span: Span
 ): XhrPerformanceResourceTiming | undefined {
   let minimumGapToSpan = Number.MAX_VALUE;
   let bestPerfEntry: XhrPerformanceResourceTiming | undefined = undefined;
-  let sumGapsToSpan: number;
   for (const perfEntry of perfEntries) {
-    // As a Tuple is in the end an Array, check that perfEntry is instance of
-    // Array is enough to know if this value refers to a Tuple.
-    if (perfEntry instanceof Array) {
-      sumGapsToSpan = Math.abs(perfEntry[0].startTime - span.startPerfTime);
-      sumGapsToSpan += Math.abs(perfEntry[1].responseEnd - span.endPerfTime);
+    let gapToSpan = Math.abs(
+      perfEntry.mainRequest.responseEnd - span.endPerfTime
+    );
+    // If the current entry has cors preflight data use its `startTime` to
+    // calculate the gap to the span.
+    if (perfEntry.corsPreFlightRequest) {
+      gapToSpan += Math.abs(
+        perfEntry.corsPreFlightRequest.startTime - span.startPerfTime
+      );
     } else {
-      sumGapsToSpan = Math.abs(perfEntry.responseEnd - span.endPerfTime);
-      sumGapsToSpan += Math.abs(perfEntry.startTime - span.startPerfTime);
+      gapToSpan += Math.abs(
+        perfEntry.mainRequest.startTime - span.startPerfTime
+      );
     }
     // If there is a new minimum gap to the span, update the minimum and pick
     // the current performance entry as the best at this point.
-    if (sumGapsToSpan < minimumGapToSpan) {
-      minimumGapToSpan = sumGapsToSpan;
+    if (gapToSpan < minimumGapToSpan) {
+      minimumGapToSpan = gapToSpan;
       bestPerfEntry = perfEntry;
     }
   }

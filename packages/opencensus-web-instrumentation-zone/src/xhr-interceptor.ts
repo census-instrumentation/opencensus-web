@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AsyncTask, XHRWithUrl } from './zone-types';
+import { AsyncTask, XhrWithUrl } from './zone-types';
 import {
   RootSpan,
   Span,
@@ -33,9 +33,11 @@ import {
   getResourceSpan,
 } from '@opencensus/web-instrumentation-perf';
 
+const TRACEPARENT_HEADER = 'traceparent';
+
 // Map intended to keep track of current XHR objects
 // associated to a span.
-const xhrSpans = new Map<XHRWithUrl, Span>();
+const xhrSpans = new Map<XhrWithUrl, Span>();
 
 // Keeps track of the current xhr tasks that are running. This is
 // useful to clear the Performance Resource Timing entries when no
@@ -54,7 +56,7 @@ export function interceptXhrTask(task: AsyncTask) {
   if (!isTrackedTask(task)) return;
   if (!(task.target instanceof XMLHttpRequest)) return;
 
-  const xhr = task.target as XHRWithUrl;
+  const xhr = task.target as XhrWithUrl;
   if (xhr.readyState === XMLHttpRequest.OPENED) {
     incrementXhrTaskCount();
     const rootSpan: RootSpan = task.zone.get('data').rootSpan;
@@ -66,7 +68,7 @@ export function interceptXhrTask(task: AsyncTask) {
 }
 
 function setTraceparentContextHeader(
-  xhr: XHRWithUrl,
+  xhr: XhrWithUrl,
   rootSpan: RootSpan
 ): void {
   // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
@@ -80,7 +82,7 @@ function setTraceparentContextHeader(
   xhrSpans.set(xhr, childSpan);
   if (traceOriginMatchesOrSameOrigin(xhrUrl)) {
     xhr.setRequestHeader(
-      'traceparent',
+      TRACEPARENT_HEADER,
       spanContextToTraceParent({
         traceId: rootSpan.traceId,
         spanId: childSpan.id,
@@ -89,7 +91,7 @@ function setTraceparentContextHeader(
   }
 }
 
-function endXhrSpan(xhr: XHRWithUrl): void {
+function endXhrSpan(xhr: XhrWithUrl): void {
   const span = xhrSpans.get(xhr);
   if (span) {
     // TODO: Investigate more to send the the status code a `number` rather
@@ -109,24 +111,15 @@ function maybeClearPerfResourceBuffer(): void {
   if (xhrTasksCount === 0) performance.clearResourceTimings();
 }
 
-function joinPerfResourceDataToSpan(xhr: XHRWithUrl, span: Span) {
-  const perfResourceTimings = getXhrPerfomanceData(xhr.responseURL, span);
-  if (perfResourceTimings instanceof Array) {
-    // This case is true when the resource timings data associates two entries
-    // to the span, where the first entry is the CORS pre-flight request and
-    // the second is the actual HTTP request. Create a child span which is
-    // related to the CORS pre-flight and use the second entry to add
-    // annotations to the span.
-    const corsPerfTiming = perfResourceTimings[0] as PerformanceResourceTimingExtended;
-    const actualXhrPerfTiming = perfResourceTimings[1] as PerformanceResourceTimingExtended;
-    setCorsPerfTimingAsChildSpan(corsPerfTiming, span);
+function joinPerfResourceDataToSpan(xhr: XhrWithUrl, span: Span) {
+  const xhrPerfResourceTiming = getXhrPerfomanceData(xhr.responseURL, span);
+  if (xhrPerfResourceTiming) {
+    if (xhrPerfResourceTiming.corsPreFlightRequest) {
+      const corsPerfTiming = xhrPerfResourceTiming.corsPreFlightRequest as PerformanceResourceTimingExtended;
+      setCorsPerfTimingAsChildSpan(corsPerfTiming, span);
+    }
     span.annotations = annotationsForPerfTimeFields(
-      actualXhrPerfTiming,
-      PERFORMANCE_ENTRY_EVENTS
-    );
-  } else if (perfResourceTimings) {
-    span.annotations = annotationsForPerfTimeFields(
-      perfResourceTimings as PerformanceResourceTimingExtended,
+      xhrPerfResourceTiming.mainRequest as PerformanceResourceTimingExtended,
       PERFORMANCE_ENTRY_EVENTS
     );
   }
@@ -137,7 +130,7 @@ function setCorsPerfTimingAsChildSpan(
   span: Span
 ): void {
   const corsSpan = getResourceSpan(performanceTiming, span.traceId, span.id);
-  corsSpan.name = 'CORS';
+  corsSpan.name = 'CORS Preflight';
   span.spans.push(corsSpan);
 }
 
