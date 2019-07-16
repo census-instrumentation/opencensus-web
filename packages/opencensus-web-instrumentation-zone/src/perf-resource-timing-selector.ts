@@ -16,6 +16,7 @@
 
 import { Span } from '@opencensus/web-core';
 import { XhrPerformanceResourceTiming } from './zone-types';
+import { alreadyAssignedPerfEntries } from './xhr-interceptor';
 
 /**
  * Get Browser's performance resource timing data associated to a XHR.
@@ -32,8 +33,10 @@ export function getXhrPerfomanceData(
   xhrUrl: string,
   span: Span
 ): XhrPerformanceResourceTiming | undefined {
-  const filteredPerfEntries = getPerfResourceEntries(xhrUrl, span);
-  const possibleEntries = getPossiblePerfResourceEntries(filteredPerfEntries);
+  const filteredSortedPerfEntries = getPerfSortedResourceEntries(xhrUrl, span);
+  const possibleEntries = getPossiblePerfResourceEntries(
+    filteredSortedPerfEntries
+  );
   const bestEntry = getBestPerfResourceTiming(possibleEntries, span);
   return bestEntry;
 }
@@ -41,15 +44,18 @@ export function getXhrPerfomanceData(
 /**
  * First step for the algorithm. Filter the Performance Resource Timings by the
  * name (it should match the XHR URL), additionally, the start/end timings of
- * every performance entry should fit within the span start/end timings.
+ * every performance entry should fit within the span start/end timings. Also,
+ * the entry should be already assigned to a span.
  * These filtered performance resource entries are considered as possible
  * entries associated to the xhr.
  * Those are possible because there might be more than two entries that pass the
  * filter.
+ * Additionally, the returned array is sorted by the entries' `startTime` as
+ * getEntriesByType() already does it.
  * @param xhrUrl
  * @param span
  */
-export function getPerfResourceEntries(
+export function getPerfSortedResourceEntries(
   xhrUrl: string,
   span: Span
 ): PerformanceResourceTiming[] {
@@ -70,41 +76,35 @@ export function getPerfResourceEntries(
  * 'paired' with any other entry.
  * Thus, for this step traverse the array of resource entries and for every
  * entry check if it is a possible performance resource entry.
- * @param perfEntries
+ * @param filteredSortedPerfEntries Sorted array of Performance Resource
+ * Entries. This is sorted by the entries' `startTime`.
  */
 export function getPossiblePerfResourceEntries(
-  perfEntries: PerformanceResourceTiming[]
+  filteredSortedPerfEntries: PerformanceResourceTiming[]
 ): XhrPerformanceResourceTiming[] {
   const possiblePerfEntries = new Array<XhrPerformanceResourceTiming>();
-  const pairedEntries = new Set<PerformanceResourceTiming>();
-  let entryI: PerformanceResourceTiming;
-  let entryJ: PerformanceResourceTiming;
   // As this part of the algorithm traverses the array twice, although,
   // this array is not large as the performance resource entries buffer is
   // cleared when there are no more running XHRs.
-  for (let i = 0; i < perfEntries.length; i++) {
-    entryI = perfEntries[i];
-    // Compare every performance entry with its consecutive perfomance entries.
-    // That way to avoid comparing twice the entries.
-    for (let j = i + 1; j < perfEntries.length; j++) {
-      entryJ = perfEntries[j];
-      if (!overlappingPerfResourceTimings(entryI, entryJ)) {
+  for (let i = 0; i < filteredSortedPerfEntries.length; i++) {
+    const entryI = filteredSortedPerfEntries[i];
+    // Consider the current entry as a possible entry without cors preflight
+    // request. This is valid as this entry might be better than other possible
+    // entries.
+    possiblePerfEntries.push({ mainRequest: entryI });
+    // Compare every performance entry with the perfomance entries in front of
+    // it. This is possible as the entries are sorted by the startTime. That
+    // way we to avoid comparing twice the entries and taking the wrong order.
+    for (let j = i + 1; j < filteredSortedPerfEntries.length; j++) {
+      const entryJ = filteredSortedPerfEntries[j];
+      if (!isPossibleCorsPair(entryI, entryJ)) {
         // As the entries are not overlapping, that means those timings
         // are possible perfomance timings related to the XHR.
         possiblePerfEntries.push({
           corsPreFlightRequest: entryI,
           mainRequest: entryJ,
         });
-        pairedEntries.add(entryI);
-        pairedEntries.add(entryJ);
       }
-    }
-    // If the entry couldn't be paired with any other resource timing,
-    // add it as a possible resource timing without cors preflight data.
-    // This is possible because this entry might be better than the other
-    // possible entries.
-    if (!pairedEntries.has(entryI)) {
-      possiblePerfEntries.push({ mainRequest: entryI });
     }
   }
   return possiblePerfEntries;
@@ -122,20 +122,16 @@ function getBestPerfResourceTiming(
   let minimumGapToSpan = Number.MAX_VALUE;
   let bestPerfEntry: XhrPerformanceResourceTiming | undefined = undefined;
   for (const perfEntry of perfEntries) {
-    let gapToSpan = Math.abs(
-      perfEntry.mainRequest.responseEnd - span.endPerfTime
-    );
     // If the current entry has cors preflight data use its `startTime` to
     // calculate the gap to the span.
-    if (perfEntry.corsPreFlightRequest) {
-      gapToSpan += Math.abs(
-        perfEntry.corsPreFlightRequest.startTime - span.startPerfTime
-      );
-    } else {
-      gapToSpan += Math.abs(
-        perfEntry.mainRequest.startTime - span.startPerfTime
-      );
-    }
+    const perfEntryStartTime = perfEntry.corsPreFlightRequest
+      ? perfEntry.corsPreFlightRequest.startTime
+      : perfEntry.mainRequest.startTime;
+    const gapToSpan =
+      span.endPerfTime -
+      perfEntry.mainRequest.responseEnd +
+      (perfEntryStartTime - span.startPerfTime);
+
     // If there is a new minimum gap to the span, update the minimum and pick
     // the current performance entry as the best at this point.
     if (gapToSpan < minimumGapToSpan) {
@@ -152,13 +148,14 @@ function isPerfEntryPartOfXhr(
   span: Span
 ): boolean {
   return (
+    !alreadyAssignedPerfEntries.has(entry) &&
     entry.name === xhrUrl &&
     entry.startTime >= span.startPerfTime &&
     entry.responseEnd <= span.endPerfTime
   );
 }
 
-function overlappingPerfResourceTimings(
+function isPossibleCorsPair(
   entry1: PerformanceResourceTiming,
   entry2: PerformanceResourceTiming
 ): boolean {

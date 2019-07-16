@@ -44,6 +44,11 @@ const xhrSpans = new Map<XhrWithUrl, Span>();
 // xhr tasks are being intercepted.
 let xhrTasksCount = 0;
 
+// Set to keep track of already assigned performance resource entries to a span.
+// This is done as there might be some edge cases where the result might include
+// some already assigned entries.
+export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
+
 /**
  * Intercepts task as XHR if it is a tracked task and its target object is
  * instance of `XMLHttpRequest`.
@@ -108,13 +113,21 @@ function endXhrSpan(xhr: XhrWithUrl): void {
 // This is done in order to help the browser Performance resource timings
 // selector algorithm to take only the data related to the current XHRs running.
 function maybeClearPerfResourceBuffer(): void {
-  if (xhrTasksCount === 0) performance.clearResourceTimings();
+  if (xhrTasksCount === 0) {
+    performance.clearResourceTimings();
+    // Clear the set as these entries are not longer necessary.
+    alreadyAssignedPerfEntries.clear();
+  }
 }
 
 function joinPerfResourceDataToSpan(xhr: XhrWithUrl, span: Span) {
   const xhrPerfResourceTiming = getXhrPerfomanceData(xhr.responseURL, span);
   if (xhrPerfResourceTiming) {
+    alreadyAssignedPerfEntries.add(xhrPerfResourceTiming.mainRequest);
     if (xhrPerfResourceTiming.corsPreFlightRequest) {
+      alreadyAssignedPerfEntries.add(
+        xhrPerfResourceTiming.corsPreFlightRequest
+      );
       const corsPerfTiming = xhrPerfResourceTiming.corsPreFlightRequest as PerformanceResourceTimingExtended;
       setCorsPerfTimingAsChildSpan(corsPerfTiming, span);
     }

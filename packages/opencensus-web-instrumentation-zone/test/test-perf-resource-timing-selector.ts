@@ -16,7 +16,7 @@
 
 import { Span } from '@opencensus/web-core';
 import {
-  getPerfResourceEntries,
+  getPerfSortedResourceEntries,
   getPossiblePerfResourceEntries,
   getXhrPerfomanceData,
 } from '../src/perf-resource-timing-selector';
@@ -55,7 +55,7 @@ describe('Perf Resource Timing Selector', () => {
       const span = createSpan(12, 30);
 
       const entriesToBeFiltered = [entry2, entry3];
-      const filteredPerfEntries = getPerfResourceEntries('/test', span);
+      const filteredPerfEntries = getPerfSortedResourceEntries('/test', span);
       expect(filteredPerfEntries).toEqual(entriesToBeFiltered);
     });
   });
@@ -92,10 +92,15 @@ describe('Perf Resource Timing Selector', () => {
         mainRequest: entry3,
       } as XhrPerformanceResourceTiming;
 
-      expect(filteredPerfEntries.length).toBe(2);
+      expect(filteredPerfEntries.length).toBe(5);
       expect(filteredPerfEntries).toContain(nonOverlappingEntry1);
       expect(filteredPerfEntries).toContain(nonOverlappingEntry2);
       expect(filteredPerfEntries).not.toContain(overlappingEntry3);
+      // As every entry is considered a possible Xhr performance entry
+      // without CORS preflight, check the should be present.
+      expect(filteredPerfEntries).toContain({ mainRequest: entry1 });
+      expect(filteredPerfEntries).toContain({ mainRequest: entry2 });
+      expect(filteredPerfEntries).toContain({ mainRequest: entry3 });
     });
 
     it('Should not add cors preflight value as all the entries overlap each other', () => {
