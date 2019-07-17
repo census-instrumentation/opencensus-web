@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      gRPC://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  */
 
 import React from 'react';
+import { tracing } from '@opencensus/web-core';
 
 class App extends React.Component {
 
@@ -28,6 +29,7 @@ class App extends React.Component {
 
   handleClick() {
     // Use promises to test behavior on MicroTasks.
+    const childSpan = tracing.tracer.startChildSpan({ name: 'promise' });
     const promise = new Promise(resolve => {
       setTimeout(function () {
         resolve();
@@ -35,15 +37,17 @@ class App extends React.Component {
     });
 
     promise.then(() => {
-      console.log("Resolving promise");
+      childSpan.end();
       this.callSleepApi();
     });
   }
 
   callSleepApi() {
     const xhr = new XMLHttpRequest();
+    const span = tracing.tracer.startChildSpan({ name: 'Sleep API' });
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
+        span.end();
         this.callPrimeNumbersApi();
       }
     };
@@ -66,10 +70,10 @@ class App extends React.Component {
   }
 
   callCalculatePi() {
+    const span = tracing.tracer.startChildSpan({ name: 'Calculate PI' });
     const time = Date.now();
-    console.log("Calculating PI");
     const pi = this.calculatePi();
-    console.log("Finished calculating PI");
+    span.end();
     return { time: (Date.now() - time), value: pi };
   }
 
