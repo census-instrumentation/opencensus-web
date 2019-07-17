@@ -35,8 +35,9 @@ import {
 
 const TRACEPARENT_HEADER = 'traceparent';
 
-// Map intended to keep track of current XHR objects
-// associated to a span.
+/**
+ * Map intended to keep track of current XHR objects associated to a span.
+ */
 const xhrSpans = new Map<XhrWithUrl, Span>();
 
 // Keeps track of the current xhr tasks that are running. This is
@@ -44,9 +45,11 @@ const xhrSpans = new Map<XhrWithUrl, Span>();
 // xhr tasks are being intercepted.
 let xhrTasksCount = 0;
 
-// Set to keep track of already assigned performance resource entries to a span.
-// This is done as there might be some edge cases where the result might include
-// some already assigned entries.
+/**
+ * Set to keep track of already assigned performance resource entries to a span.
+ * This is done as there might be some edge cases where the result might include
+ * some already assigned entries.
+ */
 export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
 
 /**
@@ -55,7 +58,6 @@ export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
  * In case the task is intercepted, sets the Trace Context Header to it and
  * creates a child span related to this XHR in case it is OPENED.
  * In case the XHR is DONE, end the child span.
- * @param task
  */
 export function interceptXhrTask(task: AsyncTask) {
   if (!isTrackedTask(task)) return;
@@ -109,9 +111,11 @@ function endXhrSpan(xhr: XhrWithUrl): void {
   }
 }
 
-// If xhr task count is 0, clear the Performance Resource Timings.
-// This is done in order to help the browser Performance resource timings
-// selector algorithm to take only the data related to the current XHRs running.
+/**
+ * If xhr task count is 0, clear the Performance Resource Timings.
+ * This is done in order to help the browser Performance resource timings
+ * selector algorithm to take only the data related to the current XHRs running.
+ */
 function maybeClearPerfResourceBuffer(): void {
   if (xhrTasksCount === 0) {
     performance.clearResourceTimings();

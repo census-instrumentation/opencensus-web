@@ -26,8 +26,6 @@ import { alreadyAssignedPerfEntries } from './xhr-interceptor';
  * In overall, the algorithm to get this data takes the best fit for the span,
  * this means the closest performance resource timing to the span start/end
  * performance times is the returned value.
- * @param xhrUrl
- * @param span
  */
 export function getXhrPerfomanceData(
   xhrUrl: string,
@@ -50,9 +48,8 @@ export function getXhrPerfomanceData(
  * Those are possible because there might be more than two entries that pass the
  * filter.
  * Additionally, the returned array is sorted by the entries' `startTime` as
- * getEntriesByType() already does it (https://developer.mozilla.org/en-US/docs/Web/API/Performance/getEntriesByType#Return_Value).
- * @param xhrUrl
- * @param span
+ * getEntriesByType() already does it.
+ * (https://developer.mozilla.org/en-US/docs/Web/API/Performance/getEntriesByType#Return_Value).
  */
 export function getPerfSortedResourceEntries(
   xhrUrl: string,
@@ -93,7 +90,7 @@ export function getPossiblePerfResourceEntries(
     possiblePerfEntries.push({ mainRequest: entryI });
     // Compare every performance entry with the perfomance entries in front of
     // it. This is possible as the entries are sorted by the startTime. That
-    // way we to avoid comparing twice the entries and taking the wrong order.
+    // way, we avoid comparing twice the entries and taking the wrong order.
     for (let j = i + 1; j < filteredSortedPerfEntries.length; j++) {
       const entryJ = filteredSortedPerfEntries[j];
       if (isPossibleCorsPair(entryI, entryJ)) {
@@ -115,9 +112,6 @@ export function getPossiblePerfResourceEntries(
  * be the one with the minimum gap to the span start/end timings.
  * The performance resource timing entry with the minimum gap to the span
  * start/end timings points out that entry is the best fit for the span.
- *
- * @param perfEntries
- * @param span
  */
 function getBestPerfResourceTiming(
   perfEntries: XhrPerformanceResourceTiming[],
@@ -169,15 +163,12 @@ function isPerfEntryPartOfXhr(
  * start/end times.
  */
 function isPossibleCorsPair(
-  entry1: PerformanceResourceTiming,
-  entry2: PerformanceResourceTiming
+  maybePreflight: PerformanceResourceTiming,
+  maybeMainRequest: PerformanceResourceTiming
 ): boolean {
-  // To determine if the entries overlap, the minimum responseEnd should be
-  // less than the maximum startTime (e.g. entry1 with startTime = 1 and
-  // responseEnd = 3 and entry2 with startTime = 2 and responseEnd = 4, the
-  // minimum is 3 and the maximum is 2, this tells that the intervals overlap).
-  return (
-    Math.min(entry1.responseEnd, entry2.responseEnd) <
-    Math.max(entry1.startTime, entry2.startTime)
-  );
+  // We can be sure that `maybePreflight` startTime is less than
+  // `maybeMainRequest` startTime because of the sorting done by
+  // `getEntriesByType`. Thus, to check the timings do not overlap, the
+  // maybePreflight.respondeEnd must be less than maybeMainRequest.startTime.
+  return maybePreflight.responseEnd < maybeMainRequest.startTime;
 }
