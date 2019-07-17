@@ -19,7 +19,7 @@ import { PerformanceResourceTimingExtended } from './perf-types';
 import { annotationsForPerfTimeFields } from './util';
 
 /** PerformanceEntry time event fields to create as span annotations. */
-const PERFORMANCE_ENTRY_EVENTS = [
+export const PERFORMANCE_ENTRY_EVENTS = [
   'workerStart',
   'fetchStart',
   'domainLookupStart',

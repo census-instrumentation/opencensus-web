@@ -27,3 +27,14 @@ export function traceOriginMatchesOrSameOrigin(xhrUrl: string): boolean {
 
   return !!(traceHeaderHostRegex && parsedUrl.host.match(traceHeaderHostRegex));
 }
+
+/**
+ * Whether or not a task is being tracked as part of an interaction.
+ */
+export function isTrackedTask(task: Task): boolean {
+  return !!(
+    task.zone &&
+    task.zone.get('data') &&
+    task.zone.get('data').isTracingZone
+  );
+}

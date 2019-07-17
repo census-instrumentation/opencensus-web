@@ -19,19 +19,15 @@ import {
   tracing,
   SpanKind,
   RootSpan,
-  ATTRIBUTE_HTTP_STATUS_CODE,
-  ATTRIBUTE_HTTP_METHOD,
-  parseUrl,
-  Span,
 } from '@opencensus/web-core';
-import { AsyncTask, XHRWithUrl } from './zone-types';
+import { AsyncTask } from './zone-types';
 import {
   OnPageInteractionStopwatch,
   startOnPageInteraction,
 } from './on-page-interaction-stop-watch';
 
-import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
-import { traceOriginMatchesOrSameOrigin } from './util';
+import { isTrackedTask } from './util';
+import { interceptXhrTask } from './xhr-interceptor';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
@@ -56,10 +52,6 @@ export class InteractionTracker {
   private readonly interactionCompletionTimeouts: {
     [index: string]: number;
   } = {};
-
-  // Map intended to keep track of current XHR objects
-  // associated to a span.
-  private readonly xhrSpans = new Map<XHRWithUrl, Span>();
 
   private static singletonInstance: InteractionTracker;
 
@@ -102,7 +94,7 @@ export class InteractionTracker {
         }
         this.incrementTaskCount(getTraceId(task.zone));
       }
-      this.interceptXhrTasks(task);
+      interceptXhrTask(task);
       try {
         return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
@@ -196,52 +188,6 @@ export class InteractionTracker {
         RESET_TRACING_ZONE_DELAY
       );
     });
-  }
-
-  private interceptXhrTasks(task: AsyncTask) {
-    if (!isTrackedTask(task)) return;
-    if (!(task.target instanceof XMLHttpRequest)) return;
-
-    const xhr = task.target as XHRWithUrl;
-    if (xhr.readyState === XMLHttpRequest.OPENED) {
-      const rootSpan: RootSpan = task.zone.get('data').rootSpan;
-      this.setTraceparentContextHeader(xhr, rootSpan);
-    } else if (xhr.readyState === XMLHttpRequest.DONE) {
-      this.endXhrSpan(xhr);
-    }
-  }
-
-  private setTraceparentContextHeader(xhr: XHRWithUrl, rootSpan: RootSpan) {
-    // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
-    const xhrUrl = xhr.__zone_symbol__xhrURL;
-    const childSpan = rootSpan.startChildSpan({
-      name: parseUrl(xhrUrl).pathname,
-      kind: SpanKind.CLIENT,
-    });
-    // Associate the child span to the XHR so it allows to
-    // find the correct span when the request is DONE.
-    this.xhrSpans.set(xhr, childSpan);
-    if (traceOriginMatchesOrSameOrigin(xhrUrl)) {
-      xhr.setRequestHeader(
-        'traceparent',
-        spanContextToTraceParent({
-          traceId: rootSpan.traceId,
-          spanId: childSpan.id,
-        })
-      );
-    }
-  }
-
-  private endXhrSpan(xhr: XHRWithUrl) {
-    const childSpan = this.xhrSpans.get(xhr);
-    if (childSpan) {
-      // TODO: Investigate more to send the the status code a `number` rather than `string`
-      // Once it is able to send as a number, change it.
-      childSpan.addAttribute(ATTRIBUTE_HTTP_STATUS_CODE, xhr.status.toString());
-      childSpan.addAttribute(ATTRIBUTE_HTTP_METHOD, xhr._ocweb_method);
-      childSpan.end();
-      this.xhrSpans.delete(xhr);
-    }
   }
 
   private resetCurrentTracingZone() {
@@ -403,16 +349,6 @@ function getTrackedElement(task: AsyncTask): HTMLElement | null {
   return task.target as HTMLElement;
 }
 
-/**
- * Whether or not a task is being tracked as part of an interaction.
- */
-function isTrackedTask(task: Task): boolean {
-  return !!(
-    task.zone &&
-    task.zone.get('data') &&
-    task.zone.get('data').isTracingZone
-  );
-}
 /**
  * Look for 'data-ocweb-id' attibute in the HTMLElement in order to
  * give a name to the user interaction and Root span. If this attibute is

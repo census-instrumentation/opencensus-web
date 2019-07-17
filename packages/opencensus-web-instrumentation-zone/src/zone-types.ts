@@ -43,7 +43,7 @@ export interface OnPageInteractionData {
  * `HTMLElement` is necessary when the xhr is captured from the tasks target
  *  as the Zone monkey-patch parses xhrs as `HTMLElement & XMLHttpRequest`.
  */
-export type XHRWithUrl = HTMLElement &
+export type XhrWithUrl = HTMLElement &
   XMLHttpRequest & {
     __zone_symbol__xhrURL: string;
     _ocweb_method: string;
@@ -66,4 +66,15 @@ export declare interface WindowWithOcwGlobals extends Window {
   // RegExp to control what origins will the `trace context header` be sent.
   // That way the header is not added to all xhrs.
   ocTraceHeaderHostRegex?: string | RegExp;
+}
+
+/**
+ * Allows to keep track of performance entries related to a XHR.
+ * As some XHRs might generate a CORS pre-flight request, the XHR
+ * might have a cors preflight performance resource timing entry or only the
+ * main request performance resource timing.
+ */
+export interface XhrPerformanceResourceTiming {
+  corsPreFlightRequest?: PerformanceResourceTiming;
+  mainRequest: PerformanceResourceTiming;
 }
