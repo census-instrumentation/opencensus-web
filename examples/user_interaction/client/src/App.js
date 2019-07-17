@@ -28,8 +28,11 @@ class App extends React.Component {
   }
 
   handleClick() {
-    // Use promises to test behavior on MicroTasks.
+    // Start a child span for the Promise, this span will be son of the 
+    // current root span related to the current user interaction.
+    // These spans should be created in the code the click handler will run.
     const childSpan = tracing.tracer.startChildSpan({ name: 'promise' });
+    // Use promises to test behavior on MicroTasks.
     const promise = new Promise(resolve => {
       setTimeout(function () {
         resolve();
@@ -37,6 +40,7 @@ class App extends React.Component {
     });
 
     promise.then(() => {
+      // End the span as the Promise already finished.
       childSpan.end();
       this.callSleepApi();
     });
@@ -44,9 +48,11 @@ class App extends React.Component {
 
   callSleepApi() {
     const xhr = new XMLHttpRequest();
+    // Create a child span for the XHR.
     const span = tracing.tracer.startChildSpan({ name: 'Sleep API' });
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
+        // End the XHR span once it is DONE. 
         span.end();
         this.callPrimeNumbersApi();
       }
@@ -70,6 +76,7 @@ class App extends React.Component {
   }
 
   callCalculatePi() {
+    // Start span for synchronous code.
     const span = tracing.tracer.startChildSpan({ name: 'Calculate PI' });
     const time = Date.now();
     const pi = this.calculatePi();
