@@ -50,7 +50,9 @@ class App extends React.Component {
 
   callSleepApi() {
     const xhr = new XMLHttpRequest();
-    // Create a child span for the XHR.
+    // Create a child span for the XHR. It is possible to create your own spans 
+    // even if the involved task or operation already generates an automatic 
+    // span. In this case, automatic spans are generated for XHRs.
     const callSleepApiCustomSpan = tracing.tracer.startChildSpan({ name: 'Call Sleep API' });
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {

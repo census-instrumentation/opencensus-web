@@ -288,7 +288,6 @@ describe('InteractionTracker', () => {
           name: 'setTimeout custom span',
         });
         setTimeout(() => {
-          noop();
           setTimeoutCustomSpan.end();
         }, SET_TIMEOUT_TIME);
       };
