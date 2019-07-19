@@ -26,7 +26,7 @@ import {
   RESET_TRACING_ZONE_DELAY,
 } from '../src/interaction-tracker';
 import { doPatching } from '../src/monkey-patching';
-import { WindowWithOcwGlobals } from '../src/zone-types';
+import { WindowWithOcwGlobals, XhrWithOcWebData } from '../src/zone-types';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
 
@@ -288,7 +288,7 @@ describe('InteractionTracker', () => {
       perfResourceEntries = [];
     });
 
-    it('should handle HTTP requets and do not set Trace Context Header', done => {
+    fit('should handle HTTP requets and do not set Trace Context Header', done => {
       // Set a diferent ocTraceHeaderHostRegex to test that the trace context header is not
       // sent as the url request does not match the regex.
       (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
@@ -494,8 +494,19 @@ describe('InteractionTracker', () => {
       const xhr = new XMLHttpRequest();
       xhr.onreadystatechange = noop;
       spyOn(xhr, 'send').and.callFake(() => {
+        // Simulate the actual monkey-patch done on `Send()`.
+        (xhr as XhrWithOcWebData)._ocweb_has_called_send = true;
+        const event = new Event('readystatechange');
+        // Dispatch the event before the actual `send` is called, so the
+        // readyState is still OPENED and xhr interceptor will be able to
+        // intercept it.
+        xhr.dispatchEvent(event);
+
         setTimeout(() => {
           spyOnProperty(xhr, 'status').and.returnValue(200);
+          // Fake the readyState as DONE so the xhr interceptor knows when the
+          // XHR finished.
+          spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
           const event = new Event('readystatechange');
           xhr.dispatchEvent(event);
         }, XHR_TIME);
@@ -507,9 +518,6 @@ describe('InteractionTracker', () => {
       });
 
       xhr.open('GET', urlRequest);
-      // Spy on `readystate` property after open, so that way while intercepting
-      // the XHR will detect OPENED and DONE states.
-      spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
       xhr.send();
     }
 

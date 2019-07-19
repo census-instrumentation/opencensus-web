@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { XhrWithUrl } from './zone-types';
+import { XhrWithOcWebData } from './zone-types';
 
 export function doPatching() {
   patchXmlHttpRequestOpen();
+  patchXmlHttpRequestSend();
 }
 
 // Patch the `XMLHttpRequest.open` method to add method used for the request.
@@ -38,6 +39,37 @@ function patchXmlHttpRequestOpen() {
     } else {
       open.call(this, method, url, true, null, null);
     }
-    (this as XhrWithUrl)._ocweb_method = method;
+    (this as XhrWithOcWebData)._ocweb_method = method;
+  };
+}
+
+/**
+ * Patch `send()` method to detect when it has been detected in order to
+ * dispatch an event and tell the xhr-interceptor that this method has been
+ * called and it can now generate the XHR span and send the traceparent header.
+ * This is necessary, as the XHR span generated in the xhr interceptor should
+ * be created once this method is called.
+ */
+function patchXmlHttpRequestSend() {
+  const open = XMLHttpRequest.prototype.send;
+
+  XMLHttpRequest.prototype.send = function(
+    body?:
+      | string
+      | Document
+      | Blob
+      | ArrayBufferView
+      | ArrayBuffer
+      | FormData
+      | URLSearchParams
+      | ReadableStream<Uint8Array>
+      | null
+  ) {
+    (this as XhrWithOcWebData)._ocweb_has_called_send = true;
+    const event = new Event('readystatechange');
+    // Dispatch the event before the actual `send` is called, so the readyState
+    // is still OPENED and xhr interceptor will be able to intercept it.
+    this.dispatchEvent(event);
+    open.call(this, body);
   };
 }
