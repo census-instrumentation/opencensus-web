@@ -159,7 +159,7 @@ describe('InteractionTracker', () => {
     fakeInteraction(onclick, button);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(rootSpan.name).toBe("<BUTTON> id:'test_element' click");
+      expect(rootSpan.name).toBe("<button> #test_element click");
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();

@@ -374,9 +374,9 @@ function resolveInteractionName(
     if (!tagName) return '';
     interactionName =
       '<' +
-      tagName +
+      tagName.toLowerCase() +
       '>' +
-      (elementId ? " id:'" + elementId + "' " : '') +
+      (elementId ? " #" + elementId + " " : '') +
       eventName;
   }
   return interactionName;
