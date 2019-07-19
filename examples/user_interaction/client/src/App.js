@@ -28,20 +28,22 @@ class App extends React.Component {
   }
 
   handleClick() {
-    // Start a child span for the Promise, this span will be son of the 
-    // current root span related to the current user interaction.
-    // These spans should be created in the code the click handler will run.
-    const childSpan = tracing.tracer.startChildSpan({ name: 'promise' });
     // Use promises to test behavior on MicroTasks.
     const promise = new Promise(resolve => {
+      // Start a child span for the setTimeout as this is the operation we want 
+      // to measure. 
+      // This span will be child of the  current root span related to the 
+      // current user interaction. Additionally, these spans should be created
+      // in the code the click handler will run.
+      const setTimeoutCustomSpan = tracing.tracer.startChildSpan({ name: 'setTimeout custom span' });
       setTimeout(function () {
         resolve();
+        // End the span as the setTimeout has finished running the callback.
+        setTimeoutCustomSpan.end();
       }, 1000);
     });
 
     promise.then(() => {
-      // End the span as the Promise already finished.
-      childSpan.end();
       this.callSleepApi();
     });
   }
@@ -49,11 +51,11 @@ class App extends React.Component {
   callSleepApi() {
     const xhr = new XMLHttpRequest();
     // Create a child span for the XHR.
-    const span = tracing.tracer.startChildSpan({ name: 'Sleep API' });
+    const callSleepApiCustomSpan = tracing.tracer.startChildSpan({ name: 'Call Sleep API' });
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         // End the XHR span once it is DONE. 
-        span.end();
+        callSleepApiCustomSpan.end();
         this.callPrimeNumbersApi();
       }
     };
@@ -77,10 +79,10 @@ class App extends React.Component {
 
   callCalculatePi() {
     // Start span for synchronous code.
-    const span = tracing.tracer.startChildSpan({ name: 'Calculate PI' });
+    const calculatePiCustomSpan = tracing.tracer.startChildSpan({ name: 'Calculate PI' });
     const time = Date.now();
     const pi = this.calculatePi();
-    span.end();
+    calculatePiCustomSpan.end();
     return { time: (Date.now() - time), value: pi };
   }
 

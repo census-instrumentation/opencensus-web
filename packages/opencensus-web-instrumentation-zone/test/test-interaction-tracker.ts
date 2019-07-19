@@ -280,6 +280,41 @@ describe('InteractionTracker', () => {
     });
   });
 
+  describe('Custom Spans', () => {
+    it('Should handle the custom spans and add them to the current root span as child spans', done => {
+      const onclick = () => {
+        // Start a custom span for the setTimeout.
+        const setTimeoutCustomSpan = tracing.tracer.startChildSpan({
+          name: 'setTimeout custom span',
+        });
+        setTimeout(() => {
+          noop();
+          setTimeoutCustomSpan.end();
+        }, SET_TIMEOUT_TIME);
+      };
+      fakeInteraction(onclick);
+
+      onEndSpanSpy.and.callFake((rootSpan: Span) => {
+        expect(rootSpan.name).toBe('test interaction');
+        expect(rootSpan.attributes['EventType']).toBe('click');
+        expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.ended).toBeTruthy();
+        expect(rootSpan.spans.length).toBe(1);
+        const childSpan = rootSpan.spans[0];
+        expect(childSpan.name).toBe('setTimeout custom span');
+        expect(childSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(childSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(rootSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        done();
+      });
+    });
+  });
+
   describe('HTTP requests', () => {
     // Value to be full when the XMLHttpRequest.send method is faked,
     // That way the perfornamce resource entries have a accurate timing.
