@@ -65,7 +65,6 @@ export function interceptXhrTask(task: AsyncTask) {
   if (!(task.target instanceof XMLHttpRequest)) return;
 
   const xhr = task.target as XhrWithOcWebData;
-  console.log(xhr.readyState);
   if (xhr.readyState === XMLHttpRequest.OPENED && xhr._ocweb_has_called_send) {
     // Only generate the XHR and send the tracer if it is OPENED and the
     // `send()` method has beend called.

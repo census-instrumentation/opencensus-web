@@ -65,11 +65,21 @@ function patchXmlHttpRequestSend() {
       | ReadableStream<Uint8Array>
       | null
   ) {
-    (this as XhrWithOcWebData)._ocweb_has_called_send = true;
-    const event = new Event('readystatechange');
-    // Dispatch the event before the actual `send` is called, so the readyState
-    // is still OPENED and xhr interceptor will be able to intercept it.
-    this.dispatchEvent(event);
+    setXhrAttributeHasCalledSend(this);
     open.call(this, body);
   };
+}
+
+/**
+ * Function to set attribute in the XHR that points out `send()` has been
+ * called and dispatch the event before the actual `send` is called, then, the
+ * readyState is still OPENED and xhr interceptor will be able to intercept it.
+ *
+ * This is exported to be called in testing as we want to avoid calling the
+ * actual XHR's `send()`.
+ */
+export function setXhrAttributeHasCalledSend(xhr: XMLHttpRequest) {
+  (xhr as XhrWithOcWebData)._ocweb_has_called_send = true;
+  const event = new Event('readystatechange');
+  xhr.dispatchEvent(event);
 }

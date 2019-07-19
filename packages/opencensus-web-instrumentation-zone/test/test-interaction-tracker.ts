@@ -25,8 +25,11 @@ import {
   InteractionTracker,
   RESET_TRACING_ZONE_DELAY,
 } from '../src/interaction-tracker';
-import { doPatching } from '../src/monkey-patching';
-import { WindowWithOcwGlobals, XhrWithOcWebData } from '../src/zone-types';
+import {
+  doPatching,
+  setXhrAttributeHasCalledSend,
+} from '../src/monkey-patching';
+import { WindowWithOcwGlobals } from '../src/zone-types';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
 
@@ -288,7 +291,7 @@ describe('InteractionTracker', () => {
       perfResourceEntries = [];
     });
 
-    fit('should handle HTTP requets and do not set Trace Context Header', done => {
+    it('should handle HTTP requets and do not set Trace Context Header', done => {
       // Set a diferent ocTraceHeaderHostRegex to test that the trace context header is not
       // sent as the url request does not match the regex.
       (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
@@ -494,14 +497,7 @@ describe('InteractionTracker', () => {
       const xhr = new XMLHttpRequest();
       xhr.onreadystatechange = noop;
       spyOn(xhr, 'send').and.callFake(() => {
-        // Simulate the actual monkey-patch done on `Send()`.
-        (xhr as XhrWithOcWebData)._ocweb_has_called_send = true;
-        const event = new Event('readystatechange');
-        // Dispatch the event before the actual `send` is called, so the
-        // readyState is still OPENED and xhr interceptor will be able to
-        // intercept it.
-        xhr.dispatchEvent(event);
-
+        setXhrAttributeHasCalledSend(xhr);
         setTimeout(() => {
           spyOnProperty(xhr, 'status').and.returnValue(200);
           // Fake the readyState as DONE so the xhr interceptor knows when the
