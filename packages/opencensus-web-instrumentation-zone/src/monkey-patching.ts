@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { XhrWithUrl } from './zone-types';
+import { XhrWithOcWebData } from './zone-types';
 import { patchHistoryApi } from './history-api-patch';
 
 export function doPatching() {
-  patchXmlHttpRequestOpen();
   patchHistoryApi();
+  patchXmlHttpRequestOpen();
+  patchXmlHttpRequestSend();
 }
 
 // Patch the `XMLHttpRequest.open` method to add method used for the request.
@@ -40,6 +40,47 @@ function patchXmlHttpRequestOpen() {
     } else {
       open.call(this, method, url, true, null, null);
     }
-    (this as XhrWithUrl)._ocweb_method = method;
+    (this as XhrWithOcWebData)._ocweb_method = method;
   };
+}
+
+/**
+ * Patch `send()` method to detect when it has been detected in order to
+ * dispatch an event and tell the xhr-interceptor that this method has been
+ * called and it can now generate the XHR span and send the traceparent header.
+ * This is necessary, as the XHR span generated in the xhr interceptor should
+ * be created once this method is called.
+ */
+function patchXmlHttpRequestSend() {
+  const open = XMLHttpRequest.prototype.send;
+
+  XMLHttpRequest.prototype.send = function(
+    body?:
+      | string
+      | Document
+      | Blob
+      | ArrayBufferView
+      | ArrayBuffer
+      | FormData
+      | URLSearchParams
+      | ReadableStream<Uint8Array>
+      | null
+  ) {
+    setXhrAttributeHasCalledSend(this);
+    open.call(this, body);
+  };
+}
+
+/**
+ * Function to set attribute in the XHR that points out `send()` has been
+ * called and dispatch the event before the actual `send` is called, then, the
+ * readyState is still OPENED and xhr interceptor will be able to intercept it.
+ *
+ * This is exported to be called in testing as we want to avoid calling the
+ * actual XHR's `send()`.
+ */
+export function setXhrAttributeHasCalledSend(xhr: XMLHttpRequest) {
+  (xhr as XhrWithOcWebData)._ocweb_has_called_send = true;
+  const event = new Event('readystatechange');
+  xhr.dispatchEvent(event);
 }

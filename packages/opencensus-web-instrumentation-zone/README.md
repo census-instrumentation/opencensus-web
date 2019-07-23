@@ -11,9 +11,31 @@ The library is in alpha stage and the API is subject to change.
 
 ## Usage
 
-Currently the primary intended usage of OpenCensus Web is to collect
-spans from the resource timing waterfall of an initial page load. See the 
-[OpenCensus Web readme][oc-web-readme-url] for details.
+#### Custom spans
+In addition to automatic user interaction tracing, it is possible to create 
+your own spans for the tasks or code involved in a user interaction.
+Here is an example for JavaScript
+
+```javascript
+import { tracing } from '@opencensus/web-core';
+
+function handleClick() {
+  // Start child span which will be child of the current root span on the current interaction.
+  // To make sure the span is attached to the root span, add this in code that the button is running.
+  const childSpan = tracing.tracer.startChildSpan({
+    name: 'name of your child span'
+  });
+  // Do some operation...
+  // Finish the child span at the end of it's operation
+  childSpan.end();
+}
+
+// Create a fake button to point out the custom span is created in the click handler.
+const button = document.createElement('button');
+button.onclick = handleClick;
+```
+Check the [user interaction client example][client-example-url] which instruments the package and 
+create some custom spans.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
@@ -31,3 +53,4 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [nav-timing-url]: https://www.w3.org/TR/navigation-timing-2/
 [resource-timing-url]: https://www.w3.org/TR/resource-timing-2/
 [long-tasks-url]: https://w3c.github.io/longtasks/
+[client-example-url]: https://github.com/census-instrumentation/opencensus-web/tree/master/examples/user_interaction/client

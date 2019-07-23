@@ -39,14 +39,18 @@ export interface OnPageInteractionData {
 }
 
 /**
- * Allows monkey-patching XMLHttpRequest and to obtain the request URL.
+ * Allows monkey-patching XMLHttpRequest and obtain important data for
+ * OpenCensus Web such as the request URL or the HTTP method.
  * `HTMLElement` is necessary when the xhr is captured from the tasks target
  *  as the Zone monkey-patch parses xhrs as `HTMLElement & XMLHttpRequest`.
  */
-export type XhrWithUrl = HTMLElement &
+export type XhrWithOcWebData = HTMLElement &
   XMLHttpRequest & {
     __zone_symbol__xhrURL: string;
     _ocweb_method: string;
+    // Attribute to tell that `send()` method has been called before it sends
+    // any HTTP request.
+    _ocweb_has_called_send: boolean;
   };
 
 /** Type for `window` object with variables OpenCensus Web interacts with. */

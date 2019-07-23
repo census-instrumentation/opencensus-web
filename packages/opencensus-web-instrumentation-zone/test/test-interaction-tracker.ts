@@ -25,7 +25,10 @@ import {
   InteractionTracker,
   RESET_TRACING_ZONE_DELAY,
 } from '../src/interaction-tracker';
-import { doPatching } from '../src/monkey-patching';
+import {
+  doPatching,
+  setXhrAttributeHasCalledSend,
+} from '../src/monkey-patching';
 import { WindowWithOcwGlobals } from '../src/zone-types';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
@@ -257,49 +260,85 @@ describe('InteractionTracker', () => {
     });
   });
 
-  it('should handle route transition interaction and rename the interaction as Navigation', done => {
-    const onclick = () => {
-      setTimeout(() => {
-        history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
-      }, SET_TIMEOUT_TIME);
-    };
-    // Create a button without 'data-ocweb-id' attribute.
-    const button = createButton('');
-    fakeInteraction(onclick, button);
+  describe('Route transition', () => {
+    it('should handle route transition interaction and rename the interaction as Navigation', done => {
+      const onclick = () => {
+        setTimeout(() => {
+          history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
+        }, SET_TIMEOUT_TIME);
+      };
+      // Create a button without 'data-ocweb-id' attribute.
+      const button = createButton('');
+      fakeInteraction(onclick, button);
 
-    onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(rootSpan.name).toBe('Navigation /test_navigation');
-      expect(rootSpan.attributes['EventType']).toBe('click');
-      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
-      expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
-      expect(rootSpan.duration).toBeLessThanOrEqual(
-        SET_TIMEOUT_TIME + TIME_BUFFER
-      );
-      done();
+      onEndSpanSpy.and.callFake((rootSpan: Span) => {
+        expect(rootSpan.name).toBe('Navigation /test_navigation');
+        expect(rootSpan.attributes['EventType']).toBe('click');
+        expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.ended).toBeTruthy();
+        expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(rootSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        done();
+      });
+    });
+
+    it('should handle route transition interaction and not rename the interaction as Navigation', done => {
+      const onclick = () => {
+        setTimeout(() => {
+          history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
+        }, SET_TIMEOUT_TIME);
+      };
+      // Create a button with 'data-ocweb-id' attribute.
+      const button = createButton('Test navigation');
+      fakeInteraction(onclick, button);
+
+      onEndSpanSpy.and.callFake((rootSpan: Span) => {
+        expect(rootSpan.name).toBe('Test navigation');
+        expect(rootSpan.attributes['EventType']).toBe('click');
+        expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.ended).toBeTruthy();
+        expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(rootSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        done();
+      });
     });
   });
 
-  it('should handle route transition interaction and not rename the interaction as Navigation', done => {
-    const onclick = () => {
-      setTimeout(() => {
-        history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
-      }, SET_TIMEOUT_TIME);
-    };
-    // Create a button without 'data-ocweb-id' attribute.
-    const button = createButton('Test navigation');
-    fakeInteraction(onclick, button);
+  describe('Custom Spans', () => {
+    it('Should handle the custom spans and add them to the current root span as child spans', done => {
+      const onclick = () => {
+        // Start a custom span for the setTimeout.
+        const setTimeoutCustomSpan = tracing.tracer.startChildSpan({
+          name: 'setTimeout custom span',
+        });
+        setTimeout(() => {
+          setTimeoutCustomSpan.end();
+        }, SET_TIMEOUT_TIME);
+      };
+      fakeInteraction(onclick);
 
-    onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(rootSpan.name).toBe('Test navigation');
-      expect(rootSpan.attributes['EventType']).toBe('click');
-      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
-      expect(rootSpan.ended).toBeTruthy();
-      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
-      expect(rootSpan.duration).toBeLessThanOrEqual(
-        SET_TIMEOUT_TIME + TIME_BUFFER
-      );
-      done();
+      onEndSpanSpy.and.callFake((rootSpan: Span) => {
+        expect(rootSpan.name).toBe('test interaction');
+        expect(rootSpan.attributes['EventType']).toBe('click');
+        expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.ended).toBeTruthy();
+        expect(rootSpan.spans.length).toBe(1);
+        const childSpan = rootSpan.spans[0];
+        expect(childSpan.name).toBe('setTimeout custom span');
+        expect(childSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(childSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+        expect(rootSpan.duration).toBeLessThanOrEqual(
+          SET_TIMEOUT_TIME + TIME_BUFFER
+        );
+        done();
+      });
     });
   });
 
@@ -517,8 +556,12 @@ describe('InteractionTracker', () => {
       const xhr = new XMLHttpRequest();
       xhr.onreadystatechange = noop;
       spyOn(xhr, 'send').and.callFake(() => {
+        setXhrAttributeHasCalledSend(xhr);
         setTimeout(() => {
           spyOnProperty(xhr, 'status').and.returnValue(200);
+          // Fake the readyState as DONE so the xhr interceptor knows when the
+          // XHR finished.
+          spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
           const event = new Event('readystatechange');
           xhr.dispatchEvent(event);
         }, XHR_TIME);
@@ -530,9 +573,6 @@ describe('InteractionTracker', () => {
       });
 
       xhr.open('GET', urlRequest);
-      // Spy on `readystate` property after open, so that way while intercepting
-      // the XHR will detect OPENED and DONE states.
-      spyOnProperty(xhr, 'readyState').and.returnValue(XMLHttpRequest.DONE);
       xhr.send();
     }
 

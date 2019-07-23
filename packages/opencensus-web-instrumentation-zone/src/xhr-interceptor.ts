@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AsyncTask, XhrWithUrl } from './zone-types';
+import { AsyncTask, XhrWithOcWebData } from './zone-types';
 import {
   RootSpan,
   Span,
@@ -38,7 +38,7 @@ const TRACEPARENT_HEADER = 'traceparent';
 /**
  * Map intended to keep track of current XHR objects associated to a span.
  */
-const xhrSpans = new Map<XhrWithUrl, Span>();
+const xhrSpans = new Map<XhrWithOcWebData, Span>();
 
 // Keeps track of the current xhr tasks that are running. This is
 // useful to clear the Performance Resource Timing entries when no
@@ -56,15 +56,23 @@ export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
  * Intercepts task as XHR if it is a tracked task and its target object is
  * instance of `XMLHttpRequest`.
  * In case the task is intercepted, sets the Trace Context Header to it and
- * creates a child span related to this XHR in case it is OPENED.
+ * creates a child span related to this XHR in case it is OPENED and `send()`
+ * has been called.
  * In case the XHR is DONE, end the child span.
  */
 export function interceptXhrTask(task: AsyncTask) {
   if (!isTrackedTask(task)) return;
   if (!(task.target instanceof XMLHttpRequest)) return;
 
-  const xhr = task.target as XhrWithUrl;
-  if (xhr.readyState === XMLHttpRequest.OPENED) {
+  const xhr = task.target as XhrWithOcWebData;
+  if (xhr.readyState === XMLHttpRequest.OPENED && xhr._ocweb_has_called_send) {
+    // Only generate the XHR and send the tracer if it is OPENED and the
+    // `send()` method has beend called.
+    // This avoids associating the wrong performance resource timing entries
+    // to the XHR when `send()` is not called right after `open()` is called.
+    // This is because there might be a long gap between `open()` and `send()`
+    // methods are called, and within this gap there might be other HTTP
+    // requests causing more entries to the Performance Resource buffer.
     incrementXhrTaskCount();
     const rootSpan: RootSpan = task.zone.get('data').rootSpan;
     setTraceparentContextHeader(xhr, rootSpan);
@@ -75,7 +83,7 @@ export function interceptXhrTask(task: AsyncTask) {
 }
 
 function setTraceparentContextHeader(
-  xhr: XhrWithUrl,
+  xhr: XhrWithOcWebData,
   rootSpan: RootSpan
 ): void {
   // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
@@ -98,7 +106,7 @@ function setTraceparentContextHeader(
   }
 }
 
-function endXhrSpan(xhr: XhrWithUrl): void {
+function endXhrSpan(xhr: XhrWithOcWebData): void {
   const span = xhrSpans.get(xhr);
   if (span) {
     // TODO: Investigate more to send the the status code a `number` rather
@@ -124,7 +132,7 @@ function maybeClearPerfResourceBuffer(): void {
   }
 }
 
-function joinPerfResourceDataToSpan(xhr: XhrWithUrl, span: Span) {
+function joinPerfResourceDataToSpan(xhr: XhrWithOcWebData, span: Span) {
   const xhrPerfResourceTiming = getXhrPerfomanceData(xhr.responseURL, span);
   if (!xhrPerfResourceTiming) return;
 
