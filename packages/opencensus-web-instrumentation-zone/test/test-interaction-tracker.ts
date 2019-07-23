@@ -159,7 +159,7 @@ describe('InteractionTracker', () => {
     fakeInteraction(onclick, button);
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
-      expect(rootSpan.name).toBe("<button> #test_element click");
+      expect(rootSpan.name).toBe('button#test_element click');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();
@@ -269,6 +269,29 @@ describe('InteractionTracker', () => {
 
     onEndSpanSpy.and.callFake((rootSpan: Span) => {
       expect(rootSpan.name).toBe('Navigation /test_navigation');
+      expect(rootSpan.attributes['EventType']).toBe('click');
+      expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.ended).toBeTruthy();
+      expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
+      expect(rootSpan.duration).toBeLessThanOrEqual(
+        SET_TIMEOUT_TIME + TIME_BUFFER
+      );
+      done();
+    });
+  });
+
+  it('should handle route transition interaction and not rename the interaction as Navigation', done => {
+    const onclick = () => {
+      setTimeout(() => {
+        history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
+      }, SET_TIMEOUT_TIME);
+    };
+    // Create a button without 'data-ocweb-id' attribute.
+    const button = createButton('Test navigation');
+    fakeInteraction(onclick, button);
+
+    onEndSpanSpy.and.callFake((rootSpan: Span) => {
+      expect(rootSpan.name).toBe('Test navigation');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
       expect(rootSpan.ended).toBeTruthy();

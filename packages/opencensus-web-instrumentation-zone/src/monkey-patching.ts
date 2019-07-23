@@ -15,9 +15,11 @@
  */
 
 import { XhrWithUrl } from './zone-types';
+import { patchHistoryApi } from './history-api-patch';
 
 export function doPatching() {
   patchXmlHttpRequestOpen();
+  patchHistoryApi();
 }
 
 // Patch the `XMLHttpRequest.open` method to add method used for the request.

@@ -38,3 +38,10 @@ export function isTrackedTask(task: Task): boolean {
     task.zone.get('data').isTracingZone
   );
 }
+
+/**
+ * Get the trace ID from the zone properties.
+ */
+export function getTraceId(zone: Zone): string {
+  return zone && zone.get('data') ? zone.get('data').traceId : '';
+}
