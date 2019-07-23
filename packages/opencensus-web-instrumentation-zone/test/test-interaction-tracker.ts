@@ -261,6 +261,12 @@ describe('InteractionTracker', () => {
   });
 
   describe('Route transition', () => {
+    afterEach(() => {
+      // To allow the several tests to detect the route transition, go back to
+      // the home page.
+      history.back();
+    });
+
     it('should handle route transition interaction and rename the interaction as Navigation', done => {
       const onclick = () => {
         setTimeout(() => {
