@@ -290,7 +290,7 @@ describe('InteractionTracker', () => {
       });
     });
 
-    it('should handle route transition interaction and not rename the interaction as Navigation', done => {
+    it('should not rename span as Navigation if it used data-ocweb-id', done => {
       const onclick = () => {
         setTimeout(() => {
           history.pushState({ test: 'testing' }, 'page 2', '/test_navigation');
