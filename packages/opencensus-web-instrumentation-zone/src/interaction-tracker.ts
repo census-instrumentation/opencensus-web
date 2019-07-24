@@ -167,11 +167,8 @@ export class InteractionTracker {
         // to capture the new zone, also, start the `OnPageInteraction` to capture the
         // new root span.
         this.currentEventTracingZone = Zone.current;
-        if (interactionName.isReplaceable) {
-          this.currentEventTracingZone.get(
-            'data'
-          ).isRootSpanNameReplaceable = true;
-        }
+        this.currentEventTracingZone.get('data')['isRootSpanNameReplaceable'] =
+          interactionName.isReplaceable;
         this.interactions[traceId] = startOnPageInteraction({
           startLocationHref: location.href,
           startLocationPath: location.pathname,
