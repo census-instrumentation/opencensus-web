@@ -18,21 +18,22 @@ import {
   isSampled,
   makeRandomSamplingDecision,
   setInitialLoadSpanContext,
+  initialLoadSpanContext,
 } from '../src/common/initial-load-util';
 
 describe('Initial Load Util', () => {
   describe('isSampled', () => {
     it('returns true if sampling bit is set', () => {
       setInitialLoadSpanContext({ traceId: '', spanId: '', options: 1 });
-      expect(isSampled()).toBe(true);
+      expect(isSampled(initialLoadSpanContext)).toBe(true);
       setInitialLoadSpanContext({ traceId: '', spanId: '', options: 5 });
-      expect(isSampled()).toBe(true);
+      expect(isSampled(initialLoadSpanContext)).toBe(true);
     });
     it('returns false if sampling bit is not set', () => {
       setInitialLoadSpanContext({ traceId: '', spanId: '', options: 0 });
-      expect(isSampled()).toBe(false);
+      expect(isSampled(initialLoadSpanContext)).toBe(false);
       setInitialLoadSpanContext({ traceId: '', spanId: '', options: 4 });
-      expect(isSampled()).toBe(false);
+      expect(isSampled(initialLoadSpanContext)).toBe(false);
     });
   });
 

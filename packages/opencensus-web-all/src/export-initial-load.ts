@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  isSampled,
-  tracing,
-  setInitialLoadSpanContext,
-} from '@opencensus/web-core';
+import { isSampled, tracing } from '@opencensus/web-core';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
 import {
   clearPerfEntries,
@@ -70,9 +66,7 @@ export function exportRootSpanAfterLoadEvent() {
 function exportInitialLoadSpans() {
   setTimeout(() => {
     const spanContext = getInitialLoadSpanContext();
-    // Set the span context to allow passing it around OpenCensus Web.
-    setInitialLoadSpanContext(spanContext);
-    if (!isSampled()) return; // Don't export if initial load is not sampled.
+    if (!isSampled(spanContext)) return; // Don't export if not sampled.
 
     const perfEntries = getPerfEntries();
 

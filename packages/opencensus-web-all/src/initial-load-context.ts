@@ -19,6 +19,7 @@ import {
   randomTraceId,
   SpanContext,
   makeRandomSamplingDecision,
+  setInitialLoadSpanContext,
 } from '@opencensus/web-core';
 import { traceParentToSpanContext } from '@opencensus/web-propagation-tracecontext';
 
@@ -39,14 +40,22 @@ const DEFAULT_SAMPLE_RATE = 0.0001;
  * marked sampled.
  */
 export function getInitialLoadSpanContext(): SpanContext {
-  if (!windowWithOcwGlobals.traceparent) return randomSampledSpanContext();
-  const spanContext = traceParentToSpanContext(
-    windowWithOcwGlobals.traceparent
-  );
-  if (!spanContext) {
-    console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
-    return randomSampledSpanContext();
+  let spanContext: SpanContext;
+  if (!windowWithOcwGlobals.traceparent) {
+    spanContext = randomSampledSpanContext();
+  } else {
+    const spanContextFromTraceparent = traceParentToSpanContext(
+      windowWithOcwGlobals.traceparent
+    );
+    if (!spanContextFromTraceparent) {
+      console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
+      spanContext = randomSampledSpanContext();
+    } else {
+      spanContext = spanContextFromTraceparent;
+    }
   }
+  // Set the span context to allow passing it around OpenCensus Web.
+  setInitialLoadSpanContext(spanContext);
   return spanContext;
 }
 

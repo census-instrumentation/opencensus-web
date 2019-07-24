@@ -19,17 +19,16 @@ import { SpanContext } from '@opencensus/web-types';
 /**
  * Store the Span Context generated for the initial load.
  */
-let initialLoadSpanContext: SpanContext;
+export let initialLoadSpanContext: SpanContext;
 
 const IS_SAMPLED_BIT = 0x1;
 
 /**
  * Returns whether sampling hint bit of the intial load span context `options`
  * is set.
- * The used Span Context is the one set by `setInitialLoadSpanContext`.
  */
-export function isSampled() {
-  const options = initialLoadSpanContext.options;
+export function isSampled(spanContext: SpanContext) {
+  const options = spanContext.options;
   if (!options) return false;
   return !!(options & IS_SAMPLED_BIT);
 }

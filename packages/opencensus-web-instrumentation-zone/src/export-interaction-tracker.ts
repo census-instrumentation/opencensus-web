@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { tracing, isSampled } from '@opencensus/web-core';
+import {
+  tracing,
+  isSampled,
+  initialLoadSpanContext,
+} from '@opencensus/web-core';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
 import { WindowWithOcwGlobals } from './zone-types';
 
@@ -45,7 +49,7 @@ export function startInteractionTracker() {
   // Context.
   // If it is sampled, all the interactions will be sampled, otherwise,
   // none of them are sampled.
-  if (!isSampled()) return;
+  if (!isSampled(initialLoadSpanContext)) return;
 
   doPatching();
   setupExporter();
