@@ -20,6 +20,7 @@ import {
   Span,
   ATTRIBUTE_HTTP_STATUS_CODE,
   ATTRIBUTE_HTTP_METHOD,
+  setInitialLoadSpanContext,
 } from '@opencensus/web-core';
 import {
   InteractionTracker,
@@ -37,6 +38,11 @@ describe('InteractionTracker', () => {
   doPatching();
   InteractionTracker.startTracking();
   let onEndSpanSpy: jasmine.Spy;
+  const windowWithOcGlobals = window as WindowWithOcwGlobals;
+  // Sample 100% of interactions for the testing. Necessary as the sampling
+  // decision is done in the initial load page and the interaction tracker uses
+  // the same sampling decision.
+  setInitialLoadSpanContext({ traceId: '', spanId: '', options: 1 });
 
   // Use Buffer time as we expect that these interactions take
   // a little extra time to complete due to the setTimeout that
@@ -328,7 +334,7 @@ describe('InteractionTracker', () => {
     it('should handle HTTP requets and do not set Trace Context Header', done => {
       // Set a diferent ocTraceHeaderHostRegex to test that the trace context header is not
       // sent as the url request does not match the regex.
-      (window as WindowWithOcwGlobals).ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
+      windowWithOcGlobals.ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
       const setRequestHeaderSpy = spyOn(
         XMLHttpRequest.prototype,
         'setRequestHeader'
@@ -405,6 +411,7 @@ describe('InteractionTracker', () => {
           spanContextToTraceParent({
             traceId: rootSpan.traceId,
             spanId: childSpan.id,
+            options: 1, // Sampled trace
           })
         );
         expect(childSpan.name).toBe('/test');
@@ -483,6 +490,7 @@ describe('InteractionTracker', () => {
           spanContextToTraceParent({
             traceId: rootSpan.traceId,
             spanId: childSpan.id,
+            options: 1, // Sampled trace
           })
         );
         expect(childSpan.name).toBe('/test');

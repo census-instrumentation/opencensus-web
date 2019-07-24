@@ -60,6 +60,7 @@ export declare interface WindowWithOcwGlobals extends Window {
    * Example 'https://my-oc-agent-deployment.com:55678'
    */
   ocAgent?: string;
+
   /**
    * If the `traceparent` global variable described above is not present on the
    * `window`, then a trace sampling decision will be made randomly with the
@@ -67,8 +68,10 @@ export declare interface WindowWithOcwGlobals extends Window {
    */
   ocSampleRate?: number;
 
-  // RegExp to control what origins will the `trace context header` be sent.
-  // That way the header is not added to all xhrs.
+  /**
+   * RegExp to control what origins will the `trace context header` be sent.
+   * That way the header is not added to all xhrs.
+   */
   ocTraceHeaderHostRegex?: string | RegExp;
 }
 

@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { randomSpanId, randomTraceId, SpanContext } from '@opencensus/web-core';
+import {
+  randomSpanId,
+  randomTraceId,
+  SpanContext,
+  makeRandomSamplingDecision,
+} from '@opencensus/web-core';
 import { traceParentToSpanContext } from '@opencensus/web-propagation-tracecontext';
 
 import { WindowWithOcwGlobals } from './types';
@@ -50,9 +55,6 @@ function randomSampledSpanContext() {
   return {
     traceId: randomTraceId(),
     spanId: randomSpanId(),
-    // Math.random returns a number in the 0-1 range (inclusive of 0 but not 1).
-    // That means we should use the strict `<` operator to compare it to the
-    // sample rate. A value of 1 for `options` indicates trace sampling.
-    options: Math.random() < sampleRate ? 1 : 0,
+    options: makeRandomSamplingDecision(sampleRate),
   };
 }
