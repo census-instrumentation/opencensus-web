@@ -15,14 +15,7 @@
  */
 
 import { tracing } from '@opencensus/web-core';
-import { getTraceId } from './util';
-
-/**
- * Set of strings to store the trace Id of interactions that might change the
- * name during interaction tracking. This is the case when interaction name is
- * a CSS selector.
- */
-export const interactionsMightChangeName = new Set<string>();
+import { isRootSpanNameReplaceable } from './util';
 
 /**
  * Monkey-patch `History API` to detect route transitions. This is necessary
@@ -82,13 +75,11 @@ function maybeUpdateInteractionName(previousLocationPathname: string) {
   // that means the name might change to `Navigation <pathname>` as this is a
   // more understadable name for the interaction in case the location
   // pathname actually changed.
-  const traceId = getTraceId(Zone.current);
   if (
     rootSpan &&
-    interactionsMightChangeName.has(traceId) &&
+    isRootSpanNameReplaceable(Zone.current) &&
     previousLocationPathname !== location.pathname
   ) {
     rootSpan.name = 'Navigation ' + location.pathname;
-    interactionsMightChangeName.delete(traceId);
   }
 }

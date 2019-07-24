@@ -26,9 +26,8 @@ import {
   startOnPageInteraction,
 } from './on-page-interaction-stop-watch';
 
-import { isTrackedTask, getTraceId } from './util';
+import { isTrackedTask, getTraceId, resolveInteractionName } from './util';
 import { interceptXhrTask } from './xhr-interceptor';
-import { interactionsMightChangeName } from './history-api-patch';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
 declare const Zone: ZoneType & { prototype: Zone };
@@ -150,8 +149,6 @@ export class InteractionTracker {
     interactionName: InteractionName
   ) {
     const traceId = randomTraceId();
-    if (interactionName.isReplaceable) interactionsMightChangeName.add(traceId);
-
     const spanOptions = {
       name: interactionName.name,
       spanContext: {
@@ -170,6 +167,11 @@ export class InteractionTracker {
         // to capture the new zone, also, start the `OnPageInteraction` to capture the
         // new root span.
         this.currentEventTracingZone = Zone.current;
+        if (interactionName.isReplaceable) {
+          this.currentEventTracingZone.get(
+            'data'
+          ).isRootSpanNameReplaceable = true;
+        }
         this.interactions[traceId] = startOnPageInteraction({
           startLocationHref: location.href,
           startLocationPath: location.pathname,
@@ -277,41 +279,6 @@ function getTrackedElement(task: AsyncTask): HTMLElement | null {
 }
 
 /**
- * Look for 'data-ocweb-id' attibute in the HTMLElement in order to
- * give a name to the user interaction and Root span. If this attibute is
- * not present, use the element ID, tag name and event name, generating a CSS
- * selector. In this case, also mark the interaction name as replaceable.
- * Thus, the resulting interaction name will be: "<tag_name>#id event_name"
- * (e.g. "button#save_changes click").
- * In case the name is not resolvable, return undefined (e.g. element is the
- * `document`).
- * @param element
- */
-function resolveInteractionName(
-  element: HTMLElement | null,
-  eventName: string
-): InteractionName | undefined {
-  if (!element) return undefined;
-  if (!element.getAttribute) return undefined;
-  if (element.hasAttribute('disabled')) {
-    return undefined;
-  }
-  let interactionName = element.getAttribute('data-ocweb-id');
-  let nameCanChange = false;
-  if (!interactionName) {
-    const elementId = element.getAttribute('id') || '';
-    const tagName = element.tagName;
-    if (!tagName) return undefined;
-    nameCanChange = true;
-    interactionName =
-      tagName.toLowerCase() +
-      (elementId ? '#' + elementId + ' ' : '') +
-      eventName;
-  }
-  return { name: interactionName, isReplaceable: nameCanChange };
-}
-
-/**
  * Whether or not a task should be tracked as part of an interaction.
  */
 function shouldCountTask(task: Task): boolean {
@@ -323,8 +290,8 @@ function shouldCountTask(task: Task): boolean {
   // This case only applies for `setInterval` as we support `setTimeout`.
   // TODO: ideally OpenCensus Web can manage this kind of tasks, so for example
   // if a periodic task ends up doing some work in the future it will still
-  // be associated with that same older tracing zone. This is something we have to
-  // think of.
+  // be associated with that same older tracing zone. This is something we have
+  // to think of.
   if (task.data.isPeriodic) return false;
 
   // We're only interested in macroTasks and microTasks.

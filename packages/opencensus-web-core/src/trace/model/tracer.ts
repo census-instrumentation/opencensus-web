@@ -83,6 +83,7 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
           data: {
             isTracingZone: true,
             traceId,
+            isRootSpanNameReplaceable: false, // As default is not replaceable.
           },
         },
       };
