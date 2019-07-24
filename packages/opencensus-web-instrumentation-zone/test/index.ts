@@ -19,3 +19,4 @@
 import './test-on-page-interaction-stop-watch';
 import './test-interaction-tracker';
 import './test-perf-resource-timing-selector';
+import './test-util';

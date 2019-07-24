@@ -82,3 +82,14 @@ export interface XhrPerformanceResourceTiming {
   corsPreFlightRequest?: PerformanceResourceTiming;
   mainRequest: PerformanceResourceTiming;
 }
+
+/**
+ * Type to allow the interaction tracker know whether the interaction name can
+ * change or not. As part of naming the interaction, the name could be given
+ * using the `data-ocweb-id` attribute or as a CSS selector, however when there
+ * are route transitions, the name might change to `Navigation URL`.
+ */
+export interface InteractionName {
+  name: string;
+  isReplaceable: boolean;
+}
