@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  randomSpanId,
-  randomTraceId,
-  SpanContext,
-  makeRandomSamplingDecision,
-  setInitialLoadSpanContext,
-} from '@opencensus/web-core';
+import { SpanContext } from '@opencensus/web-types';
+
 import { traceParentToSpanContext } from '@opencensus/web-propagation-tracecontext';
 
-import { WindowWithOcwGlobals } from './types';
+import { WindowWithInitialLoadGlobals } from './types';
+import { randomTraceId, randomSpanId } from '@opencensus/web-core';
+import { makeRandomSamplingDecision } from './initial-load-sampling';
 
-const windowWithOcwGlobals = window as WindowWithOcwGlobals;
+const windowWithOcwGlobals = window as WindowWithInitialLoadGlobals;
 
 /**
  * The default trace sampling rate if no `traceparent` and no `ocSampleRate`
@@ -34,29 +31,45 @@ const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 const DEFAULT_SAMPLE_RATE = 0.0001;
 
 /**
+ * Store the Span Context generated for the initial load. This Span Context
+ * will be passed around other packages in order to have the same sampling
+ * decision and allow to relate the initial load trace to other traces.
+ */
+let initialLoadSpanContext: SpanContext | undefined;
+
+/**
  * Gets a span context for the initial page load from the `window.traceparent`,
  * or generates a new random span context if it is missing. For now the new
  * random span context generated if `window.traceparent` is missing is always
- * marked sampled.
+ * marked sampled. If the initial load span context was already generated,
+ * return `initialLoadSpanContext`.
  */
 export function getInitialLoadSpanContext(): SpanContext {
-  let spanContext: SpanContext;
+  if (initialLoadSpanContext) return initialLoadSpanContext;
+
   if (!windowWithOcwGlobals.traceparent) {
-    spanContext = randomSampledSpanContext();
+    initialLoadSpanContext = randomSampledSpanContext();
   } else {
-    const spanContextFromTraceparent = traceParentToSpanContext(
+    const spanContext = traceParentToSpanContext(
       windowWithOcwGlobals.traceparent
     );
-    if (!spanContextFromTraceparent) {
+    if (!spanContext) {
       console.log(`Invalid traceparent: ${windowWithOcwGlobals.traceparent}`);
-      spanContext = randomSampledSpanContext();
+      initialLoadSpanContext = randomSampledSpanContext();
     } else {
-      spanContext = spanContextFromTraceparent;
+      initialLoadSpanContext = spanContext;
     }
   }
-  // Set the span context to allow passing it around OpenCensus Web.
-  setInitialLoadSpanContext(spanContext);
-  return spanContext;
+  return initialLoadSpanContext;
+}
+
+/**
+ * Set initial load span context as undefined. This is helpful for test to
+ * reset the previously generated span context.
+ * This is only exported for testing purposes.
+ */
+export function resetInitialLoadSpanContext() {
+  initialLoadSpanContext = undefined;
 }
 
 function randomSampledSpanContext() {

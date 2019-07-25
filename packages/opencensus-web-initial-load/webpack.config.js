@@ -13,3 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: './src/index.ts',
+  output: {filename: 'bundle.js'},
+  resolve: {extensions: ['.ts', '.js']},
+  devtool: 'inline-source-map',
+  module: {
+    rules: [
+      {test: /\.ts$/, use: 'ts-loader'},
+      {
+        test: /\.ts$/,
+        exclude: [path.resolve(__dirname, 'test')],
+        enforce: 'post',
+        use: {
+          loader: 'istanbul-instrumenter-loader',
+          options: {esModules: true},
+        },
+      },
+    ],
+  },
+};

@@ -13,3 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export { exportRootSpanAfterLoadEvent } from './export-initial-load';
+export { getInitialLoadSpanContext } from './initial-load-context';
+export { isSampled } from './initial-load-sampling';

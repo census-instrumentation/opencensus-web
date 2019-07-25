@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RootSpan } from '@opencensus/web-core';
+import { RootSpan, WindowWithOcwGlobals } from '@opencensus/web-core';
 
 export interface AsyncTaskData extends TaskData {
   interactionId: string;
@@ -54,20 +54,8 @@ export type XhrWithOcWebData = HTMLElement &
   };
 
 /** Type for `window` object with variables OpenCensus Web interacts with. */
-export declare interface WindowWithOcwGlobals extends Window {
-  /**
-   * HTTP root URL of the agent endpoint to write traces to.
-   * Example 'https://my-oc-agent-deployment.com:55678'
-   */
-  ocAgent?: string;
-
-  /**
-   * If the `traceparent` global variable described above is not present on the
-   * `window`, then a trace sampling decision will be made randomly with the
-   * specified sample rate. If not specified, a default sampling rate is used.
-   */
-  ocSampleRate?: number;
-
+export declare interface WindowWithInteractionGlobals
+  extends WindowWithOcwGlobals {
   /**
    * RegExp to control what origins will the `trace context header` be sent.
    * That way the header is not added to all xhrs.

@@ -16,11 +16,6 @@
 
 import { SpanContext } from '@opencensus/web-types';
 
-/**
- * Store the Span Context generated for the initial load.
- */
-export let initialLoadSpanContext: SpanContext;
-
 const IS_SAMPLED_BIT = 0x1;
 
 /**
@@ -41,14 +36,4 @@ export function makeRandomSamplingDecision(sampleRate: number): number {
   // That means we should use the strict `<` operator to compare it to the
   // sample rate. A value of 1 for `options` indicates trace sampling.
   return Math.random() < sampleRate ? 1 : 0;
-}
-
-/**
- * Set the initial load span context to pass it around OpenCensus Web.
- * This allows the interaction tracker and the user interactions to be related
- * to the initial load page, for instance, the user interactions will have the
- * same sampling decision as the initial load.
- */
-export function setInitialLoadSpanContext(spanContext: SpanContext) {
-  initialLoadSpanContext = spanContext;
 }

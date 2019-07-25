@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 
-import { getInitialLoadSpanContext } from '../src/initial-load-context';
-import { WindowWithOcwGlobals } from '../src/types';
+import { WindowWithInitialLoadGlobals } from '../src/types';
+import {
+  getInitialLoadSpanContext,
+  resetInitialLoadSpanContext,
+} from '../src/initial-load-context';
 
-const windowWithOcwGlobals = window as WindowWithOcwGlobals;
+const windowWithInitialLoadGlobals = window as WindowWithInitialLoadGlobals;
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const TRACE_ID_REGEX = /[0-9a-f]{32}/;
 
-describe('getInitialLoadSpanContext', () => {
+describe('Initial Load context', () => {
   let realTraceparent: string | undefined;
   let realOcSampleRate: number | undefined;
   beforeEach(() => {
-    realTraceparent = windowWithOcwGlobals.traceparent;
-    realOcSampleRate = windowWithOcwGlobals.ocSampleRate;
+    realTraceparent = windowWithInitialLoadGlobals.traceparent;
+    realOcSampleRate = windowWithInitialLoadGlobals.ocSampleRate;
+    resetInitialLoadSpanContext();
   });
   afterEach(() => {
-    windowWithOcwGlobals.traceparent = realTraceparent;
-    windowWithOcwGlobals.ocSampleRate = realOcSampleRate;
+    windowWithInitialLoadGlobals.traceparent = realTraceparent;
+    windowWithInitialLoadGlobals.ocSampleRate = realOcSampleRate;
   });
 
   it('sets trace and span ID from global `traceparent` when specified', () => {
-    windowWithOcwGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    windowWithInitialLoadGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
     expect(getInitialLoadSpanContext()).toEqual({
       traceId: '0af7651916cd43dd8448eb211c80319c',
       spanId: 'b7ad6b7169203331',
@@ -44,7 +48,7 @@ describe('getInitialLoadSpanContext', () => {
   });
 
   it('generates a new random span context if `traceparent` unspecified', () => {
-    windowWithOcwGlobals.traceparent = undefined;
+    windowWithInitialLoadGlobals.traceparent = undefined;
     spyOn(Math, 'random').and.returnValue(0);
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
@@ -55,7 +59,7 @@ describe('getInitialLoadSpanContext', () => {
 
   it('generates a new random span context if `traceparent` is invalid', () => {
     spyOn(Math, 'random').and.returnValue(0);
-    windowWithOcwGlobals.traceparent = 'invalid trace parent header!';
+    windowWithInitialLoadGlobals.traceparent = 'invalid trace parent header!';
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
     expect(spanContext.spanId).toMatch(SPAN_ID_REGEX);
@@ -63,18 +67,31 @@ describe('getInitialLoadSpanContext', () => {
     expect(Math.random).toHaveBeenCalled();
   });
 
+  it('Should not generate new span context if it was already generated', () => {
+    windowWithInitialLoadGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    // Generate the initial load span context.
+    const generatedSpanContext = getInitialLoadSpanContext();
+    expect(generatedSpanContext).toEqual({
+      traceId: '0af7651916cd43dd8448eb211c80319c',
+      spanId: 'b7ad6b7169203331',
+      options: 0,
+    });
+    // Should not generate a new span context.
+    expect(getInitialLoadSpanContext()).toBe(generatedSpanContext);
+  });
+
   describe('specifying the sampling rate with window.ocSampleRate', () => {
     beforeEach(() => {
       spyOn(Math, 'random').and.returnValue(0.5);
-      windowWithOcwGlobals.traceparent = undefined;
+      windowWithInitialLoadGlobals.traceparent = undefined;
     });
     it('sets trace options to unsampled if random above sample rate', () => {
-      windowWithOcwGlobals.ocSampleRate = 0.1;
+      windowWithInitialLoadGlobals.ocSampleRate = 0.1;
       const spanContext = getInitialLoadSpanContext();
       expect(spanContext.options).toBe(0);
     });
     it('sets trace options to sampled if random below sample rate', () => {
-      windowWithOcwGlobals.ocSampleRate = 1.0;
+      windowWithInitialLoadGlobals.ocSampleRate = 1.0;
       const spanContext = getInitialLoadSpanContext();
       expect(spanContext.options).toBe(1);
     });

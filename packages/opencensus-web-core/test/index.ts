@@ -21,7 +21,6 @@ import './test-id-util';
 import './test-root-span';
 import './test-span';
 import './test-time-util';
-import './test-initial-load-util';
 import './test-tracer';
 import './test-tracing';
 import './test-url-util';

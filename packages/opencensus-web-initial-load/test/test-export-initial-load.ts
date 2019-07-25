@@ -15,28 +15,10 @@
  */
 
 import { exportRootSpanAfterLoadEvent } from '../src/export-initial-load';
-import { WindowWithOcwGlobals } from '../src/types';
+import { WindowWithInitialLoadGlobals } from '../src/types';
+import { resetInitialLoadSpanContext } from '../src/initial-load-context';
 
-const windowWithOcwGlobals = window as WindowWithOcwGlobals;
-
-/**
- * Converts bytes in a hexadecimal encoded string to base64 encoded string.
- * This is needed because the JSON proto formatting that the OC agent expects
- * (via grpc-gateway) formats trace and span IDs in base64. This helper function
- * allows matching trace/span IDs that are sent in the XHR body to the agent.
- */
-function hexToBase64(hexString: string): string {
-  const match = hexString.match(/\w{2}/g);
-  if (!match) return '';
-  return window.btoa(
-    match
-      .map(hexByteChars =>
-        // tslint:disable-next-line:ban Needed to parse hexadecimal.
-        String.fromCharCode(parseInt(hexByteChars, 16))
-      )
-      .join('')
-  );
-}
+const windowWithOcwGlobals = window as WindowWithInitialLoadGlobals;
 
 describe('exportRootSpanAfterLoadEvent', () => {
   let realOcAgent: string | undefined;
@@ -49,6 +31,7 @@ describe('exportRootSpanAfterLoadEvent', () => {
     spyOn(XMLHttpRequest.prototype, 'setRequestHeader');
     realOcAgent = windowWithOcwGlobals.ocAgent;
     realTraceparent = windowWithOcwGlobals.traceparent;
+    resetInitialLoadSpanContext();
   });
   afterEach(() => {
     jasmine.clock().uninstall();
@@ -126,3 +109,22 @@ describe('exportRootSpanAfterLoadEvent', () => {
     expect(XMLHttpRequest.prototype.send).toHaveBeenCalled();
   });
 });
+
+/**
+ * Converts bytes in a hexadecimal encoded string to base64 encoded string.
+ * This is needed because the JSON proto formatting that the OC agent expects
+ * (via grpc-gateway) formats trace and span IDs in base64. This helper function
+ * allows matching trace/span IDs that are sent in the XHR body to the agent.
+ */
+function hexToBase64(hexString: string): string {
+  const match = hexString.match(/\w{2}/g);
+  if (!match) return '';
+  return window.btoa(
+    match
+      .map(hexByteChars =>
+        // tslint:disable-next-line:ban Needed to parse hexadecimal.
+        String.fromCharCode(parseInt(hexByteChars, 16))
+      )
+      .join('')
+  );
+}
