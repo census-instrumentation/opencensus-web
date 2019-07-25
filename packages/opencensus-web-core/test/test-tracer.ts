@@ -16,14 +16,14 @@
 
 import * as webTypes from '@opencensus/web-types';
 import { Tracer } from '../src/trace/model/tracer';
-import { WindowWithZone } from '../src/trace/model/types';
+import { WindowWithOcwGlobals } from '../src/trace/model/types';
 
 describe('Tracer', () => {
   let tracer: Tracer;
   let listener: webTypes.SpanEventListener;
   const options = { name: 'test' };
   let realZone: Function | undefined;
-  const windowWithZone = window as WindowWithZone;
+  const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
   beforeEach(() => {
     tracer = new Tracer();
@@ -36,12 +36,12 @@ describe('Tracer', () => {
 
   describe('Zone is not present', () => {
     beforeEach(() => {
-      realZone = windowWithZone.Zone;
-      windowWithZone.Zone = undefined;
+      realZone = windowWithOcwGlobals.Zone;
+      windowWithOcwGlobals.Zone = undefined;
     });
 
     afterEach(() => {
-      windowWithZone.Zone = realZone;
+      windowWithOcwGlobals.Zone = realZone;
     });
 
     it('isZonePresent() is false', () => {

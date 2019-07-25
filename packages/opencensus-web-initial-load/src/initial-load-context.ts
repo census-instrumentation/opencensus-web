@@ -18,11 +18,14 @@ import { SpanContext } from '@opencensus/web-types';
 
 import { traceParentToSpanContext } from '@opencensus/web-propagation-tracecontext';
 
-import { WindowWithInitialLoadGlobals } from './types';
-import { randomTraceId, randomSpanId } from '@opencensus/web-core';
+import {
+  randomTraceId,
+  randomSpanId,
+  WindowWithOcwGlobals,
+} from '@opencensus/web-core';
 import { makeRandomSamplingDecision } from './initial-load-sampling';
 
-const windowWithOcwGlobals = window as WindowWithInitialLoadGlobals;
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 /**
  * The default trace sampling rate if no `traceparent` and no `ocSampleRate`

@@ -19,7 +19,7 @@ import { RootSpan } from './root-span';
 import { Span } from './span';
 import { TracerBase } from './tracer-base';
 import { randomTraceId } from '../../common/id-util';
-import { WindowWithZone } from './types';
+import { WindowWithOcwGlobals } from './types';
 
 /** Tracer manages the current root span and trace header propagation. */
 export class Tracer extends TracerBase implements webTypes.Tracer {
@@ -133,6 +133,6 @@ export class Tracer extends TracerBase implements webTypes.Tracer {
   wrapEmitter(emitter: webTypes.NodeJsEventEmitter) {}
 
   isZonePresent(): boolean {
-    return !!(window as WindowWithZone).Zone;
+    return !!(window as WindowWithOcwGlobals).Zone;
   }
 }

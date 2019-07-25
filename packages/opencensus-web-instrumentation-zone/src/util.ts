@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { WindowWithInteractionGlobals, InteractionName } from './zone-types';
-import { parseUrl } from '@opencensus/web-core';
+import { InteractionName } from './zone-types';
+import { parseUrl, WindowWithOcwGlobals } from '@opencensus/web-core';
 
 /** Check that the trace */
 export function traceOriginMatchesOrSameOrigin(xhrUrl: string): boolean {
-  const traceHeaderHostRegex = (window as WindowWithInteractionGlobals)
+  const traceHeaderHostRegex = (window as WindowWithOcwGlobals)
     .ocTraceHeaderHostRegex as string;
   const parsedUrl = parseUrl(xhrUrl);
 

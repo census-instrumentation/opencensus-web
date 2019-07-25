@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-/** Interface to add `Zone` variable, used to check the `Zone` presence. */
-export interface WindowWithZone extends Window {
-  Zone?: Function;
-}
-
 /** Type for `window` object with variables OpenCensus Web interacts with. */
 export declare interface WindowWithOcwGlobals extends Window {
   /**
@@ -49,4 +44,13 @@ export declare interface WindowWithOcwGlobals extends Window {
    * specified sample rate. If not specified, a default sampling rate is used.
    */
   ocSampleRate?: number;
+
+  /** Used to check the `Zone` presence as a global variable. */
+  Zone?: Function;
+
+  /**
+   * RegExp to control what origins will the `trace context header` be sent.
+   * That way the header is not added to all xhrs.
+   */
+  ocTraceHeaderHostRegex?: string | RegExp;
 }

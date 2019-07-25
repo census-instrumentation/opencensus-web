@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { WindowWithInitialLoadGlobals } from '../src/types';
+import { WindowWithOcwGlobals } from '@opencensus/web-core';
 import {
   getInitialLoadSpanContext,
   resetInitialLoadSpanContext,
 } from '../src/initial-load-context';
 
-const windowWithInitialLoadGlobals = window as WindowWithInitialLoadGlobals;
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const TRACE_ID_REGEX = /[0-9a-f]{32}/;
@@ -29,17 +29,17 @@ describe('Initial Load context', () => {
   let realTraceparent: string | undefined;
   let realOcSampleRate: number | undefined;
   beforeEach(() => {
-    realTraceparent = windowWithInitialLoadGlobals.traceparent;
-    realOcSampleRate = windowWithInitialLoadGlobals.ocSampleRate;
+    realTraceparent = windowWithOcwGlobals.traceparent;
+    realOcSampleRate = windowWithOcwGlobals.ocSampleRate;
     resetInitialLoadSpanContext();
   });
   afterEach(() => {
-    windowWithInitialLoadGlobals.traceparent = realTraceparent;
-    windowWithInitialLoadGlobals.ocSampleRate = realOcSampleRate;
+    windowWithOcwGlobals.traceparent = realTraceparent;
+    windowWithOcwGlobals.ocSampleRate = realOcSampleRate;
   });
 
   it('sets trace and span ID from global `traceparent` when specified', () => {
-    windowWithInitialLoadGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    windowWithOcwGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
     expect(getInitialLoadSpanContext()).toEqual({
       traceId: '0af7651916cd43dd8448eb211c80319c',
       spanId: 'b7ad6b7169203331',
@@ -48,7 +48,7 @@ describe('Initial Load context', () => {
   });
 
   it('generates a new random span context if `traceparent` unspecified', () => {
-    windowWithInitialLoadGlobals.traceparent = undefined;
+    windowWithOcwGlobals.traceparent = undefined;
     spyOn(Math, 'random').and.returnValue(0);
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
@@ -59,7 +59,7 @@ describe('Initial Load context', () => {
 
   it('generates a new random span context if `traceparent` is invalid', () => {
     spyOn(Math, 'random').and.returnValue(0);
-    windowWithInitialLoadGlobals.traceparent = 'invalid trace parent header!';
+    windowWithOcwGlobals.traceparent = 'invalid trace parent header!';
     const spanContext = getInitialLoadSpanContext();
     expect(spanContext.traceId).toMatch(TRACE_ID_REGEX);
     expect(spanContext.spanId).toMatch(SPAN_ID_REGEX);
@@ -68,7 +68,7 @@ describe('Initial Load context', () => {
   });
 
   it('Should not generate new span context if it was already generated', () => {
-    windowWithInitialLoadGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    windowWithOcwGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
     // Generate the initial load span context.
     const generatedSpanContext = getInitialLoadSpanContext();
     expect(generatedSpanContext).toEqual({
@@ -83,15 +83,15 @@ describe('Initial Load context', () => {
   describe('specifying the sampling rate with window.ocSampleRate', () => {
     beforeEach(() => {
       spyOn(Math, 'random').and.returnValue(0.5);
-      windowWithInitialLoadGlobals.traceparent = undefined;
+      windowWithOcwGlobals.traceparent = undefined;
     });
     it('sets trace options to unsampled if random above sample rate', () => {
-      windowWithInitialLoadGlobals.ocSampleRate = 0.1;
+      windowWithOcwGlobals.ocSampleRate = 0.1;
       const spanContext = getInitialLoadSpanContext();
       expect(spanContext.options).toBe(0);
     });
     it('sets trace options to sampled if random below sample rate', () => {
-      windowWithInitialLoadGlobals.ocSampleRate = 1.0;
+      windowWithOcwGlobals.ocSampleRate = 1.0;
       const spanContext = getInitialLoadSpanContext();
       expect(spanContext.options).toBe(1);
     });

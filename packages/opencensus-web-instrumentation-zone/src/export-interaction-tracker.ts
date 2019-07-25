@@ -19,9 +19,9 @@ import {
   getInitialLoadSpanContext,
 } from '@opencensus/web-initial-load';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
-import { WindowWithInteractionGlobals } from './zone-types';
+import { WindowWithOcwGlobals } from '@opencensus/web-core';
 
-const windowWithInteractionGlobals = window as WindowWithInteractionGlobals;
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 /** Trace endpoint in the OC agent. */
 const TRACE_ENDPOINT = '/v1/trace';
@@ -31,14 +31,14 @@ import { doPatching } from './monkey-patching';
 import { tracing } from '@opencensus/web-core';
 
 function setupExporter() {
-  if (!windowWithInteractionGlobals.ocAgent) {
+  if (!windowWithOcwGlobals.ocAgent) {
     console.log('Not configured to export page load spans.');
     return;
   }
 
   tracing.registerExporter(
     new OCAgentExporter({
-      agentEndpoint: `${windowWithInteractionGlobals.ocAgent}${TRACE_ENDPOINT}`,
+      agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
     })
   );
 }

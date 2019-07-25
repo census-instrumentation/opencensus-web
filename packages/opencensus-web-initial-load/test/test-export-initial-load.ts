@@ -15,10 +15,10 @@
  */
 
 import { exportRootSpanAfterLoadEvent } from '../src/export-initial-load';
-import { WindowWithInitialLoadGlobals } from '../src/types';
+import { WindowWithOcwGlobals } from '@opencensus/web-core';
 import { resetInitialLoadSpanContext } from '../src/initial-load-context';
 
-const windowWithOcwGlobals = window as WindowWithInitialLoadGlobals;
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 describe('exportRootSpanAfterLoadEvent', () => {
   let realOcAgent: string | undefined;

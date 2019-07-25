@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RootSpan, WindowWithOcwGlobals } from '@opencensus/web-core';
+import { RootSpan } from '@opencensus/web-core';
 
 export interface AsyncTaskData extends TaskData {
   interactionId: string;
@@ -52,16 +52,6 @@ export type XhrWithOcWebData = HTMLElement &
     // any HTTP request.
     _ocweb_has_called_send: boolean;
   };
-
-/** Type for `window` object with variables OpenCensus Web interacts with. */
-export declare interface WindowWithInteractionGlobals
-  extends WindowWithOcwGlobals {
-  /**
-   * RegExp to control what origins will the `trace context header` be sent.
-   * That way the header is not added to all xhrs.
-   */
-  ocTraceHeaderHostRegex?: string | RegExp;
-}
 
 /**
  * Allows to keep track of performance entries related to a XHR.

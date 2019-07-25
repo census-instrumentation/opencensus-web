@@ -20,6 +20,7 @@ import {
   Span,
   ATTRIBUTE_HTTP_STATUS_CODE,
   ATTRIBUTE_HTTP_METHOD,
+  WindowWithOcwGlobals,
 } from '@opencensus/web-core';
 import {
   InteractionTracker,
@@ -29,7 +30,6 @@ import {
   doPatching,
   setXhrAttributeHasCalledSend,
 } from '../src/monkey-patching';
-import { WindowWithInteractionGlobals } from '../src/zone-types';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
 import { getInitialLoadSpanContext } from '@opencensus/web-initial-load';
@@ -38,11 +38,11 @@ describe('InteractionTracker', () => {
   doPatching();
   InteractionTracker.startTracking();
   let onEndSpanSpy: jasmine.Spy;
-  const windowWithInteractionGlobals = window as WindowWithInteractionGlobals;
+  const windowWithOcwGlobals = window as WindowWithOcwGlobals;
   // Sample 100% of interactions for the testing. Necessary as the sampling
   // decision is supposed to be done in the initial load page and the
   // interaction tracker uses the same sampling decision.
-  windowWithInteractionGlobals.ocSampleRate = 1.0;
+  windowWithOcwGlobals.ocSampleRate = 1.0;
   getInitialLoadSpanContext();
 
   // Use Buffer time as we expect that these interactions take
@@ -366,7 +366,7 @@ describe('InteractionTracker', () => {
     it('should handle HTTP requets and do not set Trace Context Header', done => {
       // Set a diferent ocTraceHeaderHostRegex to test that the trace context header is not
       // sent as the url request does not match the regex.
-      windowWithInteractionGlobals.ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
+      windowWithOcwGlobals.ocTraceHeaderHostRegex = /"http:\/\/test-host".*/;
       const setRequestHeaderSpy = spyOn(
         XMLHttpRequest.prototype,
         'setRequestHeader'
@@ -417,7 +417,7 @@ describe('InteractionTracker', () => {
 
     it('should handle HTTP requets and set Trace Context Header', done => {
       // Set the ocTraceHeaderHostRegex value so the `traceparent` context header is set.
-      windowWithInteractionGlobals.ocTraceHeaderHostRegex = /.*/;
+      windowWithOcwGlobals.ocTraceHeaderHostRegex = /.*/;
       const setRequestHeaderSpy = spyOn(
         XMLHttpRequest.prototype,
         'setRequestHeader'

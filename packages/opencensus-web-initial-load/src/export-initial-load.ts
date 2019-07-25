@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { WindowWithInitialLoadGlobals } from './types';
-import { tracing } from '@opencensus/web-core';
+import { tracing, WindowWithOcwGlobals } from '@opencensus/web-core';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
 import { getInitialLoadSpanContext } from './initial-load-context';
 import { isSampled } from './initial-load-sampling';
@@ -25,7 +24,7 @@ import {
   clearPerfEntries,
 } from '@opencensus/web-instrumentation-perf';
 
-const windowWithInitialLoadGlobals = window as WindowWithInitialLoadGlobals;
+const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 /**
  * How long to wait after `load` event to export initial load spans. This allows
@@ -43,14 +42,14 @@ const TRACE_ENDPOINT = '/v1/trace';
  * export the spans for the initial page load.
  */
 export function exportRootSpanAfterLoadEvent() {
-  if (!windowWithInitialLoadGlobals.ocAgent) {
+  if (!windowWithOcwGlobals.ocAgent) {
     console.log('Not configured to export page load spans.');
     return;
   }
 
   tracing.registerExporter(
     new OCAgentExporter({
-      agentEndpoint: `${windowWithInitialLoadGlobals.ocAgent}${TRACE_ENDPOINT}`,
+      agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
     })
   );
 

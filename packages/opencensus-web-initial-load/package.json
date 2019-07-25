@@ -1,7 +1,7 @@
 {
   "name": "@opencensus/web-initial-load",
   "version": "0.0.3",
-  "description": "OpenCensus Initial Load trace",
+  "description": "OpenCensus Web trace instrumentation for the initial page load",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
