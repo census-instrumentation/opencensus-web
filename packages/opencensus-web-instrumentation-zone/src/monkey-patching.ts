@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { XhrWithOcWebData } from './zone-types';
+import { patchHistoryApi } from './history-api-patch';
 
 export function doPatching() {
+  patchHistoryApi();
   patchXmlHttpRequestOpen();
   patchXmlHttpRequestSend();
 }

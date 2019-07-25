@@ -20,13 +20,13 @@ import {
   SpanKind,
   RootSpan,
 } from '@opencensus/web-core';
-import { AsyncTask } from './zone-types';
+import { AsyncTask, InteractionName } from './zone-types';
 import {
   OnPageInteractionStopwatch,
   startOnPageInteraction,
 } from './on-page-interaction-stop-watch';
 
-import { isTrackedTask } from './util';
+import { isTrackedTask, getTraceId, resolveInteractionName } from './util';
 import { interceptXhrTask } from './xhr-interceptor';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
@@ -59,7 +59,6 @@ export class InteractionTracker {
     this.patchZoneRunTask();
     this.patchZoneScheduleTask();
     this.patchZoneCancelTask();
-    this.patchHistoryApi();
   }
 
   static startTracking(): void {
@@ -147,11 +146,11 @@ export class InteractionTracker {
     interceptingElement: HTMLElement,
     eventName: string,
     taskZone: Zone,
-    interactionName: string
+    interactionName: InteractionName
   ) {
     const traceId = randomTraceId();
     const spanOptions = {
-      name: interactionName,
+      name: interactionName.name,
       spanContext: {
         traceId,
         // This becomes the parentSpanId field of the root span, and the actual
@@ -168,6 +167,8 @@ export class InteractionTracker {
         // to capture the new zone, also, start the `OnPageInteraction` to capture the
         // new root span.
         this.currentEventTracingZone = Zone.current;
+        this.currentEventTracingZone.get('data')['isRootSpanNameReplaceable'] =
+          interactionName.isReplaceable;
         this.interactions[traceId] = startOnPageInteraction({
           startLocationHref: location.href,
           startLocationPath: location.pathname,
@@ -266,120 +267,12 @@ export class InteractionTracker {
     stopWatch.stopAndRecord();
     delete this.interactions[interactionId];
   }
-
-  // Monkey-patch `History API` to detect route transitions.
-  // This is necessary because there might be some cases when
-  // there are several interactions being tracked at the same time
-  // but if there is an user interaction that triggers a route transition
-  // while those interactions are still in tracking, only that interaction
-  // will have a `Navigation` name. Otherwise, if this is not patched, the
-  // other interactions will change the name to `Navigation` even if they
-  // did not cause the route transition.
-  private patchHistoryApi() {
-    const pushState = history.pushState;
-    history.pushState = (
-      data: unknown,
-      title: string,
-      url?: string | null | undefined
-    ) => {
-      patchHistoryApiMethod(pushState, data, title, url);
-    };
-
-    const replaceState = history.replaceState;
-    history.replaceState = (
-      data: unknown,
-      title: string,
-      url?: string | null | undefined
-    ) => {
-      patchHistoryApiMethod(replaceState, data, title, url);
-    };
-
-    const back = history.back;
-    history.back = () => {
-      patchHistoryApiMethod(back);
-    };
-
-    const forward = history.forward;
-    history.forward = () => {
-      patchHistoryApiMethod(forward);
-    };
-
-    const go = history.go;
-    history.go = (delta?: number) => {
-      patchHistoryApiMethod(go, delta);
-    };
-
-    const patchHistoryApiMethod = (func: Function, ...args: unknown[]) => {
-      // Store the location.pathname before it changes calling `func`.
-      const currentPathname = location.pathname;
-      func.call(history, ...args);
-      this.maybeUpdateInteractionName(currentPathname);
-    };
-  }
-
-  private maybeUpdateInteractionName(previousLocationPathname: string) {
-    const rootSpan = tracing.tracer.currentRootSpan;
-    // If for this interaction, the developer did not give any
-    // explicit attibute (`data-ocweb-id`) the current interaction
-    // name will start with a '<' that stands to the tag name. If that is
-    // the case, change the name to `Navigation <pathname>` as this is a more
-    // understadable name for the interaction.
-    // Also, we check if the location pathname did change.
-    if (
-      rootSpan &&
-      rootSpan.name.startsWith('<') &&
-      previousLocationPathname !== location.pathname
-    ) {
-      rootSpan.name = 'Navigation ' + location.pathname;
-    }
-  }
-}
-
-/**
- * Get the trace ID from the zone properties.
- * @param zone
- */
-function getTraceId(zone: Zone): string {
-  return zone && zone.get('data') ? zone.get('data').traceId : '';
 }
 
 function getTrackedElement(task: AsyncTask): HTMLElement | null {
   if (!(task.eventName && task.eventName === 'click')) return null;
 
   return task.target as HTMLElement;
-}
-
-/**
- * Look for 'data-ocweb-id' attibute in the HTMLElement in order to
- * give a name to the user interaction and Root span. If this attibute is
- * not present, use the element ID, tag name, event that triggered the interaction.
- * Thus, the resulting interaction name will be: "tag_name> id:'ID' event"
- * (e.g. "<BUTTON> id:'save_changes' click").
- * In case the the name is not resolvable, return empty string (e.g. element is the document).
- * @param element
- */
-function resolveInteractionName(
-  element: HTMLElement | null,
-  eventName: string
-): string {
-  if (!element) return '';
-  if (!element.getAttribute) return '';
-  if (element.hasAttribute('disabled')) {
-    return '';
-  }
-  let interactionName = element.getAttribute('data-ocweb-id');
-  if (!interactionName) {
-    const elementId = element.getAttribute('id') || '';
-    const tagName = element.tagName;
-    if (!tagName) return '';
-    interactionName =
-      '<' +
-      tagName +
-      '>' +
-      (elementId ? " id:'" + elementId + "' " : '') +
-      eventName;
-  }
-  return interactionName;
 }
 
 /**
@@ -394,8 +287,8 @@ function shouldCountTask(task: Task): boolean {
   // This case only applies for `setInterval` as we support `setTimeout`.
   // TODO: ideally OpenCensus Web can manage this kind of tasks, so for example
   // if a periodic task ends up doing some work in the future it will still
-  // be associated with that same older tracing zone. This is something we have to
-  // think of.
+  // be associated with that same older tracing zone. This is something we have
+  // to think of.
   if (task.data.isPeriodic) return false;
 
   // We're only interested in macroTasks and microTasks.
