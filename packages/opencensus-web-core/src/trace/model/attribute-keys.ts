@@ -89,3 +89,8 @@ export const LONG_TASK_PREFIX = 'long_task.';
  * long task.
  */
 export const ATTRIBUTE_LONG_TASK_ATTRIBUTION = `${LONG_TASK_PREFIX}attribution`;
+
+/**
+ * Attribute for spans to be related back to the initial load trace.
+ */
+export const ATTRIBUTE_INITIAL_LOAD_TRACE_ID = 'initial_load_trace_id';
