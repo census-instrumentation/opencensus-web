@@ -17,7 +17,7 @@
 import {
   isSampled,
   makeRandomSamplingDecision,
-} from '../src/initial-load-sampling';
+} from '../src/common/sampling-util';
 
 describe('Initial Load Util', () => {
   describe('isSampled', () => {

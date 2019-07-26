@@ -22,8 +22,8 @@ import {
   randomTraceId,
   randomSpanId,
   WindowWithOcwGlobals,
+  makeRandomSamplingDecision,
 } from '@opencensus/web-core';
-import { makeRandomSamplingDecision } from './initial-load-sampling';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 

@@ -19,6 +19,7 @@ export { RootSpan } from './trace/model/root-span';
 export { Span } from './trace/model/span';
 export { Tracer } from './trace/model/tracer';
 export { Tracing } from './trace/model/tracing';
+export { isSampled, makeRandomSamplingDecision } from './common/sampling-util';
 export { WindowWithOcwGlobals } from './trace/model/types';
 export * from './trace/model/attribute-keys';
 export { VERSION } from './version';

@@ -16,4 +16,3 @@
 
 export { exportRootSpanAfterLoadEvent } from './export-initial-load';
 export { getInitialLoadSpanContext } from './initial-load-context';
-export { isSampled } from './initial-load-sampling';

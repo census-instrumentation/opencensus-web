@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { tracing, WindowWithOcwGlobals } from '@opencensus/web-core';
+import { tracing, WindowWithOcwGlobals, isSampled } from '@opencensus/web-core';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
 import { getInitialLoadSpanContext } from './initial-load-context';
-import { isSampled } from './initial-load-sampling';
 import {
   getPerfEntries,
   getInitialLoadRootSpan,
