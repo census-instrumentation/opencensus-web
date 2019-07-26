@@ -19,7 +19,10 @@ import {
   ATTRIBUTE_HTTP_URL,
   ATTRIBUTE_HTTP_USER_AGENT,
   ATTRIBUTE_HTTP_PATH,
+  ATTRIBUTE_INITIAL_LOAD_TRACE_ID,
+  LinkType,
 } from '@opencensus/web-core';
+import { getInitialLoadSpanContext } from '@opencensus/web-initial-load';
 
 /** A helper class for tracking on page interactions. */
 export class OnPageInteractionStopwatch {
@@ -44,7 +47,8 @@ export class OnPageInteractionStopwatch {
   }
 
   /**
-   * Stops the stopwatch, fills root span attributes and ends the span.
+   * Stops the stopwatch. Adds root span attributes and link to the initial
+   * load page, also, ends the span.
    * If has remaining tasks do not end the root span.
    */
   stopAndRecord(): void {
@@ -56,6 +60,16 @@ export class OnPageInteractionStopwatch {
     rootSpan.addAttribute(ATTRIBUTE_HTTP_URL, this.data.startLocationHref);
     rootSpan.addAttribute(ATTRIBUTE_HTTP_PATH, this.data.startLocationPath);
     rootSpan.addAttribute(ATTRIBUTE_HTTP_USER_AGENT, navigator.userAgent);
+    const initialLoadSpanContext = getInitialLoadSpanContext();
+    rootSpan.addAttribute(
+      ATTRIBUTE_INITIAL_LOAD_TRACE_ID,
+      initialLoadSpanContext.traceId
+    );
+    rootSpan.addLink(
+      initialLoadSpanContext.traceId,
+      initialLoadSpanContext.spanId,
+      LinkType.CHILD_LINKED_SPAN
+    );
     rootSpan.end();
   }
 }

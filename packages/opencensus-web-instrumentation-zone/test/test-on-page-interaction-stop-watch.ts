@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { RootSpan, Tracer } from '@opencensus/web-core';
+import { RootSpan, Tracer, WindowWithOcwGlobals } from '@opencensus/web-core';
 import { OnPageInteractionStopwatch } from '../src/on-page-interaction-stop-watch';
 
 describe('OnPageInteractionStopWatch', () => {
@@ -21,6 +21,7 @@ describe('OnPageInteractionStopWatch', () => {
   let tracer: Tracer;
   let interaction: OnPageInteractionStopwatch;
   let target: HTMLElement;
+  const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
   describe('Tasks tracking', () => {
     beforeEach(() => {
@@ -53,6 +54,9 @@ describe('OnPageInteractionStopWatch', () => {
   });
 
   describe('stopAndRecord()', () => {
+    const traceId = '0af7651916cd43dd8448eb211c80319c';
+    const spanId = 'b7ad6b7169203331';
+    windowWithOcwGlobals.traceparent = `00-${traceId}-${spanId}-01`;
     beforeEach(() => {
       tracer = Tracer.instance;
       root = new RootSpan(tracer, { name: 'root1' });
@@ -72,6 +76,7 @@ describe('OnPageInteractionStopWatch', () => {
 
       expect(root.attributes['EventType']).toBe('click');
       expect(root.attributes['TargetElement']).toBe(target.tagName);
+      expect(root.attributes['initial_load_trace_id']).toBe(traceId);
       expect(tracer.onEndSpan).toHaveBeenCalledWith(root);
     });
     it('Should not finish the interaction when there are remaining tasks', () => {

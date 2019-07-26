@@ -128,6 +128,7 @@ const EXPECTED_ROOT_ATTRIBUTES: Attributes = {
   'http.url': 'http://localhost:4200/',
   'http.user_agent': USER_AGENT,
   'nav.type': 'navigate',
+  initial_load_trace_id: '0000000000000000000000000000000b',
 };
 const EXPECTED_ROOT_ANNOTATIONS: Annotation[] = [
   {

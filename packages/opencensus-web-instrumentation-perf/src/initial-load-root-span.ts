@@ -20,6 +20,7 @@ import {
   ATTRIBUTE_HTTP_USER_AGENT,
   ATTRIBUTE_LONG_TASK_ATTRIBUTION,
   ATTRIBUTE_NAV_TYPE,
+  ATTRIBUTE_INITIAL_LOAD_TRACE_ID,
   parseUrl,
   randomSpanId,
   randomTraceId,
@@ -92,6 +93,7 @@ export function getInitialLoadRootSpan(
   root.annotations = getNavigationAnnotations(perfEntries);
   root.attributes[ATTRIBUTE_HTTP_URL] = navigationUrl;
   root.attributes[ATTRIBUTE_HTTP_USER_AGENT] = navigator.userAgent;
+  root.attributes[ATTRIBUTE_INITIAL_LOAD_TRACE_ID] = root.traceId;
 
   if (navTiming) {
     root.endPerfTime = navTiming.loadEventEnd;

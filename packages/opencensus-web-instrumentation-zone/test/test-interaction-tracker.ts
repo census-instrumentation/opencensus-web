@@ -21,6 +21,8 @@ import {
   ATTRIBUTE_HTTP_STATUS_CODE,
   ATTRIBUTE_HTTP_METHOD,
   WindowWithOcwGlobals,
+  LinkType,
+  Link,
 } from '@opencensus/web-core';
 import {
   InteractionTracker,
@@ -32,18 +34,27 @@ import {
 } from '../src/monkey-patching';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import { createFakePerfResourceEntry, spyPerfEntryByType } from './util';
-import { getInitialLoadSpanContext } from '@opencensus/web-initial-load';
 
 describe('InteractionTracker', () => {
   doPatching();
   InteractionTracker.startTracking();
   let onEndSpanSpy: jasmine.Spy;
   const windowWithOcwGlobals = window as WindowWithOcwGlobals;
-  // Sample 100% of interactions for the testing. Necessary as the sampling
-  // decision is supposed to be done in the initial load page and the
-  // interaction tracker uses the same sampling decision.
-  windowWithOcwGlobals.ocSampleRate = 1.0;
-  getInitialLoadSpanContext();
+  // Set the traceparent to fake the initial load Span Context. Also, Sample
+  // 100% of interactions for the testing. Necessary as this is supposed to be
+  // done by the initial load page.
+  const INITIAL_LOAD_TRACE_ID = '0af7651916cd43dd8448eb211c80319c';
+  const INITIAL_LOAD_SPAN_ID = 'b7ad6b7169203331';
+  windowWithOcwGlobals.traceparent = `00-${INITIAL_LOAD_TRACE_ID}-${INITIAL_LOAD_SPAN_ID}-01`;
+
+  const EXPECTED_LINKS: Link[] = [
+    {
+      traceId: INITIAL_LOAD_TRACE_ID,
+      spanId: INITIAL_LOAD_SPAN_ID,
+      type: LinkType.CHILD_LINKED_SPAN,
+      attributes: {},
+    },
+  ];
 
   // Use Buffer time as we expect that these interactions take
   // a little extra time to complete due to the setTimeout that
@@ -66,10 +77,14 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       // As there is another setTimeOut that completes the interaction, the
-      // span duraction is not precise, then only test if the interaction duration
-      // finishes within a range.
+      // span duraction is not precise, then only test if the interaction
+      // duration finishes within a range.
       expect(rootSpan.duration).toBeLessThan(TIME_BUFFER);
       done();
     });
@@ -85,6 +100,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
       expect(rootSpan.duration).toBeLessThanOrEqual(
@@ -105,6 +124,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeLessThanOrEqual(TIME_BUFFER);
       done();
@@ -125,6 +148,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeGreaterThanOrEqual(interactionTime);
       //The duration has to be less than set to the canceled timeout.
@@ -152,6 +179,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
       expect(rootSpan.duration).toBeLessThanOrEqual(
@@ -172,6 +203,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('button#test_element click');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
       expect(rootSpan.duration).toBeLessThanOrEqual(
@@ -193,6 +228,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       expect(rootSpan.duration).toBeLessThanOrEqual(TIME_BUFFER);
       done();
@@ -217,6 +256,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       // As this click is done at 'RESET_TRACING_ZONE_DELAY - 10' and this click has a
       // setTimeout, the minimum time taken by this click is the sum of these values.
@@ -248,6 +291,10 @@ describe('InteractionTracker', () => {
       expect(rootSpan.name).toBe('test interaction');
       expect(rootSpan.attributes['EventType']).toBe('click');
       expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+      expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+        INITIAL_LOAD_TRACE_ID
+      );
+      expect(rootSpan.links).toEqual(EXPECTED_LINKS);
       expect(rootSpan.ended).toBeTruthy();
       // Test related to the first interaction
       if (onEndSpanSpy.calls.count() === 1) {
@@ -288,6 +335,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('Navigation /test_navigation');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
         expect(rootSpan.duration).toBeLessThanOrEqual(
@@ -311,6 +362,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('Test navigation');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.duration).toBeGreaterThanOrEqual(SET_TIMEOUT_TIME);
         expect(rootSpan.duration).toBeLessThanOrEqual(
@@ -338,6 +393,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('test interaction');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.spans.length).toBe(1);
         const childSpan = rootSpan.spans[0];
@@ -381,6 +440,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('test interaction');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
         expect(rootSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
@@ -432,6 +495,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('test interaction');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.duration).toBeGreaterThanOrEqual(XHR_TIME);
         expect(rootSpan.duration).toBeLessThanOrEqual(XHR_TIME + TIME_BUFFER);
@@ -509,6 +576,10 @@ describe('InteractionTracker', () => {
         expect(rootSpan.name).toBe('test interaction');
         expect(rootSpan.attributes['EventType']).toBe('click');
         expect(rootSpan.attributes['TargetElement']).toBe(BUTTON_TAG_NAME);
+        expect(rootSpan.attributes['initial_load_trace_id']).toBe(
+          INITIAL_LOAD_TRACE_ID
+        );
+        expect(rootSpan.links).toEqual(EXPECTED_LINKS);
         expect(rootSpan.ended).toBeTruthy();
         expect(rootSpan.duration).toBeGreaterThanOrEqual(interactionTime);
         expect(rootSpan.duration).toBeLessThanOrEqual(
