@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { tracing } from '@opencensus/web-core';
+import { getInitialLoadSpanContext } from '@opencensus/web-initial-load';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
-import { WindowWithOcwGlobals } from './zone-types';
+import { WindowWithOcwGlobals, isSampled } from '@opencensus/web-core';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
@@ -25,6 +25,7 @@ const TRACE_ENDPOINT = '/v1/trace';
 
 import { InteractionTracker } from './interaction-tracker';
 import { doPatching } from './monkey-patching';
+import { tracing } from '@opencensus/web-core';
 
 function setupExporter() {
   if (!windowWithOcwGlobals.ocAgent) {
@@ -40,6 +41,13 @@ function setupExporter() {
 }
 
 export function startInteractionTracker() {
+  // Do not start the interaction tracker if it is not sampled. This decision
+  // is done in the Initial Load page module using the Initial Load Span
+  // Context.
+  // If it is sampled, all the interactions will be sampled, otherwise,
+  // none of them are sampled.
+  if (!isSampled(getInitialLoadSpanContext())) return;
+
   doPatching();
   setupExporter();
   InteractionTracker.startTracking();

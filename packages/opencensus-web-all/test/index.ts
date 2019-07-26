@@ -13,6 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import './test-export-initial-load';
-import './test-initial-load-context';

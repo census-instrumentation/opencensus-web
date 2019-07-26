@@ -172,6 +172,8 @@ The OpenCensus web library is composed of the following packages:
 - **[@opencensus/web-exporter-ocagent][package-web-exporter-ocagent]**. This handles exporting spans to the [OpenCensus Agent][opencensus-service-url]
 - **[@opencensus/web-instrumentation-perf][package-web-instrumentation-perf]**. This is code to convert the initial load resource waterfall timings from the browser [Navigation Timing API][navigation-timing-url] and [Resource Timing API][resource-timing-url] into  the spans for a trace of the overall initial load for a page.
 - **[@opencensus/web-propagation-tracecontext][package-web-propagation-tracecontext]**. This provides utilities to serialize and deserialize a `traceparent` trace context header in the [W3C draft trace context format][trace-context-url]
+- **[@opencensus/web-initial-load][package-web-initial-load]**. This package is in charge of generating the initial load page trace, plus the corresponding sampling decision for OpenCensus Web and 
+storing a global initial load span context to be used by other packages. 
 - **[@opencensus/web-all][package-web-all]**. This depends on all the other OpenCensus Web libraries and provides top-level functions for instrumenting the initial page load and exporting its spans to the OpenCensus Agent. It also provides WebPack builds for JS bundles that can be used in `<script>` tags.
 
 ## Useful links
@@ -225,6 +227,7 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [package-web-all]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-all
 [package-web-core]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-core
 [package-web-exporter-ocagent]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-exporter-ocagent
+[package-web-initial-load]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-initial-load
 [package-web-instrumentation-perf]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-perf
 [package-web-propagation-tracecontext]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-propagation-tracecontext
 [package-web-types]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-types

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { WindowWithOcwGlobals, InteractionName } from './zone-types';
-import { parseUrl } from '@opencensus/web-core';
+import { InteractionName } from './zone-types';
+import { parseUrl, WindowWithOcwGlobals } from '@opencensus/web-core';
 
 /** Check that the trace */
 export function traceOriginMatchesOrSameOrigin(xhrUrl: string): boolean {

@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import { isSampled, tracing } from '@opencensus/web-core';
+import { tracing, WindowWithOcwGlobals, isSampled } from '@opencensus/web-core';
 import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
-import {
-  clearPerfEntries,
-  getInitialLoadRootSpan,
-  getPerfEntries,
-} from '@opencensus/web-instrumentation-perf';
-
 import { getInitialLoadSpanContext } from './initial-load-context';
-import { WindowWithOcwGlobals } from './types';
+import {
+  getPerfEntries,
+  getInitialLoadRootSpan,
+  clearPerfEntries,
+} from '@opencensus/web-instrumentation-perf';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 

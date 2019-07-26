@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-import { getInitialLoadSpanContext } from '../src/initial-load-context';
-import { WindowWithOcwGlobals } from '../src/types';
+import { WindowWithOcwGlobals } from '@opencensus/web-core';
+import {
+  getInitialLoadSpanContext,
+  resetInitialLoadSpanContext,
+} from '../src/initial-load-context';
 
 const windowWithOcwGlobals = window as WindowWithOcwGlobals;
 
 const SPAN_ID_REGEX = /[0-9a-f]{16}/;
 const TRACE_ID_REGEX = /[0-9a-f]{32}/;
 
-describe('getInitialLoadSpanContext', () => {
+describe('Initial Load context', () => {
   let realTraceparent: string | undefined;
   let realOcSampleRate: number | undefined;
   beforeEach(() => {
     realTraceparent = windowWithOcwGlobals.traceparent;
     realOcSampleRate = windowWithOcwGlobals.ocSampleRate;
+    resetInitialLoadSpanContext();
   });
   afterEach(() => {
     windowWithOcwGlobals.traceparent = realTraceparent;
@@ -61,6 +65,19 @@ describe('getInitialLoadSpanContext', () => {
     expect(spanContext.spanId).toMatch(SPAN_ID_REGEX);
     expect(spanContext.options).toBe(1);
     expect(Math.random).toHaveBeenCalled();
+  });
+
+  it('Should not generate new span context if it was already generated', () => {
+    windowWithOcwGlobals.traceparent = `00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00`;
+    // Generate the initial load span context.
+    const generatedSpanContext = getInitialLoadSpanContext();
+    expect(generatedSpanContext).toEqual({
+      traceId: '0af7651916cd43dd8448eb211c80319c',
+      spanId: 'b7ad6b7169203331',
+      options: 0,
+    });
+    // Should not generate a new span context.
+    expect(getInitialLoadSpanContext()).toBe(generatedSpanContext);
   });
 
   describe('specifying the sampling rate with window.ocSampleRate', () => {

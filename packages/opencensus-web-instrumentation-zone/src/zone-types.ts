@@ -53,25 +53,6 @@ export type XhrWithOcWebData = HTMLElement &
     _ocweb_has_called_send: boolean;
   };
 
-/** Type for `window` object with variables OpenCensus Web interacts with. */
-export declare interface WindowWithOcwGlobals extends Window {
-  /**
-   * HTTP root URL of the agent endpoint to write traces to.
-   * Example 'https://my-oc-agent-deployment.com:55678'
-   */
-  ocAgent?: string;
-  /**
-   * If the `traceparent` global variable described above is not present on the
-   * `window`, then a trace sampling decision will be made randomly with the
-   * specified sample rate. If not specified, a default sampling rate is used.
-   */
-  ocSampleRate?: number;
-
-  // RegExp to control what origins will the `trace context header` be sent.
-  // That way the header is not added to all xhrs.
-  ocTraceHeaderHostRegex?: string | RegExp;
-}
-
 /**
  * Allows to keep track of performance entries related to a XHR.
  * As some XHRs might generate a CORS pre-flight request, the XHR

@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-import { exportRootSpanAfterLoadEvent } from '../index';
-
-exportRootSpanAfterLoadEvent();
+import './test-export-initial-load';
+import './test-initial-load-context';

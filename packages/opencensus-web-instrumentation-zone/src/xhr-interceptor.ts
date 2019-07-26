@@ -101,6 +101,8 @@ function setTraceparentContextHeader(
       spanContextToTraceParent({
         traceId: rootSpan.traceId,
         spanId: childSpan.id,
+        // As the interaction tracker has started, all traces are sampled.
+        options: 1,
       })
     );
   }
