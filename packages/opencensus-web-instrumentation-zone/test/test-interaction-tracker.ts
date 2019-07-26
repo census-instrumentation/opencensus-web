@@ -51,7 +51,7 @@ describe('InteractionTracker', () => {
     {
       traceId: INITIAL_LOAD_TRACE_ID,
       spanId: INITIAL_LOAD_SPAN_ID,
-      type: LinkType.CHILD_LINKED_SPAN,
+      type: LinkType.PARENT_LINKED_SPAN,
       attributes: {},
     },
   ];

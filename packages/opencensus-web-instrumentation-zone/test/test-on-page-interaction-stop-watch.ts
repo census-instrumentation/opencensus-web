@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { RootSpan, Tracer, WindowWithOcwGlobals } from '@opencensus/web-core';
+import {
+  RootSpan,
+  Tracer,
+  WindowWithOcwGlobals,
+  LinkType,
+} from '@opencensus/web-core';
 import { OnPageInteractionStopwatch } from '../src/on-page-interaction-stop-watch';
 
 describe('OnPageInteractionStopWatch', () => {
@@ -77,6 +82,14 @@ describe('OnPageInteractionStopWatch', () => {
       expect(root.attributes['EventType']).toBe('click');
       expect(root.attributes['TargetElement']).toBe(target.tagName);
       expect(root.attributes['initial_load_trace_id']).toBe(traceId);
+      expect(root.links).toEqual([
+        {
+          traceId,
+          spanId,
+          type: LinkType.PARENT_LINKED_SPAN,
+          attributes: {},
+        },
+      ]);
       expect(tracer.onEndSpan).toHaveBeenCalledWith(root);
     });
     it('Should not finish the interaction when there are remaining tasks', () => {

@@ -93,6 +93,8 @@ export function getInitialLoadRootSpan(
   root.annotations = getNavigationAnnotations(perfEntries);
   root.attributes[ATTRIBUTE_HTTP_URL] = navigationUrl;
   root.attributes[ATTRIBUTE_HTTP_USER_AGENT] = navigator.userAgent;
+  // This is included to enable trace search by attribute to find an initial
+  // load trace and its interaction traces via a single attribute query.
   root.attributes[ATTRIBUTE_INITIAL_LOAD_TRACE_ID] = root.traceId;
 
   if (navTiming) {

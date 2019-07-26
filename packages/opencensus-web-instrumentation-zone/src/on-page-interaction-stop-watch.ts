@@ -61,6 +61,8 @@ export class OnPageInteractionStopwatch {
     rootSpan.addAttribute(ATTRIBUTE_HTTP_PATH, this.data.startLocationPath);
     rootSpan.addAttribute(ATTRIBUTE_HTTP_USER_AGENT, navigator.userAgent);
     const initialLoadSpanContext = getInitialLoadSpanContext();
+    // This is included to enable trace search by attribute to find an initial
+    // load trace and its interaction traces via a single attribute query.
     rootSpan.addAttribute(
       ATTRIBUTE_INITIAL_LOAD_TRACE_ID,
       initialLoadSpanContext.traceId
@@ -68,7 +70,7 @@ export class OnPageInteractionStopwatch {
     rootSpan.addLink(
       initialLoadSpanContext.traceId,
       initialLoadSpanContext.spanId,
-      LinkType.CHILD_LINKED_SPAN
+      LinkType.PARENT_LINKED_SPAN
     );
     rootSpan.end();
   }
