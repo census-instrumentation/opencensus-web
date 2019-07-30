@@ -8,7 +8,7 @@ coming after initial page loads. This uses the library
 [Zone.js](https://github.com/angular/zone.js/) to generate those spans.
 
 This package adds `Zone.js` as a peer dependency as the application 
-might already be dependet on it. This is the case, for example, with 
+might already be dependent on it. This is the case, for example, with 
 application on `Angular` as this already imports it. 
 
 The library is in alpha stage and the API is subject to change.
