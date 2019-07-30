@@ -1,8 +1,7 @@
 {
   "lerna": "3.8.5",
   "packages": [
-    "packages/*",
-    "examples/user_interaction/client/"
+    "packages/*"
   ],
   "version": "0.0.3"
 }

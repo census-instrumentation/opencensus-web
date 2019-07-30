@@ -1,2 +1,2 @@
 fixes:
-  - "::packages/opencensus-web-instrumentation-zone/"
+  - "::packages/opencensus-web-instrumentation-zone-peer-dep/"
