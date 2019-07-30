@@ -5,8 +5,11 @@
 
 This package generates OpenCensus Web model spans based on user interactions 
 coming after initial page loads. This uses the library 
-[Zone.js](https://github.com/angular/zone.js/) to generate those spans. For that, 
-the package imports the Zone.js library as hard dependency.
+[Zone.js](https://github.com/angular/zone.js/) to generate those spans.
+
+This package adds `Zone.js` as a peer dependency as the application 
+might already be dependet on it. This is the case, for example, with 
+application on `Angular` as this already imports it. 
 
 The library is in alpha stage and the API is subject to change.
 

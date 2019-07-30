@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from '@opencensus/web-instrumentation-zone-peer-dep';
-import 'zone.js';
+const baseConfig = require('./base-bundles.config.js');
+
+const config = baseConfig;
+config['mode'] = 'development';
+module.exports = config;

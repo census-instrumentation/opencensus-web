@@ -14,4 +14,6 @@
  * limitations under the License.
  */
 
-import './export-interaction-tracker';
+import { startInteractionTracker } from '../index';
+
+startInteractionTracker();
