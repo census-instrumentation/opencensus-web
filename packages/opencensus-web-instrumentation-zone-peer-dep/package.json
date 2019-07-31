@@ -1,7 +1,7 @@
 {
-  "name": "@opencensus/web-instrumentation-zone",
+  "name": "@opencensus/web-instrumentation-zone-peer-dep",
   "version": "0.0.3",
-  "description": "OpenCensus Web instrumentation zone is used to generate user interaction spans for interactions after the initial page loads.",
+  "description": "OpenCensus Web instrumentation zone is used to generate user interaction spans for interactions after the initial page loads. Add Zone.js as peer dependency.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
@@ -9,6 +9,8 @@
     "build:dev": "webpack --config ./webpack/dev-bundles.config.js",
     "build": "webpack",
     "start:webpack-server": "webpack-dev-server --config ./webpack/dev-bundles.config.js",
+    "test": "karma start --single-run",
+    "test:start": "karma start",
     "codecov": "codecov -f coverage/*.json",
     "clean": "rimraf build/*",
     "check": "gts check",
@@ -61,15 +63,17 @@
     "typescript": "^3.1.6",
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.4.1"
+    "webpack-dev-server": "^3.4.1",
+    "zone.js": "~0.9.1"
   },
   "dependencies": {
     "@opencensus/web-core": "^0.0.3",
     "@opencensus/web-exporter-ocagent": "^0.0.3",
-    "@opencensus/web-instrumentation-perf": "^0.0.3",
-    "@opencensus/web-propagation-tracecontext": "^0.0.3",
-    "@opencensus/web-initial-load": "^0.0.3",
-    "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.3",
+    "@opencensus/web-instrumentation-perf": "0.0.3",
+    "@opencensus/web-propagation-tracecontext": "0.0.3",
+    "@opencensus/web-initial-load": "0.0.3"
+  },
+  "peerDependencies": {
     "zone.js": "~0.9.1"
   },
   "sideEffects": false

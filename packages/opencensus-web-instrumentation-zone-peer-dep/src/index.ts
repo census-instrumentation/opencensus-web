@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from '@opencensus/web-instrumentation-zone-peer-dep';
-import 'zone.js';
+export { startInteractionTracker } from './export-interaction-tracker';

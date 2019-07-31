@@ -13,10 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// This file is an entry point for the webpack test configuration, so this
-// should import from all test files.
-import './test-on-page-interaction-stop-watch';
-import './test-interaction-tracker';
-import './test-perf-resource-timing-selector';
-import './test-util';

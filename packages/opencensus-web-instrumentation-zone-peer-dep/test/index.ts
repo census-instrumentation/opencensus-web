@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from '@opencensus/web-instrumentation-zone-peer-dep';
-import 'zone.js';
+// This file is an entry point for the webpack test configuration, so this
+// should import from all test files.
+import './test-on-page-interaction-stop-watch';
+import './test-interaction-tracker';
+import './test-perf-resource-timing-selector';
+import './test-util';

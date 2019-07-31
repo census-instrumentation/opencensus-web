@@ -22,8 +22,6 @@ import { exportRootSpanAfterLoadEvent } from '@opencensus/web-all';
 import { startInteractionTracker } from '@opencensus/web-instrumentation-zone';
 
 import { Route, BrowserRouter as Router, Link } from 'react-router-dom'
-// Necessary import for @opencensus/web-instrumentation-zone
-import { Zone, ZoneType, Task } from 'zone.js';
 
 const routing = (
     <Router>
