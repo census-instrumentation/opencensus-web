@@ -14,4 +14,8 @@
  * limitations under the License.
  */
 
-export { startInteractionTracker } from './export-interaction-tracker';
+export * from '@opencensus/web-core';
+export * from '@opencensus/web-exporter-ocagent';
+export * from '@opencensus/web-instrumentation-perf';
+
+export { startTracing } from './export-interaction-tracker';

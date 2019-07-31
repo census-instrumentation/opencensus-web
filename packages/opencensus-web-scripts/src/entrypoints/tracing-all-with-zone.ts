@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-const baseConfig = require('./base-bundles.config.js');
-const path = require('path');
+import { startTracing } from '@opencensus/web-instrumentation-zone';
 
-const config = baseConfig;
-config['mode'] = 'production';
-module.exports = config;
+startTracing();

@@ -5,10 +5,7 @@
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
-    "build:prod": "webpack --config ./webpack/prod-bundles.config.js",
-    "build:dev": "webpack --config ./webpack/dev-bundles.config.js",
     "build": "webpack",
-    "start:webpack-server": "webpack-dev-server --config ./webpack/dev-bundles.config.js",
     "test": "karma start --single-run",
     "test:start": "karma start",
     "codecov": "codecov -f coverage/*.json",

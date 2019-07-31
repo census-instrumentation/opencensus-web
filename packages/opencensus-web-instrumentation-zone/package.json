@@ -5,10 +5,7 @@
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
-    "build:prod": "webpack --config ./webpack/prod-bundles.config.js",
-    "build:dev": "webpack --config ./webpack/dev-bundles.config.js",
     "build": "webpack",
-    "start:webpack-server": "webpack-dev-server --config ./webpack/dev-bundles.config.js",
     "codecov": "codecov -f coverage/*.json",
     "clean": "rimraf build/*",
     "check": "gts check",
@@ -64,11 +61,6 @@
     "webpack-dev-server": "^3.4.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.3",
-    "@opencensus/web-exporter-ocagent": "^0.0.3",
-    "@opencensus/web-instrumentation-perf": "^0.0.3",
-    "@opencensus/web-propagation-tracecontext": "^0.0.3",
-    "@opencensus/web-initial-load": "^0.0.3",
     "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.3",
     "zone.js": "~0.9.1"
   },

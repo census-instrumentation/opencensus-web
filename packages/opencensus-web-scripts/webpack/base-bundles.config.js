@@ -19,6 +19,8 @@ module.exports = {
     'export-initial-load': './src/entrypoints/export-initial-load.ts',
     'instrument-initial-load': './src/entrypoints/instrument-initial-load.ts',
     'initial-load-all': './src/entrypoints/initial-load-all.ts',
+    'tracing-all-with-zone': './src/entrypoints/tracing-all-with-zone.ts',
+    'tracing-all-without-zone': './src/entrypoints/tracing-all-without-zone.ts',
   },
   resolve: {extensions: ['.ts', '.js']},
   devtool: 'source-map',

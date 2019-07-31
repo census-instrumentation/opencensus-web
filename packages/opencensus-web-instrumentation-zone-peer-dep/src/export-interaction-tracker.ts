@@ -14,33 +14,20 @@
  * limitations under the License.
  */
 
-import { getInitialLoadSpanContext } from '@opencensus/web-initial-load';
-import { OCAgentExporter } from '@opencensus/web-exporter-ocagent';
-import { WindowWithOcwGlobals, isSampled } from '@opencensus/web-core';
-
-const windowWithOcwGlobals = window as WindowWithOcwGlobals;
-
-/** Trace endpoint in the OC agent. */
-const TRACE_ENDPOINT = '/v1/trace';
+import {
+  getInitialLoadSpanContext,
+  exportRootSpanAfterLoadEvent,
+} from '@opencensus/web-initial-load';
+import { isSampled } from '@opencensus/web-core';
 
 import { InteractionTracker } from './interaction-tracker';
 import { doPatching } from './monkey-patching';
-import { tracing } from '@opencensus/web-core';
 
-function setupExporter() {
-  if (!windowWithOcwGlobals.ocAgent) {
-    console.log('Not configured to export page load spans.');
-    return;
-  }
-
-  tracing.registerExporter(
-    new OCAgentExporter({
-      agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
-    })
-  );
-}
-
-export function startInteractionTracker() {
+/**
+ *
+ */
+export function startTracing() {
+  exportRootSpanAfterLoadEvent();
   // Do not start the interaction tracker if it is not sampled. This decision
   // is done in the Initial Load page module using the Initial Load Span
   // Context.
@@ -49,6 +36,5 @@ export function startInteractionTracker() {
   if (!isSampled(getInitialLoadSpanContext())) return;
 
   doPatching();
-  setupExporter();
   InteractionTracker.startTracking();
 }

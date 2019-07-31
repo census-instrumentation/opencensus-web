@@ -38,10 +38,10 @@ go run github.com/census-instrumentation/opencensus-service/cmd/ocagent
 ### Step 2: Run the local webpack server
 
 Then within your `opencensus-web` folder run the local webpack server for the
-`opencensus-all` package to serve the OpenCensus web scripts:
+`opencensus-scripts` package to serve the OpenCensus web scripts:
 
 ```bash
-cd packages/opencensus-web-all
+cd packages/opencensus-web-scripts
 npm run start:webpack-server
 ```
 
@@ -111,9 +111,9 @@ First build the OpenCensus Web scripts that will be deployed with the
 application:
 
 ```bash
-npm run build:prod --prefix=../../packages/opencensus-web-all
+npm run build:prod --prefix=../../packages/opencensus-web-scripts
 mkdir -p static
-cp ../../packages/opencensus-web-all/dist/*.js ./static
+cp ../../packages/opencensus-web-scripts/dist/*.js ./static
 ```
 Then build the server container and push it to GCR:
 

@@ -57,7 +57,7 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [gitter-image]: https://badges.gitter.im/census-instrumentation/lobby.svg
 [gitter-url]: https://gitter.im/census-instrumentation/lobby
 [oc-web-readme-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/README.md
-[license-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-all/LICENSE
+[license-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-scripts/LICENSE
 [long-tasks-url]: https://w3c.github.io/longtasks/
 [resource-timing-buffer-url]: https://www.w3.org/TR/resource-timing-2/#dom-performance-setresourcetimingbuffersize
 [resource-timing-url]: https://www.w3.org/TR/resource-timing-2/

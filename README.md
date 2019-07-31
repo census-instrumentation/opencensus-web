@@ -87,7 +87,7 @@ The script tag should go before the `</body>`. You will also need to set the
 trace sample rate via an `ocSampleRate` global variable as well.
 ```html
 ...
-  <script src="https://unpkg.com/@opencensus/web-all@0.0.2/dist/initial-load-all.js"
+  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.3/dist/initial-load-all.js"
           integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
           async crossorigin="anonymous">
   </script>
@@ -105,16 +105,16 @@ trace sample rate via an `ocSampleRate` global variable as well.
 
 You can also host the `initial-load-all.js` bundle from your own site. For
 docs on how to build the bundle see the
-[@opencensus/web-all readme][package-web-all].
+[@opencensus/web-scripts readme][package-web-scripts].
 
 #### Using as NPM dependency in existing JS build
 
 If you already have a JS build pipeline using e.g. webpack or similar, you can 
-do `npm install @opencensus/web-all`, and then set the configuration variables
+do `npm install @opencensus/web-initial-load`, and then set the configuration variables
 and trigger the recording and exporting of the initial load spans as follows:
 
 ```js
-import { exportRootSpanAfterLoadEvent } from '@opencensus/web-all';
+import { exportRootSpanAfterLoadEvent } from '@opencensus/web-initial-load';
 
 window.ocAgent = 'https://example.com/my-opencensus-agent-endpoint';
 window.ocSampleRate = 1.0; // Sample at 100% for test only. Default is 1/10000.
@@ -139,7 +139,7 @@ variable. The `traceparent` variable should be in the
 
 ```html
   ...
-  <script src="https://unpkg.com/@opencensus/web-all@0.0.2/dist/initial-load-all.js"
+  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.3/dist/initial-load-all.js"
           integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
           async crossorigin="anonymous">
   </script>
@@ -174,7 +174,7 @@ The OpenCensus web library is composed of the following packages:
 - **[@opencensus/web-propagation-tracecontext][package-web-propagation-tracecontext]**. This provides utilities to serialize and deserialize a `traceparent` trace context header in the [W3C draft trace context format][trace-context-url]
 - **[@opencensus/web-initial-load][package-web-initial-load]**. This package is in charge of generating the initial load page trace, plus the corresponding sampling decision for OpenCensus Web and 
 storing a global initial load span context to be used by other packages. 
-- **[@opencensus/web-all][package-web-all]**. This depends on all the other OpenCensus Web libraries and provides top-level functions for instrumenting the initial page load and exporting its spans to the OpenCensus Agent. It also provides WebPack builds for JS bundles that can be used in `<script>` tags.
+- **[@opencensus/web-scripts][package-web-scripts]**. This depends on all the other OpenCensus Web libraries and provides top-level functions for instrumenting the initial page load and exporting its spans to the OpenCensus Agent. It also provides WebPack builds for JS bundles that can be used in `<script>` tags.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
@@ -224,7 +224,7 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [opencensus-node-url]: https://github.com/census-instrumentation/opencensus-node
 [opencensus-service-url]: https://github.com/census-instrumentation/opencensus-service
 [package-core]: https://github.com/census-instrumentation/opencensus-node/tree/master/packages/opencensus-core
-[package-web-all]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-all
+[package-web-scripts]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-scripts
 [package-web-core]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-core
 [package-web-exporter-ocagent]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-exporter-ocagent
 [package-web-initial-load]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-initial-load
