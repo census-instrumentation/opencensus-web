@@ -64,7 +64,7 @@
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1",
-    "zone.js": "~0.9.1"
+    "zone.js": "~0.10.0"
   },
   "dependencies": {
     "@opencensus/web-core": "^0.0.3",
@@ -74,7 +74,7 @@
     "@opencensus/web-initial-load": "0.0.3"
   },
   "peerDependencies": {
-    "zone.js": "~0.9.1"
+    "zone.js": "~0.10.0"
   },
   "sideEffects": false
 }

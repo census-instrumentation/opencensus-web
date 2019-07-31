@@ -70,7 +70,7 @@
     "@opencensus/web-propagation-tracecontext": "^0.0.3",
     "@opencensus/web-initial-load": "^0.0.3",
     "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.3",
-    "zone.js": "~0.9.1"
+    "zone.js": "~0.10.0"
   },
   "sideEffects": false
 }
