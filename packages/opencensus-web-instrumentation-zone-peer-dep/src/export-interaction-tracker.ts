@@ -24,7 +24,10 @@ import { InteractionTracker } from './interaction-tracker';
 import { doPatching } from './monkey-patching';
 
 /**
- *
+ * This is in charge of exporting the Initial page load trace to the OpenCensus
+ * Agent and starts the tracing for the user interactions doing the necessary
+ * monkey-patch for this. This is done depending on the sampling decision made
+ * by  the initial page load module.
  */
 export function startTracing() {
   exportRootSpanAfterLoadEvent();

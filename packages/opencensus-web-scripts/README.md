@@ -3,7 +3,7 @@
 
 *For overview and usage info see the main [OpenCensus Web readme][oc-web-readme-url].*
 
-This package combines all of the main functionality of the OpenCensus Web
+This package brings all of the main functionality of the OpenCensus Web
 packages into a variety of distributions for easy inclusion into web
 applications via a `<script>` tag.
 
@@ -19,7 +19,8 @@ start:webpack-server`.
 
 ## Generated scripts
 
-These are the generated bundles.
+These are the generated bundles. Where we give the possibility to import either
+only the initial load page code or the whole tracing code.
 
 If you don't mind loading a single larger bundle on the initial page load, use:
 
@@ -44,6 +45,28 @@ these two bundles to do instrumentation first and then an export more lazily:
     retrieved after the initial page load has fully completed so it being
     downloaded and parsed doesn't need to compete with resources for the main
     page load.
+
+If your application already depends on `Zone.js`, the case for `Angular`, use:
+
+* **`./dist/tracing-all-without-zone.js`** - This script combines all the functionality of
+    OC Web, including the `initial-page-load` and `user interaction tracker`. That
+    is, it records spans based on the [resource timing API][resource-timing-url]
+    for the initial page load and exports it to the OpenCensus Agent based on
+    configured global variables and starts the interaction tracker for user interaction 
+    traces exported to the OC Anget as well . See the main [OpenCensus Web readme][oc-web-readme-url] 
+    for details.
+
+If your application does not depend on `Zone.js`, that is the case for framworks like 
+`React` or `VueJs`, use:
+
+* **`./dist/tracing-all-with-zone.js`** - This script combines all the functionality of
+    OC Web, including the `initial-page-load` and `user interaction tracker` to start the 
+    tracing, plus the code of `Zone.js`. That is, it records spans based on the 
+    [resource timing API][resource-timing-url] for the initial page load and exports it 
+    to the OpenCensus Agent based on configured global variables and starts the interaction 
+    tracker for user interaction traces exported to the OC Anget as well. 
+    Using this  script you do not have to add the hard dependency of `Zone.js`. 
+    See the main [OpenCensus Web readme][oc-web-readme-url] for details.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
