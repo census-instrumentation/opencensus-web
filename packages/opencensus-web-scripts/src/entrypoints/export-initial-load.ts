@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-const baseConfig = require('./base-bundles.config.js');
-const path = require('path');
+import { exportRootSpanAfterLoadEvent } from '@opencensus/web-initial-load';
 
-const config = baseConfig;
-config['mode'] = 'production';
-module.exports = config;
+exportRootSpanAfterLoadEvent();

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { exportRootSpanAfterLoadEvent } from '../index';
+import { startTracing } from '@opencensus/web-instrumentation-zone-peer-dep';
 
-exportRootSpanAfterLoadEvent();
+startTracing();

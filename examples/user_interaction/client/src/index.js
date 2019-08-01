@@ -18,8 +18,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import SecondPage from './SecondPage';
-import { exportRootSpanAfterLoadEvent } from '@opencensus/web-all';
-import { startInteractionTracker } from '@opencensus/web-instrumentation-zone';
+import { startTracing } from '@opencensus/web-instrumentation-zone';
 
 import { Route, BrowserRouter as Router, Link } from 'react-router-dom'
 
@@ -47,8 +46,4 @@ window.ocAgent = 'http://localhost:55678';
 window.ocTraceHeaderHostRegex = /.*/;
 window.ocSampleRate = 1.0; // Sample at 100% for test only. Default is 1/10000.
 
-// Send the root span and child spans for the initial page load to the
-// OpenCensus agent if this request was sampled for trace.
-exportRootSpanAfterLoadEvent();
-
-startInteractionTracker();
+startTracing();

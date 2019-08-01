@@ -18,7 +18,7 @@ your own spans for the tasks or code involved in a user interaction.
 Here is an example for JavaScript
 
 ```javascript
-import { tracing } from '@opencensus/web-core';
+import { tracing } from '@opencensus/web-instrumentation-zone';
 
 function handleClick() {
   // Start child span which will be child of the current root span on the current interaction.

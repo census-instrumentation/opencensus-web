@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { tracing } from '@opencensus/web-core';
+import { tracing } from '@opencensus/web-instrumentation-zone';
 
 class App extends React.Component {
 
