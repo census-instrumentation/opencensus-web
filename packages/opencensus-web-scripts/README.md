@@ -48,8 +48,8 @@ these two bundles to do instrumentation first and then an export more lazily:
 
 If your application already depends on `Zone.js`, the case for `Angular`, use:
 
-* **`./dist/tracing-all-without-zone.js`** - This script combines all the functionality of
-    OC Web, including the `initial-page-load` and `user interaction tracker`. That
+* **`./dist/tracing-all-zone-peer-dep.js`** - This script combines all the functionality of
+    OC Web, including the *initial page load* and *user interaction tracker*. That
     is, it records spans based on the [resource timing API][resource-timing-url]
     for the initial page load and exports it to the OpenCensus Agent based on
     configured global variables and starts the interaction tracker for user interaction 
@@ -60,7 +60,7 @@ If your application does not depend on `Zone.js`, that is the case for framworks
 `React` or `VueJs`, use:
 
 * **`./dist/tracing-all-with-zone.js`** - This script combines all the functionality of
-    OC Web, including the `initial-page-load` and `user interaction tracker` to start the 
+    OC Web, including the *initial page load* and *user interaction tracker* to start the 
     tracing, plus the code of `Zone.js`. That is, it records spans based on the 
     [resource timing API][resource-timing-url] for the initial page load and exports it 
     to the OpenCensus Agent based on configured global variables and starts the interaction 

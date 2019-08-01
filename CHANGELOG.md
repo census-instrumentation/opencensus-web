@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Rename `@opencensus/web-all` to `@opencensus/web-scripts` so now this package 
+    is only in charge of bundling OC Web to allow importing it as <script> tag.
+
+- To use OC Web as an npm dependency, there are several options: `@opencensus/web-initial-load`
+    to instrument with only the initial page load module, `@opencensus/web-instrumentation-zone`
+    to instrument it with all the OC Web functionality plus the `Zone.js` library and 
+    `@opencensus/web-instrumentation-zone-peer-dep` also exports all the functionality but `Zone.js`
+    is a peer dependency.
+
 ## 0.0.3 - 2019-06-08
 
 - Support custom end time for span (#95), thanks @skjindal93
