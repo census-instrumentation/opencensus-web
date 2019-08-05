@@ -28,6 +28,7 @@ const tracer = setupTracerAndExporters();
 const http = require('http');
 const url = require('url');
 const sleep = require('sleep');
+let fs = require('fs');
 
 /** Starts a HTTP server that receives requests on sample server port. */
 function startServer(port) {
@@ -95,22 +96,50 @@ function handleRequest(request, response) {
       sleep.sleep(2);
       result = { time: Date.now() - time, value: "" };
       console.log("Finished.")
+      request.on('end', () => {
+        span.end();
+        response.statusCode = code;
+        response.end(JSON.stringify(result));
+      });
     } else if (url.parse(request.url).pathname === '/prime_numbers') {
       console.log("Calculate prime numbers...")
       const time = Date.now();
       const prime_numbers = JSON.stringify(calculatePrimeNumbers());
       result = { time: Date.now() - time, value: prime_numbers };
       console.log("Finished.")
-    } else {
+      request.on('end', () => {
+        span.end();
+        response.statusCode = code;
+        response.end(JSON.stringify(result));
+      });
+    } else if (url.parse(request.url).pathname === '/'){
+      fs.readFile('../client/build/index.html', null, function (error, data) {
+        if (error) {
+            response.writeHead(404);
+            response.write('Whoops! File not found!');
+        } else {
+            response.write(data);
+        }
+        response.end();
+      }); 
       result = { time: 0, value: "unknown url" };
       code = 404;
+      return;
+    } else if(url.parse(request.url).pathname.startsWith('/static')){
+      console.log(request.url)
+      fs.readFile('../client/build/' + url.parse(request.url).pathname, null, function (error, data) {
+        if (error) {
+            response.writeHead(404);
+            response.write('Whoops! File not found!');
+        } else {
+            response.write(data);
+        }
+        response.end();
+      }); 
+      result = { time: 0, value: "unknown url" };
+      code = 404;
+      return
     }
-
-    request.on('end', () => {
-      span.end();
-      response.statusCode = code;
-      response.end(JSON.stringify(result));
-    });
   } catch (err) {
     console.log(err);
     span.end();
