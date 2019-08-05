@@ -26,7 +26,7 @@ import {
   startOnPageInteraction,
 } from './on-page-interaction-stop-watch';
 
-import { isTrackedTask, getTraceId, resolveInteractionName } from './util';
+import { isTracingZone, getTraceId, resolveInteractionName } from './util';
 import { interceptXhrTask } from './xhr-interceptor';
 
 // Allows us to monkey patch Zone prototype without TS compiler errors.
@@ -99,7 +99,7 @@ export class InteractionTracker {
       } finally {
         if (
           interceptingElement ||
-          (shouldCountTask(task) && isTrackedTask(task))
+          (shouldCountTask(task) && isTracingZone(task.zone))
         ) {
           this.decrementTaskCount(getTraceId(task.zone));
         }
@@ -110,14 +110,16 @@ export class InteractionTracker {
   private patchZoneScheduleTask() {
     const scheduleTask = Zone.prototype.scheduleTask;
     Zone.prototype.scheduleTask = <T extends Task>(task: T) => {
-      let taskZone = Zone.current;
-      if (isTrackedTask(task)) {
-        taskZone = task.zone;
+      const currentZone = Zone.current;
+      if (isTracingZone(currentZone)) {
+        // Cast first as Task and then as AsyncTask because the direct
+        // cast from type `T` is not possible.
+        ((task as Task) as AsyncTask)._zone = currentZone;
       }
       try {
-        return scheduleTask.call(taskZone as {}, task) as T;
+        return scheduleTask.call(currentZone as {}, task) as T;
       } finally {
-        if (shouldCountTask(task) && isTrackedTask(task)) {
+        if (shouldCountTask(task) && isTracingZone(task.zone)) {
           this.incrementTaskCount(getTraceId(task.zone));
         }
       }
@@ -127,15 +129,15 @@ export class InteractionTracker {
   private patchZoneCancelTask() {
     const cancelTask = Zone.prototype.cancelTask;
     Zone.prototype.cancelTask = (task: AsyncTask) => {
-      let taskZone = Zone.current;
-      if (isTrackedTask(task)) {
-        taskZone = task.zone;
+      const currentZone = Zone.current;
+      if (isTracingZone(currentZone)) {
+        task._zone = currentZone;
       }
 
       try {
-        return cancelTask.call(taskZone as {}, task);
+        return cancelTask.call(currentZone as {}, task);
       } finally {
-        if (isTrackedTask(task) && shouldCountTask(task)) {
+        if (isTracingZone(task.zone) && shouldCountTask(task)) {
           this.decrementTaskCount(getTraceId(task.zone));
         }
       }

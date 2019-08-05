@@ -24,7 +24,7 @@ import {
   SpanKind,
 } from '@opencensus/web-core';
 import { getXhrPerfomanceData } from './perf-resource-timing-selector';
-import { traceOriginMatchesOrSameOrigin, isTrackedTask } from './util';
+import { traceOriginMatchesOrSameOrigin, isTracingZone } from './util';
 import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
 import {
   annotationsForPerfTimeFields,
@@ -61,7 +61,7 @@ export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
  * In case the XHR is DONE, end the child span.
  */
 export function interceptXhrTask(task: AsyncTask) {
-  if (!isTrackedTask(task)) return;
+  if (!isTracingZone(task.zone)) return;
   if (!(task.target instanceof XMLHttpRequest)) return;
 
   const xhr = task.target as XhrWithOcWebData;
