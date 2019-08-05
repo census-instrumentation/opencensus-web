@@ -31,12 +31,8 @@ export function traceOriginMatchesOrSameOrigin(xhrUrl: string): boolean {
 /**
  * Whether or not a task is being tracked as part of an interaction.
  */
-export function isTrackedTask(task: Task): boolean {
-  return !!(
-    task.zone &&
-    task.zone.get('data') &&
-    task.zone.get('data').isTracingZone
-  );
+export function isTracingZone(zone: Zone): boolean {
+  return !!(zone && zone.get('data') && zone.get('data').isTracingZone);
 }
 
 /**
