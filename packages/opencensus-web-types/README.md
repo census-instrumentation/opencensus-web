@@ -37,8 +37,10 @@ Then run `npm run copytypes` to copy the types.
 ## Usage
 
 Currently the primary intended usage of OpenCensus Web is to collect
-spans from the resource timing waterfall of an initial page load. See the 
-[OpenCensus Web readme][oc-web-readme-url] for details.
+spans from the resource timing waterfall of an initial page load
+and trace on-page user interactions with a series of features like automatic tracing 
+for *clicks* and *route transitions*, *custom spans*, and browser [Performance API][performance-api] data.
+See the [OpenCensus Web readme][oc-web-readme-url] for details.
 
 In the future we would like to support collecting spans for XHRs and other
 operations made after the initial page load and then join those back to the

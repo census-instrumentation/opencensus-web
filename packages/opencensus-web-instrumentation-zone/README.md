@@ -5,14 +5,26 @@
 
 This package generates OpenCensus Web model spans based on user interactions 
 coming after initial page loads. This uses the library 
-[Zone.js](https://github.com/angular/zone.js/) to generate those spans. For that, 
+[Zone.js][zonejs-url] to generate those spans. For that, 
 the package imports the Zone.js library as hard dependency.
 
 The library is in alpha stage and the API is subject to change.
 
-## Usage
+## Overview
 
-#### Custom spans
+This package depends on `@opencensus/web-instrumentation-zone-peer-dep` which contains
+all the code related to on-page user interaction tracing. Then, this only exports all
+from that package and imports the `Zone.js` library added as hard dependecy.
+
+Instrument your application with this package if your application does not already depends on 
+`Zone.js`, this is the case for frameworks like *React*.
+
+See the `@opencensus/web-instrumentation-zone-peer-dep` 
+[documentation][instrumentation-zone-peer-dep-url] for more details.
+
+## Usage 
+
+### Custom spans
 In addition to automatic user interaction tracing, it is possible to create 
 your own spans for the tasks or code involved in a user interaction.
 Here is an example for JavaScript
@@ -55,3 +67,5 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [resource-timing-url]: https://www.w3.org/TR/resource-timing-2/
 [long-tasks-url]: https://w3c.github.io/longtasks/
 [client-example-url]: https://github.com/census-instrumentation/opencensus-web/tree/master/examples/user_interaction/client
+[zonejs-url]: https://github.com/angular/zone.js/
+[instrumentation-zone-peer-dep-url]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-zone-peer-dep

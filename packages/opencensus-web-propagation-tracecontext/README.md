@@ -12,16 +12,17 @@ The library is in alpha stage and the API is subject to change.
 ## Usage
 
 Currently the primary intended usage of OpenCensus Web is to collect
-spans from the resource timing waterfall of an initial page load. See the 
-[OpenCensus Web readme][oc-web-readme-url] for details.
+spans from the resource timing waterfall of an initial page load
+and trace on-page user interactions with a series of features like automatic tracing 
+for *clicks* and *route transitions*, *custom spans*, and browser [Performance API][performance-api] data.
+See the [OpenCensus Web readme][oc-web-readme-url] for details.
 
 This package is currently used to deserialize the `window.traceparent` global
 variable that the server can send back to the client to indicate the parent
 trace context for the initial page load.
 
-In the future we would like to support propagating trace contextspans for XHRs, 
-and this library could be used to also serialize a `traceparent` header to send
-along to XHR calls.
+This is also used to propagate trace contextspans for XHRs in the user interactions, 
+serializing a `traceparent` header to send along to XHR calls.
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>

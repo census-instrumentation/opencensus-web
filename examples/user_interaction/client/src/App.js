@@ -108,9 +108,11 @@ class App extends React.Component {
       <div>
         <p>This example makes some calculations like calculate Pi using the series from
         and calculate the amount of prime numbers in between 1 and 100000. These
-        calculations are done using slow methods in order to measure the traces.</p>
+        calculations are done using slow methods in order to show long spans.</p>
 
-        <button id='trace_interaction' data-ocweb-id='Trace user interaction' onClick={this.handleClick}>Trace user interaction</button>
+        <button data-ocweb-id='Trace user interaction' onClick={this.handleClick}>Trace user interaction</button>
+        <br></br><br></br>
+        <button id='trace_interaction' onClick={this.handleClick}>Trace user interaction 2</button>
 
         <p>The value of Pi is: <code>{this.state.pi.value}</code> and it took
         <code> {this.state.pi.time} ms </code> to compute this.</p>
