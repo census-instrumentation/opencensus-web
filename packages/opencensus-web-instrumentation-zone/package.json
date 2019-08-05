@@ -64,5 +64,5 @@
     "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.3",
     "zone.js": "~0.9.1"
   },
-  "sideEffects": false
+  "sideEffects": true
 }
