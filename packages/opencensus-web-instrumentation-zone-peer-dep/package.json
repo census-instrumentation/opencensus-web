@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.4",
-    "@types/node": "^10.12.18",
+    "@types/node": "^10.14.14",
     "codecov": "^3.3.0",
     "gts": "^1.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
@@ -61,7 +61,7 @@
     "webpack": "^4.32.2",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1",
-    "zone.js": "~0.9.1"
+    "zone.js": "^0.10.1"
   },
   "dependencies": {
     "@opencensus/web-core": "^0.0.3",
@@ -71,7 +71,7 @@
     "@opencensus/web-initial-load": "0.0.3"
   },
   "peerDependencies": {
-    "zone.js": "~0.9.1"
+    "zone.js": "^0.10.1"
   },
   "sideEffects": false
 }
