@@ -3,7 +3,7 @@
 
 *For overview and usage info see the main [OpenCensus Web readme][oc-web-readme-url].*
 
-This package combines contains the core trace model used by OpenCensus Web. This
+This package contains the core trace model used by OpenCensus Web. This
 trace model is based on the same TypeScript interfaces that
 [OpenCensus Node](https://github.com/census-instrumentation/opencensus-node)
 uses.
@@ -13,8 +13,10 @@ The library is in alpha stage and the API is subject to change.
 ## Usage
 
 Currently the primary intended usage of OpenCensus Web is to collect
-spans from the resource timing waterfall of an initial page load. See the 
-[OpenCensus Web readme][oc-web-readme-url] for details.
+spans from the resource timing waterfall of an initial page load
+and trace on-page user interactions with a series of features like automatic tracing 
+for *clicks* and *route transitions*, *custom spans*, and browser [Performance API][performance-api] data.
+See the [OpenCensus Web readme][oc-web-readme-url] for details.
 
 In the future we would like to make it easy to generate custom spans that will
 be conveniently exported to the [OpenCensus Agent][opencensus-service-url]. This
@@ -35,7 +37,5 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [gitter-url]: https://gitter.im/census-instrumentation/lobby
 [oc-web-readme-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/README.md
 [license-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-core/LICENSE
-[long-tasks-url]: https://w3c.github.io/longtasks/
-[resource-timing-buffer-url]: https://www.w3.org/TR/resource-timing-2/#dom-performance-setresourcetimingbuffersize
-[resource-timing-url]: https://www.w3.org/TR/resource-timing-2/
 [opencensus-service-url]: https://github.com/census-instrumentation/opencensus-service
+[performance-api]: (https://developer.mozilla.org/en-US/docs/Web/API/Performance)

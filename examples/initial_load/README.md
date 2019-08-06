@@ -32,7 +32,7 @@ exporters:
 Then in the same folder as your `config.yaml` run the agent with this command:
 
 ```bash
-go run github.com/census-instrumentation/opencensus-service/cmd/ocagent
+GO111MODULE=on go run github.com/census-instrumentation/opencensus-service/cmd/ocagent
 ```
 
 ### Step 2: Run the local webpack server
@@ -105,7 +105,7 @@ following the
 [OpenCensus Agent](https://github.com/census-instrumentation/opencensus-service#opencensus-agent)
 docs.
 
-### 5. Build the demo application container
+### 4. Build the demo application container
 
 First build the OpenCensus Web scripts that will be deployed with the
 application:
@@ -123,7 +123,7 @@ docker build . -t gcr.io/$PROJECT_ID/oc-web-initial-load:latest
 gcloud docker -- push gcr.io/$PROJECT_ID/oc-web-initial-load:latest
 ```
 
-### 4. Deploy the demo application
+### 5. Deploy the demo application
 
 Run the command `kubectl get svc oc-agent-service` to check if the 
 `EXTERNAL-IP` column has been filled in. If it is still pending, then wait a bit

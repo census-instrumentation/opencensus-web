@@ -7,15 +7,105 @@ This package generates OpenCensus Web model spans based on user interactions
 coming after initial page loads. This uses the library 
 [Zone.js](https://github.com/angular/zone.js/) to generate those spans.
 
-This package adds `Zone.js` as a peer dependency as the application 
+The library is in alpha stage and the API is subject to change.
+
+## Overview
+
+This package adds `Zone.js` as a peer dependency as your application 
 might already be dependent on it. This is the case, for example, with 
 application on `Angular` as this already imports it. 
 
-The library is in alpha stage and the API is subject to change.
+### How it works?
+
+In general, `Zone.js` is in charge of intercepting all the tasks running in an application,
+then, OC Web mokey-patches the functions `runTask`, `scheduleTask` and `cancelTask` to intercept
+and know when a task is running, being scheduled or canceled. 
+To start a new interaction, in the `runTask` monkey-patch, OC Web checks if the `task.eventName`
+corresponds to a *click* and the element that triggered the task either has a `data-ocweb-id` attibute
+or can be named with a *CSS selector*. In case those conditions are true, a new `Zone` and `rootSpan` are 
+started to measure the interaction.
+
+#### Detecting user interaction stability 
+To be able to know when the interactions finishes, the number of tasks the interaction 
+triggers has to be tracked. The count of tasks is incremented when a task is scheduled 
+(e.g. `setTimeout` is called) or the interaction just started, and the count decrements 
+when a task finishes running (e.g. `setTimeout` finished running the callback) or is canceled. 
+When the count of tasks is 0, the interaction is maybe complete, it is *maybe* because a 
+`setTimeout` of 0 ms is queued to actually complete the interaction in case there are no more scheduled tasks
+ahead. In case there are more tasks ahead, this task is canceled to allow keep counting the tasks.
+If the interaction is complete, the `rootSpan` ends and is exported to the OC Agent.
+
+#### Concurrent interactions
+To keep track of concurrent interactions, that is interactions triggered by either different DOM elements or 
+the same element (e.g. click several times the same button). A `Map` is used to keep track of all interactions.
+
+#### Handling with multiple event handlers for the same interaction
+Also, as in some cases, elements have multiple event handlers or some frameworks might trigger 
+several events for the same interaction. This is the case for React, that triggers several click events 
+for a button if the user only clicked once. OC Web creates a *flag* that is set when a new interaction 
+is detected and reset it after *50 ms* using `setTimeout`. Having this flag means that all 
+handled events happening within 50 milliseconds will be associated to the same interaction. 
+After 50 milliseconds, if a handled event is detected, this will cause the creation of a new user interaction.
+
+For more details see the [src/interaction_tracker.ts][interaction-tracker-url] and 
+[src/on-page-interaction-stop-watch.ts][on-page-interaction-url] files containing the source code.
+
+### What kind of tasks are tracked during the user interaction?
+There are three kinds of tasks:
+- *MicroTask*: used for doing work right after the current task. In this case the Promises are an example of microtasks.
+- *MacroTask*: used for doing work later. Such as `setTimeout` or `setInterval`.
+- *EventTask*: used for listening on some future event. This may execute zero or more times, with an unknown delay.
+
+Several tasks might run after a user interaction has started, such as a `setTimeout` or HTTP requests. In order to detect 
+the stability of an interaction, OC web only counts the *MicroTasks* and *MacroTasks* as these tasks tell the actual work 
+the interaction might have. We do not mind about *EventTasks* as they only correspond to events happening and do 
+not do network calls or long code executions. However, OC Web does not count periodic tasks such as `setInterval` as 
+they will be called repeatedly, which would cause the interaction to never finish and would be impossible 
+to measure the stability of the interaction.
+
+### How are route transitions detected and named?
+
+Another kind of traced user interactions are the route transitions within the web page. Route transitions are named as 
+*'Navigation /path/to/page'*. 
+For this case, OC Web monkey-patches the browser’s [History API][history-api-url].
+This allows to OC Web detecting all route transitions in a user interaction and give the right name to the interaction. 
+The way it works is identifying the currently running interaction by getting the current interaction from the active Zone 
+when the History API methods (e.g. pushState) are called.
+
+See the [src/history-api-patch.ts][history-api-patch-url] file.
+
+### Intercepting XHR calls and joing browser data
+
+OC Web intercepts XHR calls generated by a user interaction. A new `childSpan` is created to measure the XHR and 
+the Trace Context Header in the W3C Trace Context format is sent along the XHR.
+
+To intercept XHRs, OC Web checks if the `task.target` is an instance of `XMLHttpRequest`.  If that is the case, uses the 
+method `setRequestHeader()` to send the `traceparent` header as long as the XHR URL is same origin or matches the 
+regular expression given in `ocTraceHeaderHostRegex` global variable.
+The XHR span has to start once `send()` is called but the actual `send` has not run yet. For that, this method is monkey-patched
+to dispatch an event telling the interaction tracker the span has to start a new XHR span, the name for the span will be the URL pathname.
+
+When the XHR has ended (`readyState` is `DONE`) the XHR span is ended to get the total duration of the XHR. Additionally, some 
+attributes are added to the span, such as the *HTTP status* (e.g. 200) code and *HTTP method* (e.g. POST) used for the request. 
+To obtain the *HTTP method*, the `XMLHttpRequest.open()` method is monkey-patched and adds this data to the XHR object. 
+
+See the [src/monkey-patching.ts][monkey-patching-url] and [src/xhr-interceptor.ts][xhr-interceptor-url] files for details.
+
+In addition to the childSpan for the XHR, OC Web attaches the [Resource Performamce Timing API][resource-timing-url] 
+data to the span.
+This data is retrieved by `performance.getEntriesByType(‘resource’)` where the resource timing entries will provide that kind of data. 
+However, this data does not correlate every entry  with a specific XHR object and some of those XHRs may 
+trigger an additional request related to *CORS preflight*. Also, there might be several user interactions being 
+tracked at the same time sending requests to the same URL, creating several entries in the Performance Resource Array with the same name.
+To solve this, an algorithm is created which in general filters out this data and looks for the best entries fitting within the 
+XHR span. 
+
+For details in the algorithm see [src/perf-resource-timing-selector.ts][performance-selector-url].
+
 
 ## Usage
 
-#### Custom spans
+### Custom spans
 In addition to automatic user interaction tracing, it is possible to create 
 your own spans for the tasks or code involved in a user interaction.
 Here is an example for JavaScript
@@ -41,6 +131,8 @@ button.onclick = handleClick;
 Check the [user interaction client example][client-example-url] which instruments the package and 
 create some custom spans.
 
+For more features and ways to use it see the main [OpenCensus Web readme][oc-web-readme-url].
+
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
 - For more about OpenCensus Web: <https://github.com/census-instrumentation/opencensus-web>
@@ -58,3 +150,10 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [resource-timing-url]: https://www.w3.org/TR/resource-timing-2/
 [long-tasks-url]: https://w3c.github.io/longtasks/
 [client-example-url]: https://github.com/census-instrumentation/opencensus-web/tree/master/examples/user_interaction/client
+[history-api-url]: https://developer.mozilla.org/en-US/docs/Web/API/History_API
+[interaction-tracker-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/interaction-tracker.ts
+[on-page-interaction-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/on-page-interaction-stop-watch.ts
+[history-api-patch-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/history-api-patch.ts
+[monkey-patching-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/monkey-patching.ts
+[xhr-interceptor-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/xhr-interceptor.ts
+[performance-selector-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/packages/opencensus-web-instrumentation-zone-peer-dep/src/perf-resource-timing-selector.ts
