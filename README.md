@@ -31,14 +31,15 @@ OpenCensus Web interacts with three application components:
 - *Frontend web server*: renders the initial HTML to the browser including the OpenCensus Web library code 
   and the necessary configuration (e.g. window.ocAgent). This server would typically be instrumented with an 
   OpenCensus server-side library (Go, Java, etc.) that can attach the server-side spans to the trace, 
-  that is sending the Trace Context Header in the [W3C draft format][trace-context-url].
+  that is sending the Trace Context Header in the [W3C draft format][trace-context-url] via a `window.traceparent` 
+  global variable.
   We also suggest that you create an endpoint in the server that receives the HTTP/JSON traces and proxies 
   to the OpenCensus Agent.
 
 - *Browser JS*: the OpenCensus Web library code that runs in the browser. This measures user interactions and 
   collects browser data and writes them to the OpenCensus Agent as spans via HTTP/JSON.
 
-- *OpenCensus Collector*: receives traces from either the *frontend web server proxy endpoint* or directly from 
+- *OpenCensus Agent*: receives traces from either the *frontend web server proxy endpoint* or directly from 
   the *browser JS*, depending on  the way you deploy it, and exports them to a trace backend (e.g. Stackdriver, Zipkin). 
 
 ![architecture-diagram](images/architecture_diagram.png)
@@ -78,7 +79,7 @@ CORS, you will need to specify the
 [Timing-Allow-Origin header][timing-allow-origin-url].
 
 ### Automatic tracing for click events
-OpenCensus Web traces automatically all the *click events* as long as the click is done in a DOM element 
+OpenCensus Web automatically traces all the *click events* as long as the click is done in a DOM element 
 (e.g. button) and it is not *disabled*. When the user clicks an element, an interaction is started to 
 measure all the synchronous and asynchronous code that this interaction may trigger, like network calls or 
 JS code execution. 
@@ -221,7 +222,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
   </body>
   ```
 
-- In the other side, in case you want to **trace user interactions**, you have two options:
+- If you want to **trace user interactions**, you have two options:
   In addition to the previously explained variables, you need to set the `ocTraceHeaderHostRegex`
   regex to tell the OC Web which HTTP requests can be intercepted in a interaction to send the 
   *Trace Context Header*.
@@ -243,7 +244,8 @@ trace sample rate via an `ocSampleRate` global variable as well.
     ...
   ```
 
-  - If your application already uses the `Zone.js` library, this being the case for non `Angular` apps: 
+  - If your application doesn't already use the `Zone.js` library, the case for *non-Angular* apps
+    (e.g. React, etc.): 
     ```html
         ...
         <script src="https://unpkg.com/@opencensus/web-scripts@0.0.3/dist/tracing-all-with-zone.js"
@@ -253,7 +255,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
       </body>
     ```
 
-  - If your application uses the `Zone.js` library, being the case for `Angular` apps:
+  - If your application uses the `Zone.js` library, the case for `Angular` apps:
     ```html
         ...
         <script src="https://unpkg.com/@opencensus/web-scripts@0.0.3/dist/tracing-all-with-zone-peer-dep.js"

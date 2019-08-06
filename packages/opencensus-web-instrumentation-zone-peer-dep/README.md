@@ -22,21 +22,24 @@ then, OC Web mokey-patches the functions `runTask`, `scheduleTask` and `cancelTa
 and know when a task is running, being scheduled or canceled. 
 To start a new interaction, in the `runTask` monkey-patch, OC Web checks if the `task.eventName`
 corresponds to a *click* and the element that triggered the task either has a `data-ocweb-id` attibute
-or can be named with a *CSS selector*. In case those conditions are true, a new `Zone` and `rootSpan are 
-started `rootSpan` to measure the interaction.
+or can be named with a *CSS selector*. In case those conditions are true, a new `Zone` and `rootSpan` are 
+started to measure the interaction.
 
-To be able to know when the interactions finishes, this is there are no more async and sync tasks related to the interaction.
-The number of tasks the interaction triggers has to be tracked. The count of tasks is incremented when 
-a task is scheduled (e.g. `setTimeout` is called) or the interaction just started, and the count decrements 
+#### Detecting user interaction stability 
+To be able to know when the interactions finishes, the number of tasks the interaction 
+triggers has to be tracked. The count of tasks is incremented when a task is scheduled 
+(e.g. `setTimeout` is called) or the interaction just started, and the count decrements 
 when a task finishes running (e.g. `setTimeout` finished running the callback) or is canceled. 
 When the count of tasks is 0, the interaction is maybe complete, it is *maybe* because a 
 `setTimeout` of 0 ms is queued to actually complete the interaction in case there are no more scheduled tasks
 ahead. In case there are more tasks ahead, this task is canceled to allow keep counting the tasks.
 If the interaction is complete, the `rootSpan` ends and is exported to the OC Agent.
 
+#### Concurrent interactions
 To keep track of concurrent interactions, that is interactions triggered by either different DOM elements or 
 the same element (e.g. click several times the same button). A `Map` is used to keep track of all interactions.
 
+#### Handling with multiple event handlers for the same interaction
 Also, as in some cases, elements have multiple event handlers or some frameworks might trigger 
 several events for the same interaction. This is the case for React, that triggers several click events 
 for a button if the user only clicked once. OC Web creates a *flag* that is set when a new interaction 
