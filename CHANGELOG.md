@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 0.0.4 - 2019-08-06
 
 - Rename `@opencensus/web-all` to `@opencensus/web-scripts` so now this package 
     is only in charge of bundling OC Web to allow importing it as <script> tag.
@@ -12,6 +12,11 @@ All notable changes to this project will be documented in this file.
     to instrument it with all the OC Web functionality plus the `Zone.js` library and 
     `@opencensus/web-instrumentation-zone-peer-dep` also exports all the functionality but `Zone.js`
     is a peer dependency.
+
+- Implementation of *User interaction tracing* monkey-patching the `Zone.js` library. This includes
+    some features like: automatic tracing for click events and route transitions, custom spans, 
+    automatic spans for HTTP requests and Browser performance data, relate user interaction traces
+    back the the initial page load trace and sampling.
 
 ## 0.0.3 - 2019-06-08
 

@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-scripts",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "OpenCensus Web scripts brings all the main OpenCensus Web packages to provide distributions for easy use in web applications via <script> tags.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -68,12 +68,12 @@
     "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.3",
-    "@opencensus/web-exporter-ocagent": "^0.0.3",
-    "@opencensus/web-initial-load": "^0.0.3",
-    "@opencensus/web-instrumentation-perf": "^0.0.3",
-    "@opencensus/web-instrumentation-zone": "^0.0.3",
-    "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.3"
+    "@opencensus/web-core": "^0.0.4",
+    "@opencensus/web-exporter-ocagent": "^0.0.4",
+    "@opencensus/web-initial-load": "^0.0.4",
+    "@opencensus/web-instrumentation-perf": "^0.0.4",
+    "@opencensus/web-instrumentation-zone": "^0.0.4",
+    "@opencensus/web-instrumentation-zone-peer-dep": "^0.0.4"
   },
   "sideEffects": [
     "./src/entrypoints/*.ts"
