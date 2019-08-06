@@ -51,9 +51,11 @@ jobs:
           name: Install modules and dependencies.
           command: npm install
       # Run publish script for each package suffix and its NPM wombat token.
-      - run: .circleci/publish.sh all $WOMBAT_TOKEN_ALL
+      - run: .circleci/publish.sh initial-load $WOMBAT_TOKEN_INITIAL_LOAD
       - run: .circleci/publish.sh core $WOMBAT_TOKEN_CORE
       - run: .circleci/publish.sh exporter-ocagent $WOMBAT_TOKEN_EXPORTER_OCAGENT
       - run: .circleci/publish.sh instrumentation-perf $WOMBAT_TOKEN_INSTRUMENTATION_PERF
       - run: .circleci/publish.sh propagation-tracecontext "$WOMBAT_TOKEN_PROPAGATION_TRACECONTEXT"
       - run: .circleci/publish.sh types "$WOMBAT_TOKEN_TYPES"
+      - run: .circleci/publish.sh instrumentation-zone $WOMBAT_TOKEN_INSTRUMENTATION_ZONE
+      - run: .circleci/publish.sh instrumentation-zone-peer-dep $WOMBAT_TOKEN_INSTRUMENTATION_ZONE_PEER_DEP
