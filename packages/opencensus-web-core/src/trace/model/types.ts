@@ -53,4 +53,7 @@ export declare interface WindowWithOcwGlobals extends Window {
    * That way the header is not added to all xhrs.
    */
   ocTraceHeaderHostRegex?: string | RegExp;
+
+  /** Custom name for the service */
+  ocServiceName?: string;
 }
