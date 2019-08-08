@@ -129,9 +129,11 @@ export class InteractionTracker {
   private patchZoneCancelTask() {
     const cancelTask = Zone.prototype.cancelTask;
     Zone.prototype.cancelTask = (task: AsyncTask) => {
-      const currentZone = Zone.current;
+      let currentZone = Zone.current;
       if (isTracingZone(currentZone)) {
         task._zone = currentZone;
+      } else if (isTracingZone(task.zone)) {
+        currentZone = task.zone;
       }
 
       try {
