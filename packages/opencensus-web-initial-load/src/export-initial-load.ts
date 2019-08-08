@@ -38,7 +38,8 @@ const TRACE_ENDPOINT = '/v1/trace';
 /**
  * Waits until after the document `load` event fires, and then uses the
  * `window.ocAgent` setting to configure an OpenCensus agent exporter and
- * export the spans for the initial page load.
+ * export the spans for the initial page load. You can customize the name
+ * of the service by specifying `window.ocServiceName`
  */
 export function exportRootSpanAfterLoadEvent() {
   if (!windowWithOcwGlobals.ocAgent) {
@@ -49,6 +50,7 @@ export function exportRootSpanAfterLoadEvent() {
   tracing.registerExporter(
     new OCAgentExporter({
       agentEndpoint: `${windowWithOcwGlobals.ocAgent}${TRACE_ENDPOINT}`,
+      serviceName: windowWithOcwGlobals.ocServiceName,
     })
   );
 

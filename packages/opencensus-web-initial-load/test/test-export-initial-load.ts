@@ -67,7 +67,26 @@ describe('exportRootSpanAfterLoadEvent', () => {
     // Check that trace and span ID from `window.traceparent` are in body sent.
     const sendBody = sendSpy.calls.argsFor(0)[0];
     expect(sendBody).toContain(hexToBase64(traceId));
-    expect(sendBody).toContain(hexToBase64(traceId));
+    expect(sendBody).toContain(hexToBase64(spanId));
+  });
+
+  it('uses service name from window.ocServiceName if specified', () => {
+    windowWithOcwGlobals.ocAgent = 'http://agent';
+    windowWithOcwGlobals.ocServiceName = 'serviceName';
+    windowWithOcwGlobals.traceparent =
+      '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+
+    exportRootSpanAfterLoadEvent();
+
+    jasmine.clock().tick(300000);
+    expect(XMLHttpRequest.prototype.open).toHaveBeenCalledWith(
+      'POST',
+      'http://agent/v1/trace'
+    );
+    expect(XMLHttpRequest.prototype.send).toHaveBeenCalledTimes(1);
+    // Check that serviceName from `window.ocServiceName` is in body sent.
+    const sendBody = sendSpy.calls.argsFor(0)[0];
+    expect(sendBody).toContain(windowWithOcwGlobals.ocServiceName);
   });
 
   it('does not export spans if traceparent sampling hint set to zero', () => {
