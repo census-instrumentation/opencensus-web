@@ -132,7 +132,7 @@ export class InteractionTracker {
       let currentZone = Zone.current;
       if (isTracingZone(currentZone)) {
         task._zone = currentZone;
-      } else if(isTracingZone(task.zone)){
+      } else if (isTracingZone(task.zone)) {
         currentZone = task.zone;
       }
 
