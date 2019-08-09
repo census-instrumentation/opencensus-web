@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## unreleased
+
+## 0.0.5 - 2019-08-09
+
+- Fixes to interaction tracker.
+- Service name can be specified via window variable, thanks @Blightwidow
+- Fixes to automated NPM publish script.
+
 ## 0.0.4 - 2019-08-06
 
 - Rename `@opencensus/web-all` to `@opencensus/web-scripts` so now this package 
