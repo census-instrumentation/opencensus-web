@@ -387,7 +387,7 @@ storing a global initial load span context to be used by other packages.
 - **[@opencensus/web-scripts][package-web-scripts]**. This depends on all the other OpenCensus Web libraries and provides WebPack builds for JS bundles that can be used in `<script>` tags. See the documentation
 for more details on the resulting scripts
 - **[@opencensus/web-instrumentation-zone][package-web-instrumentation-zone]**. This depends on all the other OpenCensus Web packages and provides top-level functions for instrumenting the initial page load and 
-user interaction traces to export them to the OpenCensus Agent. This also uses `Zone.js` library as a hard dependency, then, this package should be used if your application does not already depends on that.
+user interaction traces to export them to the OpenCensus Agent. This also uses `Zone.js` library as a install dependency, then, this package should be used if your application does not already depends on that.
 - **[@opencensus/web-instrumentation-zone-peer-dep][package-web-instrumentation-zone-peer-dep]**. This depends on all the other OpenCensus Web packages and provides top-level functions for instrumenting the initial 
 page load and user interaction traces to export them to the OpenCensus Agent. This uses `Zone.js` library as a peer dependency, then, this package should be used if your application already depends on that 
 (e.g. Angular applications).
