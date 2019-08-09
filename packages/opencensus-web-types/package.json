@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-types",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "OpenCensus Web types is a slightly-patched copy of the `types.ts` files from `@opencensus/core` so that they can be easily imported in web-specific packages.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
