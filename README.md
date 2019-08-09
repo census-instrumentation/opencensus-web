@@ -384,7 +384,13 @@ The OpenCensus web library is composed of the following packages:
 - **[@opencensus/web-propagation-tracecontext][package-web-propagation-tracecontext]**. This provides utilities to serialize and deserialize a `traceparent` trace context header in the [W3C draft trace context format][trace-context-url]
 - **[@opencensus/web-initial-load][package-web-initial-load]**. This package is in charge of generating the initial load page trace, plus the corresponding sampling decision for OpenCensus Web and 
 storing a global initial load span context to be used by other packages. 
-- **[@opencensus/web-scripts][package-web-scripts]**. This depends on all the other OpenCensus Web libraries and provides top-level functions for instrumenting the initial page load and exporting its spans to the OpenCensus Agent. It also provides WebPack builds for JS bundles that can be used in `<script>` tags.
+- **[@opencensus/web-scripts][package-web-scripts]**. This depends on all the other OpenCensus Web libraries and provides WebPack builds for JS bundles that can be used in `<script>` tags. See the documentation
+for more details on the resulting scripts
+- **[@opencensus/web-instrumentation-zone][package-web-instrumentation-zone]**. This depends on all the other OpenCensus Web packages and provides top-level functions for instrumenting the initial page load and 
+user interaction traces to export them to the OpenCensus Agent. This also uses `Zone.js` library as a hard dependency, then, this package should be used if your application does not already depends on that.
+- **[@opencensus/web-instrumentation-zone-peer-dep][package-web-instrumentation-zone-peer-dep]**. This depends on all the other OpenCensus Web packages and provides top-level functions for instrumenting the initial 
+page load and user interaction traces to export them to the OpenCensus Agent. This uses `Zone.js` library as a peer dependency, then, this package should be used if your application already depends on that 
+(e.g. Angular applications).
 
 ## Useful links
 - For more information on OpenCensus, visit: <https://opencensus.io/>
@@ -443,6 +449,8 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [package-web-instrumentation-perf]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-perf
 [package-web-propagation-tracecontext]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-propagation-tracecontext
 [package-web-types]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-types
+[package-web-instrumentation-zone]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-zone
+[package-web-instrumentation-zone-peer-dep]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-zone-peer-dep
 [resource-timing-url]: https://www.w3.org/TR/resource-timing-2/
 [semver-url]: http://semver.org/
 [snyk-image]: https://snyk.io/test/github/census-instrumentation/opencensus-web/badge.svg?style=flat
