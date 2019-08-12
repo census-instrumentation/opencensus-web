@@ -216,7 +216,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
       ocSampleRate = 1.0;  
     </script>
     <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/initial-load-all.js"
-            integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+            integrity="sha384-Yjf1HlvVBAtNApsvjYTZEJj9zLfUCfSJkLMseUTmRivMj92Ri2OKnfb2kkyGqdil"
             async crossorigin="anonymous">
     </script>
   </body>
@@ -249,7 +249,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
     ```html
         ...
         <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-with-zone.js"
-                integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+                integrity="sha384-0Y5xp9Nl9nmXYL7GgTb0sz8HmFxRYlh+8wWgks5qb1NCg9h7XiKogm15uIbVaXrN"
                 async crossorigin="anonymous">
         </script>
       </body>
