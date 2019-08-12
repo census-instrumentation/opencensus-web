@@ -258,8 +258,8 @@ trace sample rate via an `ocSampleRate` global variable as well.
   - If your application uses the `Zone.js` library, the case for `Angular` apps:
     ```html
         ...
-        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-with-zone-peer-dep.js"
-                integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-zone-peer-dep.js"
+                integrity="sha384-IPZy89j7zcXj4WDrW+XWl2mRrN7tqhdMcHgRsvK+dVNrofnyxPvI5OcX1kni4FWt"
                 async crossorigin="anonymous">
         </script>
       </body>
