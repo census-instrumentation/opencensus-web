@@ -54,7 +54,7 @@
     "karma-jasmine": "^2.0.1",
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "^4.0.0-rc.5",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.0",
     "ts-loader": "^6.0.0",
     "typescript": "^3.1.6",
     "webpack": "^4.18.0",
