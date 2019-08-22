@@ -33,7 +33,13 @@ export function recordLongTasks() {
     const longTaskObserver = new windowWithLongTasks.PerformanceObserver(
       onLongTasks
     );
-    longTaskObserver.observe({ entryTypes: ['longtask'] });
+    try {
+      longTaskObserver.observe({ entryTypes: ['longtask'] });
+    } catch (err) {
+      //Safari (at least) throws a TypeError if entryTypes does not contain a valid entry.
+      //This can block further script execution. Gracefully handle this error and log instead.
+      console.error(err);
+    }
   }
   windowWithLongTasks.ocLt = [];
 }
