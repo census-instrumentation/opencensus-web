@@ -215,8 +215,8 @@ trace sample rate via an `ocSampleRate` global variable as well.
       // By default this is set to sample 1/10000 requests.
       ocSampleRate = 1.0;  
     </script>
-    <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/initial-load-all.js"
-            integrity="sha384-Yjf1HlvVBAtNApsvjYTZEJj9zLfUCfSJkLMseUTmRivMj92Ri2OKnfb2kkyGqdil"
+    <script src="https://unpkg.com/@opencensus/web-scripts@0.0.6/dist/initial-load-all.js"
+            integrity="sha384-i4hXJgWcpVndlEbWiKDJq59jlTuis+dNeFlf0XcPxM7We2mpA5msdPCFnFaPeI0w"
             async crossorigin="anonymous">
     </script>
   </body>
@@ -248,7 +248,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
     (e.g. React, etc.): 
     ```html
         ...
-        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-with-zone.js"
+        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.6/dist/tracing-all-with-zone.js"
                 integrity="sha384-0Y5xp9Nl9nmXYL7GgTb0sz8HmFxRYlh+8wWgks5qb1NCg9h7XiKogm15uIbVaXrN"
                 async crossorigin="anonymous">
         </script>
@@ -258,7 +258,7 @@ trace sample rate via an `ocSampleRate` global variable as well.
   - If your application uses the `Zone.js` library, the case for `Angular` apps:
     ```html
         ...
-        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-zone-peer-dep.js"
+        <script src="https://unpkg.com/@opencensus/web-scripts@0.0.6/dist/tracing-all-zone-peer-dep.js"
                 integrity="sha384-IPZy89j7zcXj4WDrW+XWl2mRrN7tqhdMcHgRsvK+dVNrofnyxPvI5OcX1kni4FWt"
                 async crossorigin="anonymous">
         </script>
@@ -334,8 +334,8 @@ variable. The `traceparent` variable should be in the
     // We don't need to specify `ocSampleRate` since the trace sampling decision
     // is coming from the `traceparent` global variable instead.
   </script>
-  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/initial-load-all.js"
-          integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.6/dist/initial-load-all.js"
+          integrity="sha384-i4hXJgWcpVndlEbWiKDJq59jlTuis+dNeFlf0XcPxM7We2mpA5msdPCFnFaPeI0w"
           async crossorigin="anonymous">
   </script>
 </body>
@@ -356,8 +356,8 @@ In case you want to use trace user interactions:
     // We don't need to specify `ocSampleRate` since the trace sampling decision
     // is coming from the `traceparent` global variable instead.
   </script>
-  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.5/dist/tracing-all-with-zone.js"
-          integrity="sha384-VPY9XX7tiXeLekDPFXkfO2AqNpLTCNOzfXxVghzoVP05PXrG+wtHOW2kOP2ggO9o"
+  <script src="https://unpkg.com/@opencensus/web-scripts@0.0.6/dist/tracing-all-with-zone.js"
+          integrity="sha384-0Y5xp9Nl9nmXYL7GgTb0sz8HmFxRYlh+8wWgks5qb1NCg9h7XiKogm15uIbVaXrN"
           async crossorigin="anonymous">
   </script>
 </body>
