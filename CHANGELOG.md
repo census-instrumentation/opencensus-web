@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## unreleased
 
+## 0.0.6 - 2019-08-26
+
+- Fixed TypeError in Safari, thanks @backjo (#167)
+
 ## 0.0.5 - 2019-08-09
 
 - Fixes to interaction tracker.
