@@ -20,7 +20,7 @@ import {
 } from '@opencensus/web-initial-load';
 import { isSampled } from '@opencensus/web-core';
 
-import { InteractionTracker } from './interaction-tracker';
+import { InteractionTracker, TrackerOptions } from './interaction-tracker';
 import { doPatching } from './monkey-patching';
 
 /**
@@ -29,7 +29,7 @@ import { doPatching } from './monkey-patching';
  * monkey-patch for this. This is done depending on the sampling decision made
  * by  the initial page load module.
  */
-export function startTracing() {
+export function startTracing(options?: TrackerOptions) {
   exportRootSpanAfterLoadEvent();
   // Do not start the interaction tracker if it is not sampled. This decision
   // is done in the Initial Load page module using the Initial Load Span
@@ -39,5 +39,5 @@ export function startTracing() {
   if (!isSampled(getInitialLoadSpanContext())) return;
 
   doPatching();
-  InteractionTracker.startTracking();
+  InteractionTracker.startTracking(options);
 }

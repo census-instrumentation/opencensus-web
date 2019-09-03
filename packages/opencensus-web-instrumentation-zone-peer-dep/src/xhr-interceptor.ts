@@ -22,18 +22,17 @@ import {
   ATTRIBUTE_HTTP_METHOD,
   parseUrl,
   SpanKind,
+  Propagation,
 } from '@opencensus/web-core';
 import { getXhrPerfomanceData } from './perf-resource-timing-selector';
 import { traceOriginMatchesOrSameOrigin, isTracingZone } from './util';
-import { spanContextToTraceParent } from '@opencensus/web-propagation-tracecontext';
+import { TraceContextFormat } from '@opencensus/web-propagation-tracecontext';
 import {
   annotationsForPerfTimeFields,
   PerformanceResourceTimingExtended,
   PERFORMANCE_ENTRY_EVENTS,
   getResourceSpan,
 } from '@opencensus/web-instrumentation-perf';
-
-const TRACEPARENT_HEADER = 'traceparent';
 
 /**
  * Map intended to keep track of current XHR objects associated to a span.
@@ -60,7 +59,10 @@ export const alreadyAssignedPerfEntries = new Set<PerformanceResourceTiming>();
  * has been called.
  * In case the XHR is DONE, end the child span.
  */
-export function interceptXhrTask(task: AsyncTask) {
+export function interceptXhrTask(
+  task: AsyncTask,
+  propagation: Propagation = new TraceContextFormat()
+): void {
   if (!isTracingZone(task.zone)) return;
   if (!(task.target instanceof XMLHttpRequest)) return;
 
@@ -75,7 +77,7 @@ export function interceptXhrTask(task: AsyncTask) {
     // requests causing more entries to the Performance Resource buffer.
     incrementXhrTaskCount();
     const rootSpan: RootSpan = task.zone.get('data').rootSpan;
-    setTraceparentContextHeader(xhr, rootSpan);
+    setTraceparentContextHeader(xhr, rootSpan, propagation);
   } else if (xhr.readyState === XMLHttpRequest.DONE) {
     endXhrSpan(xhr);
     decrementXhrTaskCount();
@@ -84,11 +86,12 @@ export function interceptXhrTask(task: AsyncTask) {
 
 function setTraceparentContextHeader(
   xhr: XhrWithOcWebData,
-  rootSpan: RootSpan
+  rootSpan: RootSpan,
+  propagation: Propagation
 ): void {
   // `__zone_symbol__xhrURL` is set by the Zone monkey-path.
   const xhrUrl = xhr.__zone_symbol__xhrURL;
-  const childSpan = rootSpan.startChildSpan({
+  const childSpan: Span = rootSpan.startChildSpan({
     name: parseUrl(xhrUrl).pathname,
     kind: SpanKind.CLIENT,
   });
@@ -96,15 +99,18 @@ function setTraceparentContextHeader(
   // find the correct span when the request is DONE.
   xhrSpans.set(xhr, childSpan);
   if (traceOriginMatchesOrSameOrigin(xhrUrl)) {
-    xhr.setRequestHeader(
-      TRACEPARENT_HEADER,
-      spanContextToTraceParent({
-        traceId: rootSpan.traceId,
-        spanId: childSpan.id,
-        // As the interaction tracker has started, all traces are sampled.
-        options: 1,
-      })
-    );
+    const setter = {
+      setHeader(name: string, value: string) {
+        xhr.setRequestHeader(name, value);
+      },
+    };
+
+    propagation.inject(setter, {
+      traceId: rootSpan.traceId,
+      spanId: childSpan.id,
+      // As the interaction tracker has started, all traces are sampled.
+      options: 1,
+    });
   }
 }
 

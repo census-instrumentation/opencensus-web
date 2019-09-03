@@ -19,6 +19,7 @@ import {
   tracing,
   SpanKind,
   RootSpan,
+  Propagation,
 } from '@opencensus/web-core';
 import { AsyncTask, InteractionName } from './zone-types';
 import {
@@ -35,7 +36,12 @@ declare const Zone: ZoneType & { prototype: Zone };
 // Delay of 50 ms to reset currentEventTracingZone.
 export const RESET_TRACING_ZONE_DELAY = 50;
 
+export interface TrackerOptions {
+  propagation?: Propagation;
+}
+
 export class InteractionTracker {
+  private options: TrackerOptions;
   // Allows to track several events triggered by the same user interaction in the right Zone.
   private currentEventTracingZone?: Zone;
 
@@ -54,15 +60,22 @@ export class InteractionTracker {
   } = {};
 
   private static singletonInstance: InteractionTracker;
+  private static singletonOptions: TrackerOptions;
 
-  private constructor() {
+  private constructor(options: TrackerOptions) {
+    this.options = options;
     this.patchZoneRunTask();
     this.patchZoneScheduleTask();
     this.patchZoneCancelTask();
   }
 
-  static startTracking(): void {
-    if (!this.singletonInstance) this.singletonInstance = new this();
+  static startTracking(options: TrackerOptions = {}): InteractionTracker {
+    if (!this.singletonInstance || this.singletonOptions !== options) {
+      this.singletonInstance = new this(options);
+      this.singletonOptions = options;
+    }
+
+    return this.singletonInstance;
   }
 
   private patchZoneRunTask() {
@@ -93,7 +106,7 @@ export class InteractionTracker {
         }
         this.incrementTaskCount(getTraceId(task.zone));
       }
-      interceptXhrTask(task);
+      interceptXhrTask(task, this.options.propagation);
       try {
         return runTask.call(task.zone as {}, task, applyThis, applyArgs);
       } finally {
