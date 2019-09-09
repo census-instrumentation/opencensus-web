@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## unreleased
 
+- B3 propagation support with the `@opencensus/web-propagation-b3` package,
+  and the ability 
+
 ## 0.0.6 - 2019-08-26
 
 - Fixed TypeError in Safari, thanks @backjo (#167)

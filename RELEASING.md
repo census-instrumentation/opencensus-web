@@ -62,6 +62,9 @@ publishes the packages to NPM. See the
 
 ## Update CHANGELOG and release versions in examples
 * After releasing, you need to update all examples to the latest version.
+* You will also need to update the `src` tags of `<script>` links in
+  `README.md` with not only their latest version but also their updated SHA
+  hashes. Use [srihash.org/](https://www.srihash.org/) to easily generate these.
 * In addition, update the CHANGELOG.md and start new Unreleased label.
 * Create a new commit with the exact title: `Post Release: update CHANGELOG, Examples and ReadMe`.
 * Go through PR review and merge it to GitHub master branch.

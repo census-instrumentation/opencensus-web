@@ -56,6 +56,7 @@ jobs:
       - run: .circleci/publish.sh exporter-ocagent $WOMBAT_TOKEN_EXPORTER_OCAGENT
       - run: .circleci/publish.sh instrumentation-perf $WOMBAT_TOKEN_INSTRUMENTATION_PERF
       - run: .circleci/publish.sh propagation-tracecontext "$WOMBAT_TOKEN_PROPAGATION_TRACECONTEXT"
+      - run: .circleci/publish.sh propagation-b3 "$WOMBAT_TOKEN_PROPAGATION_B3"
       - run: .circleci/publish.sh scripts "$WOMBAT_TOKEN_SCRIPTS"      
       - run: .circleci/publish.sh types "$WOMBAT_TOKEN_TYPES"
       - run: .circleci/publish.sh instrumentation-zone $WOMBAT_TOKEN_INSTRUMENTATION_ZONE
