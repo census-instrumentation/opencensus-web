@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-propagation-b3",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "OpenCensus Trace Context format propagation for the web browser based on B3 format",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -61,7 +61,7 @@
     "webpack-cli": "^3.3.7"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.6"
+    "@opencensus/web-core": "^0.1.0"
   },
   "sideEffects": false
 }

@@ -307,6 +307,9 @@ If you already have a JS build pipeline using e.g. webpack or similar, you can d
   // As the tracing has started, the coming user interactions ares also traced.
   startTracing();
   ```
+The default propagation uses the [W3C Trace Context](https://www.w3.org/TR/trace-context/) format. You can also use
+[Zipkin's B3 Propagation](https://github.com/openzipkin/b3-propagation). See the 
+[@opencensus/web-propagation-b3 README][package-web-propagation-b3] for details.
 
 ### 3. Optional: Send a trace parent and sampling decision from your server
 
@@ -448,6 +451,7 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [package-web-initial-load]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-initial-load
 [package-web-instrumentation-perf]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-perf
 [package-web-propagation-tracecontext]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-propagation-tracecontext
+[package-web-propagation-b3]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-propagation-b3
 [package-web-types]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-types
 [package-web-instrumentation-zone]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-zone
 [package-web-instrumentation-zone-peer-dep]: https://github.com/census-instrumentation/opencensus-web/tree/master/packages/opencensus-web-instrumentation-zone-peer-dep

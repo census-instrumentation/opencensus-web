@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## Unreleased
+
+- Support for B3 propagation with new `@opencensus/web-propagation-b3` package
+  and the ability to pass it in via `startTracing({ propagation: Propagation })`.
+  Thanks @edvinasbartkus!
 
 ## 0.0.6 - 2019-08-26
 
