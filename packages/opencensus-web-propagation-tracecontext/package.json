@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-propagation-tracecontext",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "OpenCensus Trace Context format propagation for the web browser",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -61,7 +61,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.6"
+    "@opencensus/web-core": "^0.0.7"
   },
   "sideEffects": false
 }

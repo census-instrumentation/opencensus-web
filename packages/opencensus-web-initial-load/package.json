@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-initial-load",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "OpenCensus Web trace instrumentation for the initial page load",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -61,11 +61,11 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.6",
-    "@opencensus/web-exporter-ocagent": "^0.0.6",
-    "@opencensus/web-instrumentation-perf": "^0.0.6",
-    "@opencensus/web-propagation-tracecontext": "^0.0.6",
-    "@opencensus/web-types": "^0.0.6"
+    "@opencensus/web-core": "^0.0.7",
+    "@opencensus/web-exporter-ocagent": "^0.0.7",
+    "@opencensus/web-instrumentation-perf": "^0.0.7",
+    "@opencensus/web-propagation-tracecontext": "^0.0.7",
+    "@opencensus/web-types": "^0.0.7"
   },
   "sideEffects": false
 }
