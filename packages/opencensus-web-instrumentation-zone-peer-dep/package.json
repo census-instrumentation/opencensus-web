@@ -1,6 +1,6 @@
 {
   "name": "@opencensus/web-instrumentation-zone-peer-dep",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "OpenCensus Web instrumentation zone is used to generate user interaction spans for interactions after the initial page loads. Add Zone.js as peer dependency.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -64,11 +64,11 @@
     "zone.js": "^0.10.1"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.6",
-    "@opencensus/web-exporter-ocagent": "^0.0.6",
-    "@opencensus/web-initial-load": "^0.0.6",
-    "@opencensus/web-instrumentation-perf": "^0.0.6",
-    "@opencensus/web-propagation-tracecontext": "^0.0.6"
+    "@opencensus/web-core": "^0.0.7",
+    "@opencensus/web-exporter-ocagent": "^0.0.7",
+    "@opencensus/web-initial-load": "^0.0.7",
+    "@opencensus/web-instrumentation-perf": "^0.0.7",
+    "@opencensus/web-propagation-tracecontext": "^0.0.7"
   },
   "peerDependencies": {
     "zone.js": "^0.10.1"
