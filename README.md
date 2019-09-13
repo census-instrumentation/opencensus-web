@@ -436,8 +436,8 @@ Apache 2.0 - See [LICENSE][license-url] for more information.
 [license-url]: https://github.com/census-instrumentation/opencensus-web/blob/master/LICENSE
 [long-tasks-url]: https://w3c.github.io/longtasks/
 [navigation-timing-url]: https://www.w3.org/TR/navigation-timing-2/
-[npm-img]: https://badge.fury.io/js/%40opencensus%2Fweb-all.svg
-[npm-url]: https://www.npmjs.com/package/@opencensus/web-all
+[npm-img]: https://badge.fury.io/js/%40opencensus%2Fweb-core.svg
+[npm-url]: https://www.npmjs.com/package/@opencensus/web-core
 [oc-agent-exporter-url]: https://github.com/census-instrumentation/opencensus-service/tree/master/exporter
 [oc-agent-url]: https://github.com/census-instrumentation/opencensus-service
 [oc-web-issue-url]: https://github.com/census-instrumentation/opencensus-web/issues/new/choose
