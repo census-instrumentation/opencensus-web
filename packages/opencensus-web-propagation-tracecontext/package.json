@@ -13,9 +13,10 @@
     "check": "gts check",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect && npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run check",
+    "snyk-protect": "snyk protect"
   },
   "repository": "census-instrumentation/opencensus-web",
   "keywords": [
@@ -61,7 +62,9 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@opencensus/web-core": "^0.0.7"
+    "@opencensus/web-core": "^0.0.7",
+    "snyk": "^1.230.5"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "snyk": true
 }
