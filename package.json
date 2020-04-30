@@ -12,7 +12,9 @@
     "bootstrap": "lerna bootstrap",
     "bump": "lerna publish  --skip-npm --skip-git",
     "codecov": "lerna run codecov",
-    "check": "lerna run check"
+    "check": "lerna run check",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "keywords": [
     "opencensus",
@@ -40,5 +42,9 @@
   },
   "devDependencies": {
     "lerna": "^3.13.4"
+  },
+  "snyk": true,
+  "dependencies": {
+    "snyk": "^1.316.1"
   }
 }
