@@ -30,6 +30,7 @@
   "engines": {
     "node": ">=6.0"
   },
+  "type": "module",
   "files": [
     "build/src/**/*.js",
     "build/src/**/*.d.ts",
