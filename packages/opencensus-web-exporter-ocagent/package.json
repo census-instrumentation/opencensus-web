@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^3.3.4",
-    "codecov": "^3.3.0",
+    "codecov": "^3.7.1",
     "gts": "^1.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "jasmine": "^3.3.1",
