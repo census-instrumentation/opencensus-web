@@ -42,7 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "gts": "^1.0.0",
+    "gts": "^3.0.0",
     "rimraf": "^3.0.0",
     "typescript": "^3.1.6"
   },
