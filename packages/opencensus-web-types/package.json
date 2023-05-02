@@ -42,9 +42,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "gts": "^1.0.0",
-    "rimraf": "^3.0.0",
-    "typescript": "^3.1.6"
+    "gts": "1.0.0",
+    "rimraf": "3.0.0",
+    "typescript": "3.2.2"
   },
   "sideEffects": false
 }
