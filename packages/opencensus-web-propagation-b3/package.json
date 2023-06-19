@@ -55,7 +55,7 @@
     "karma-spec-reporter": "^0.0.32",
     "karma-webpack": "^4.0.2",
     "rimraf": "^3.0.0",
-    "ts-loader": "^6.0.4",
+    "ts-loader": "^9.0.0",
     "typescript": "^3.5.3",
     "webpack": "^4.39.3",
     "webpack-cli": "^4.0.0"
